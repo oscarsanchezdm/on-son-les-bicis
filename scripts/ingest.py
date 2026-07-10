@@ -7,6 +7,7 @@ import csv
 import json
 import sqlite3
 import sys
+import time
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -47,10 +48,21 @@ def _headers() -> dict[str, str]:
     return {"Authorization": BICING_TOKEN}
 
 
-def _fetch_json(url: str) -> dict:
-    resp = requests.get(url, headers=_headers(), timeout=30)
-    resp.raise_for_status()
-    return resp.json()
+def _fetch_json(url: str, retries: int = 3) -> dict:
+    last_error: Exception | None = None
+    for attempt in range(1, retries + 1):
+        try:
+            resp = requests.get(url, headers=_headers(), timeout=30)
+            if not resp.ok:
+                raise RuntimeError(
+                    f"HTTP {resp.status_code} from {url}: {resp.text[:300]}"
+                )
+            return resp.json()
+        except (requests.RequestException, json.JSONDecodeError, RuntimeError) as exc:
+            last_error = exc
+            if attempt < retries:
+                time.sleep(2 * attempt)
+    raise RuntimeError(f"Failed to fetch {url} after {retries} attempts") from last_error
 
 
 def _load_barris() -> None:
