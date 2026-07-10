@@ -417,6 +417,43 @@ body.kpi-chart-open {
   margin: 0.75rem 0;
 }
 
+.legend-bar--metric {
+  margin-top: 0.35rem;
+}
+
+.heat-scale-toggle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0.35rem 0 0.5rem;
+}
+
+.heat-scale-toggle button {
+  flex: 1;
+  min-width: 0;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.78rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.heat-scale-toggle button.active {
+  background: #0f766e;
+  border-color: #0f766e;
+  color: #fff;
+}
+
+.legend-scale-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin: 0 0 0.5rem;
+}
+
 .leaflet-color-heat {
   position: absolute;
   left: 0;

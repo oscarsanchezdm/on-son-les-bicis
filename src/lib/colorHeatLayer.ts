@@ -4,9 +4,10 @@
  */
 
 import L from "leaflet";
+import type { HeatScaleMode } from "./colors";
+import { metricAbsoluteColor, metricPctColor } from "./colors";
 import type { MetricMode, Station } from "./data";
-import { stationMetric } from "./data";
-import { metricPctColor } from "./colors";
+import { stationCount, stationMetric } from "./data";
 
 export function stationMarkerRadius(capacity: number): number {
   return Math.min(8, Math.max(4, 3.2 + capacity * 0.07));
@@ -42,7 +43,7 @@ function splatRadius(zoom: number): number {
 }
 
 export type ColorHeatLayer = L.Renderer & {
-  setStations: (stations: Station[], mode: MetricMode) => ColorHeatLayer;
+  setStations: (stations: Station[], mode: MetricMode, heatScale: HeatScaleMode) => ColorHeatLayer;
   redraw: () => ColorHeatLayer;
 };
 
@@ -52,9 +53,10 @@ const ColorHeatLayerImpl = L.Renderer.extend({
     padding: 0.12,
   },
 
-  initialize(stations: Station[], mode: MetricMode) {
+  initialize(stations: Station[], mode: MetricMode, heatScale: HeatScaleMode) {
     this._stations = stations;
     this._mode = mode;
+    this._heatScale = heatScale;
   },
 
   onAdd(map: L.Map) {
@@ -77,9 +79,10 @@ const ColorHeatLayerImpl = L.Renderer.extend({
     this._ctx = undefined;
   },
 
-  setStations(stations: Station[], mode: MetricMode) {
+  setStations(stations: Station[], mode: MetricMode, heatScale: HeatScaleMode) {
     this._stations = stations;
     this._mode = mode;
+    this._heatScale = heatScale;
     if (this._map) L.Renderer.prototype._update.call(this);
     return this;
   },
@@ -124,7 +127,14 @@ const ColorHeatLayerImpl = L.Renderer.extend({
     if (!active.length) return;
 
     const maxCapacity = Math.max(...active.map((s) => s.capacity));
+    const mode = this._mode as MetricMode;
+    const heatScale = this._heatScale as HeatScaleMode;
     const radius = splatRadius(map.getZoom());
+
+    const maxCount =
+      heatScale === "absolute"
+        ? Math.max(1, ...active.map((s) => stationCount(s, mode)))
+        : 1;
 
     for (const s of active) {
       const point = map.latLngToLayerPoint([s.lat, s.lon]);
@@ -137,10 +147,23 @@ const ColorHeatLayerImpl = L.Renderer.extend({
         continue;
       }
 
-      const availability = stationMetric(s, this._mode as MetricMode);
-      const [r, g, b] = hexToRgb(metricPctColor(availability, this._mode as MetricMode));
-      const weight = capacityWeight(s.capacity, maxCapacity);
-      const alpha = 0.1 + 0.32 * weight;
+      let r: number;
+      let g: number;
+      let b: number;
+      let alpha: number;
+
+      if (heatScale === "absolute") {
+        const count = stationCount(s, mode);
+        if (count <= 0) continue;
+        [r, g, b] = hexToRgb(metricAbsoluteColor(mode));
+        const intensity = Math.pow(count / maxCount, 0.8);
+        alpha = 0.08 + 0.42 * intensity;
+      } else {
+        const availability = stationMetric(s, mode);
+        [r, g, b] = hexToRgb(metricPctColor(availability, mode));
+        const weight = capacityWeight(s.capacity, maxCapacity);
+        alpha = 0.1 + 0.32 * weight;
+      }
 
       const grad = ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, radius);
       grad.addColorStop(0, `rgba(${r},${g},${b},${alpha})`);
@@ -155,6 +178,10 @@ const ColorHeatLayerImpl = L.Renderer.extend({
   },
 });
 
-export function createColorHeatLayer(stations: Station[], mode: MetricMode): ColorHeatLayer {
-  return new ColorHeatLayerImpl(stations, mode) as ColorHeatLayer;
+export function createColorHeatLayer(
+  stations: Station[],
+  mode: MetricMode,
+  heatScale: HeatScaleMode = "percent"
+): ColorHeatLayer {
+  return new ColorHeatLayerImpl(stations, mode, heatScale) as ColorHeatLayer;
 }

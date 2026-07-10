@@ -11,7 +11,7 @@ import {
 } from "../lib/colorHeatLayer";
 import type { TimeView } from "../lib/history";
 import { isStationMappable } from "../lib/status";
-import { metricPctColor } from "../lib/colors";
+import { metricPctColor, type HeatScaleMode } from "../lib/colors";
 import { formatPct } from "../lib/format";
 import { countIconHtml } from "../lib/icons";
 
@@ -42,7 +42,8 @@ export type MapView = {
     barris: Barri[],
     stations: Station[] | null,
     timeView: TimeView,
-    selectedBarriCodi?: string | null
+    selectedBarriCodi?: string | null,
+    heatScale?: HeatScaleMode
   ) => void;
   focusBarri: (codi: string | null, stations: Station[] | null) => void;
 };
@@ -79,6 +80,7 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
   let barriLayer: L.GeoJSON | null = null;
   let heatLayer: ColorHeatLayer | null = null;
   let heatMode: MetricMode | null = null;
+  let heatScaleMode: HeatScaleMode = "percent";
 
   map.on("popupopen", () => {
     stationLayer.eachLayer((layer) => {
@@ -91,7 +93,8 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
     barris: Barri[],
     stations: Station[] | null,
     timeView: TimeView,
-    selectedBarriCodi: string | null = null
+    selectedBarriCodi: string | null = null,
+    heatScale: HeatScaleMode = "percent"
   ) {
     const byCode = new Map(barris.map((b) => [b.barri_codi, b]));
     const showStations = stations !== null;
@@ -219,17 +222,18 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
         }
       }
 
-      if (heatLayer && heatMode !== mode) {
+      if (heatLayer && (heatMode !== mode || heatScaleMode !== heatScale)) {
         map.removeLayer(heatLayer);
         heatLayer = null;
       }
       heatMode = mode;
+      heatScaleMode = heatScale;
 
       if (!heatLayer) {
-        heatLayer = createColorHeatLayer(activeStations, mode);
+        heatLayer = createColorHeatLayer(activeStations, mode, heatScale);
         heatLayer.addTo(map);
       } else {
-        heatLayer.setStations(activeStations, mode);
+        heatLayer.setStations(activeStations, mode, heatScale);
         if (!map.hasLayer(heatLayer)) heatLayer.addTo(map);
       }
 
@@ -240,6 +244,7 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
         heatLayer = null;
       }
       heatMode = null;
+      heatScaleMode = "percent";
       if (map.hasLayer(stationLayer)) map.removeLayer(stationLayer);
     }
 
