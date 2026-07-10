@@ -148,6 +148,11 @@ def ingest() -> str:
         ebike = int(status.get("num_bikes_available_types", {}).get("ebike") or 0)
         total = int(status.get("num_bikes_available") or mechanical + ebike)
         docks = int(status.get("num_docks_available") or 0)
+        bikes_disabled = int(
+            status.get("num_vehicles_disabled")
+            or status.get("num_bikes_disabled")
+            or 0
+        )
 
         station_rows.append(
             (
@@ -172,6 +177,7 @@ def ingest() -> str:
                 ebike,
                 total,
                 docks,
+                bikes_disabled,
                 capacity,
                 _pct(total, capacity),
                 _pct(docks, capacity),
@@ -245,8 +251,8 @@ def ingest() -> str:
             """
             INSERT INTO snapshots (
                 ts, station_id, mechanical, ebike, total, docks_available,
-                capacity, pct_bikes, pct_docks_free, status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                bikes_disabled, capacity, pct_bikes, pct_docks_free, status
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             snapshot_rows,
         )
