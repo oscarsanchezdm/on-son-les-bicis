@@ -51,13 +51,6 @@ export function stationHeatWeight(availabilityPct: number, ctx: HeatContext): nu
   return Math.min(0.85, weight);
 }
 
-/** Stress 0–100 for marker emphasis (vs city median). */
-export function stationStress(availabilityPct: number, ctx: HeatContext): number {
-  const gap = Math.max(0, ctx.median - availabilityPct);
-  const spread = Math.max(ctx.median - ctx.p25, 8);
-  return Math.min(100, (gap / spread) * 70 + (availabilityPct < 10 ? 30 : 0));
-}
-
 export function buildStationHeatPoints(
   stations: Array<{ lat: number; lon: number; availability: number }>,
   ctx: HeatContext
