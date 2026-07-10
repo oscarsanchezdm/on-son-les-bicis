@@ -126,7 +126,7 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
             barri.docks_available_total
           );
         const suffix =
-          timeView.kind === "snapshot"
+          timeView.kind === "hour"
             ? "<br/><em>Mitjana històrica a aquesta franja</em>"
             : "";
         layer.bindPopup(

@@ -7,10 +7,12 @@ import type { Barri, MetricMode, Station } from "./lib/data";
 import { loadBarris, loadBarrisGeo, loadLatest } from "./lib/data";
 import {
   barrisToLatestData,
+  hourViewScopeLabel,
   isHistoricalView,
-  loadBarriSnapshot,
+  loadBarriHourlyAverage,
   loadHistoryIndex,
   loadSummary7d,
+  sampleCountForView,
   type HistoryIndex,
   type TimeView,
 } from "./lib/history";
@@ -168,14 +170,22 @@ function updateTimelineStatus() {
 
   const label = timeViewLabel(timeView, historyIndex);
   if (!displayBarris.length) {
-    setTimelineStatus(timelineEl, `${label}: encara no hi ha dades per aquesta franja.`);
+    const n = sampleCountForView(historyIndex, timeView);
+    setTimelineStatus(
+      timelineEl,
+      n
+        ? `${label}: encara no hi ha dades per aquesta franja.`
+        : `${hourViewScopeLabel(timeView.hour, timeView.dayType)}: encara no hi ha prou mostres (30 dies).`
+    );
     return;
   }
+
+  const n = sampleCountForView(historyIndex, timeView);
 
   const agg = barrisToLatestData(displayBarris, latestData!.last_updated).totals;
   setTimelineStatus(
     timelineEl,
-    `${label}: ${agg.pct_bikes.toFixed(1)}% bicis · ${agg.pct_mechanical.toFixed(1)}% mecàniques · ${agg.pct_ebike.toFixed(1)}% elèctriques.`
+    `${label}: ${agg.pct_bikes.toFixed(1)}% bicis · ${agg.pct_mechanical.toFixed(1)}% mecàniques · ${agg.pct_ebike.toFixed(1)}% elèctriques (${n} mostra${n === 1 ? "" : "es"}).`
   );
 }
 
@@ -190,7 +200,7 @@ function refresh() {
     kpiData,
     summaryData,
     kpiScopeLabel(),
-    timeView.kind === "snapshot"
+    timeView.kind === "hour"
   );
   mapView.update(
     mode,
@@ -238,7 +248,7 @@ async function applyTimeView(view: TimeView) {
     displayStations = latestData.stations;
   } else {
     setTimelineStatus(timelineEl, `${timeViewLabel(view, historyIndex)}: carregant…`);
-    displayBarris = await loadBarriSnapshot(view.date, view.hour);
+    displayBarris = await loadBarriHourlyAverage(historyIndex, view.hour, view.dayType);
     if (requestId !== timeViewRequest) return;
     displayStations = null;
     selectedBarri = null;

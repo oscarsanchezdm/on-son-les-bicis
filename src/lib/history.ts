@@ -1,7 +1,10 @@
 import type { Barri, LatestData } from "./data";
 import { bikesOutOfService, pctBikesOutOfService } from "./data";
+import { formatHour } from "./format";
 
 const BASE = import.meta.env.BASE_URL;
+const HISTORY_DAYS = 30;
+const MADRID_TZ = "Europe/Madrid";
 
 export type HistoryPoint = {
   ts: string;
@@ -28,22 +31,23 @@ export type Summary7d = {
 
 export type DayType = "weekday" | "friday" | "saturday" | "sunday";
 
-export type HistorySnapshot = {
+export type HistoryFile = {
   key: string;
-  date: string;
-  hour: number;
+  localDate: string;
+  localHour: number;
   dayType: DayType;
-  label: string;
 };
 
 export type HistoryIndex = {
   generated_at: string;
-  snapshots: HistorySnapshot[];
+  timezone: string;
+  hoursByDayType: Record<DayType, number[]>;
+  files: HistoryFile[];
 };
 
 export type TimeView =
   | { kind: "latest" }
-  | { kind: "snapshot"; key: string; date: string; hour: number; dayType: DayType };
+  | { kind: "hour"; hour: number; dayType: DayType };
 
 type HourlyBarriSnapshot = {
   barri_codi: string;
@@ -96,50 +100,104 @@ export function dayTypeLabel(dayType: DayType): string {
   }
 }
 
-function snapshotToBarri(s: HourlyBarriSnapshot): Barri {
-  const cap = s.capacity_total;
-  const oos = bikesOutOfService(
-    cap,
-    s.bikes_mechanical,
-    s.bikes_ebike,
-    s.docks_available_total
+export function hoursForDayType(index: HistoryIndex | null, dayType: DayType): number[] {
+  return index?.hoursByDayType?.[dayType] ?? [];
+}
+
+function madridDateKey(daysAgo: number): string {
+  const now = new Date();
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: MADRID_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date(now.getTime() - daysAgo * 86400000));
+  const y = parts.find((p) => p.type === "year")!.value;
+  const m = parts.find((p) => p.type === "month")!.value;
+  const d = parts.find((p) => p.type === "day")!.value;
+  return `${y}-${m}-${d}`;
+}
+
+function filesForAverage(
+  index: HistoryIndex | null,
+  hour: number,
+  dayType: DayType
+): HistoryFile[] {
+  if (!index?.files?.length) return [];
+  const cutoffDates = new Set<string>();
+  for (let d = 0; d < HISTORY_DAYS; d++) {
+    cutoffDates.add(madridDateKey(d));
+  }
+  return index.files.filter(
+    (f) =>
+      f.dayType === dayType &&
+      f.localHour === hour &&
+      cutoffDates.has(f.localDate)
   );
+}
+
+function averageBarriSnapshots(samples: HourlyBarriSnapshot[]): Barri {
+  const n = samples.length;
+  const avg = (fn: (s: HourlyBarriSnapshot) => number) =>
+    samples.reduce((sum, s) => sum + fn(s), 0) / n;
+
+  const capacity = avg((s) => s.capacity_total);
+  const mechanical = avg((s) => s.bikes_mechanical);
+  const ebike = avg((s) => s.bikes_ebike);
+  const bikes = avg((s) => s.bikes_total);
+  const docks = avg((s) => s.docks_available_total);
+  const cap = Math.round(capacity);
+  const oos = bikesOutOfService(cap, Math.round(mechanical), Math.round(ebike), Math.round(docks));
 
   return {
-    barri_codi: s.barri_codi,
-    barri_nom: s.barri_nom,
-    stations_count: s.stations_active ?? 0,
-    stations_active: s.stations_active ?? 0,
+    barri_codi: samples[0]!.barri_codi,
+    barri_nom: samples[0]!.barri_nom,
+    stations_count: Math.round(avg((s) => s.stations_active ?? 0)),
+    stations_active: Math.round(avg((s) => s.stations_active ?? 0)),
     capacity_total: cap,
-    docks_available_total: s.docks_available_total,
-    bikes_mechanical: s.bikes_mechanical,
-    bikes_ebike: s.bikes_ebike,
-    bikes_total: s.bikes_total,
-    pct_bikes: s.pct_bikes,
-    pct_docks_free: s.pct_docks_free,
-    pct_mechanical: cap > 0 ? Math.round((100 * s.bikes_mechanical) / cap * 100) / 100 : 0,
-    pct_ebike: s.pct_ebike,
-    stations_zero_ebike: s.stations_zero_ebike ?? 0,
-    stations_zero_mechanical: s.stations_zero_mechanical ?? 0,
+    docks_available_total: Math.round(docks),
+    bikes_mechanical: Math.round(mechanical),
+    bikes_ebike: Math.round(ebike),
+    bikes_total: Math.round(bikes),
+    pct_bikes: cap > 0 ? Math.round((100 * bikes) / cap * 100) / 100 : 0,
+    pct_docks_free: cap > 0 ? Math.round((100 * docks) / cap * 100) / 100 : 0,
+    pct_mechanical: cap > 0 ? Math.round((100 * mechanical) / cap * 100) / 100 : 0,
+    pct_ebike: cap > 0 ? Math.round((100 * ebike) / cap * 100) / 100 : 0,
+    stations_zero_ebike: Math.round(avg((s) => s.stations_zero_ebike ?? 0)),
+    stations_zero_mechanical: Math.round(avg((s) => s.stations_zero_mechanical ?? 0)),
     stations_zero_any: 0,
     bikes_out_of_service: oos,
     pct_bikes_out_of_service: pctBikesOutOfService(
       cap,
-      s.bikes_mechanical,
-      s.bikes_ebike,
-      s.docks_available_total
+      Math.round(mechanical),
+      Math.round(ebike),
+      Math.round(docks)
     ),
     superficie_ha: null,
   };
 }
 
-/** Load barri metrics from one stored hourly snapshot file. */
-export async function loadBarriSnapshot(date: string, hour: number): Promise<Barri[]> {
-  const hh = String(hour).padStart(2, "0");
-  const url = `${BASE}data/history/hourly/${date}-${hh}.json.gz`;
-  const barris = await loadHourlyGz(url);
-  return barris
-    .map(snapshotToBarri)
+/** Average barri metrics for local hour and day-type across stored history (30 days). */
+export async function loadBarriHourlyAverage(
+  index: HistoryIndex | null,
+  hour: number,
+  dayType: DayType
+): Promise<Barri[]> {
+  const matches = filesForAverage(index, hour, dayType);
+  const byCode = new Map<string, HourlyBarriSnapshot[]>();
+
+  for (const file of matches) {
+    const url = `${BASE}data/history/hourly/${file.key}.json.gz`;
+    const barris = await loadHourlyGz(url);
+    for (const b of barris) {
+      const list = byCode.get(b.barri_codi) ?? [];
+      list.push(b);
+      byCode.set(b.barri_codi, list);
+    }
+  }
+
+  return [...byCode.values()]
+    .map(averageBarriSnapshots)
     .sort((a, b) => a.barri_nom.localeCompare(b.barri_nom, "ca"));
 }
 
@@ -179,9 +237,8 @@ export function barrisToLatestData(barris: Barri[], lastUpdated: string): Latest
   };
 }
 
-export function snapshotScopeLabel(view: Extract<TimeView, { kind: "snapshot" }>): string {
-  const hh = String(view.hour).padStart(2, "0");
-  return `mitjana ${dayTypeLabel(view.dayType)} a les ${hh}:00`;
+export function hourViewScopeLabel(hour: number, dayType: DayType): string {
+  return `mitjana ${dayTypeLabel(dayType)} a les ${formatHour(hour)}`;
 }
 
 export function sparklineValues(
@@ -205,6 +262,22 @@ export function hourlyAverage(
   return bucket.avg_pct_ebike;
 }
 
-export function isHistoricalView(view: TimeView): view is Extract<TimeView, { kind: "snapshot" }> {
-  return view.kind === "snapshot";
+export function isHistoricalView(view: TimeView): view is Extract<TimeView, { kind: "hour" }> {
+  return view.kind === "hour";
+}
+
+export function currentMadridHour(): number {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: MADRID_TZ,
+    hour: "2-digit",
+    hour12: false,
+  }).formatToParts(new Date());
+  return Number(parts.find((p) => p.type === "hour")!.value);
+}
+
+export function sampleCountForView(
+  index: HistoryIndex | null,
+  view: Extract<TimeView, { kind: "hour" }>
+): number {
+  return filesForAverage(index, view.hour, view.dayType).length;
 }

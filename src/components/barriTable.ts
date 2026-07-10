@@ -106,7 +106,7 @@ export function renderBarriTable(
     onSelect?: (barri: Barri) => void;
   }
 ): void {
-  const isHistorical = timeView.kind === "snapshot";
+  const isHistorical = timeView.kind === "hour";
   const selectedCodi = options?.selectedCodi ?? null;
   const onSelect = options?.onSelect;
   const sorted = sortedBarris(barris);

@@ -10,6 +10,9 @@ import sys
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
+
+MADRID = ZoneInfo("Europe/Madrid")
 
 from config import DATA_DIR, DB_PATH, ROOT
 from status import is_station_active
@@ -352,16 +355,6 @@ def _export_history(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
     _export_history_index(hourly_dir, ts_iso)
 
 
-_DAY_TYPE_UI = {
-    "weekday": "Feiner",
-    "friday": "Divendres",
-    "saturday": "Dissabte",
-    "sunday": "Diumenge",
-}
-
-_MONTHS_CA = ("gen", "feb", "mar", "abr", "mai", "jun", "jul", "ago", "set", "oct", "nov", "des")
-
-
 def _day_type_from_dt(dt: datetime) -> str:
     dow = dt.weekday()  # Monday=0 … Sunday=6
     if dow == 4:
@@ -381,32 +374,45 @@ def _hourly_file_key(path: Path) -> str:
 
 
 def _export_history_index(hourly_dir: Path, ts_iso: str) -> None:
-    snapshots: list[dict] = []
+    files: list[dict] = []
+    hours_by_day_type: dict[str, set[int]] = {
+        "weekday": set(),
+        "friday": set(),
+        "saturday": set(),
+        "sunday": set(),
+    }
+
     for path in sorted(hourly_dir.glob("*.json.gz")):
         key = _hourly_file_key(path)
         try:
-            dt = datetime.strptime(key, "%Y-%m-%d-%H")
+            dt_utc = datetime.strptime(key, "%Y-%m-%d-%H").replace(tzinfo=timezone.utc)
         except ValueError:
             continue
+        dt = dt_utc.astimezone(MADRID)
         day_type = _day_type_from_dt(dt)
-        label = (
-            f"{_DAY_TYPE_UI[day_type]} {dt.day} {_MONTHS_CA[dt.month - 1]}, {dt.hour:02d}:00"
-        )
-        snapshots.append(
+        local_hour = dt.hour
+        files.append(
             {
                 "key": key,
-                "date": dt.strftime("%Y-%m-%d"),
-                "hour": dt.hour,
+                "localDate": dt.strftime("%Y-%m-%d"),
+                "localHour": local_hour,
                 "dayType": day_type,
-                "label": label,
             }
         )
+        hours_by_day_type[day_type].add(local_hour)
 
     history_dir = DATA_DIR / "history"
     history_dir.mkdir(parents=True, exist_ok=True)
     (history_dir / "history-index.json").write_text(
         json.dumps(
-            {"generated_at": ts_iso, "snapshots": snapshots},
+            {
+                "generated_at": ts_iso,
+                "timezone": "Europe/Madrid",
+                "hoursByDayType": {
+                    k: sorted(v) for k, v in hours_by_day_type.items()
+                },
+                "files": files,
+            },
             ensure_ascii=False,
             indent=2,
         ),
@@ -450,8 +456,8 @@ def _export_summary_7d(conn: sqlite3.Connection, ts_iso: str) -> None:
 
     for raw_ts, bikes, cap, mech, ebike in rows:
         ts = _normalize_ts(raw_ts)
-        dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
-        if dt < cutoff_dt:
+        dt = datetime.fromisoformat(ts.replace("Z", "+00:00")).astimezone(MADRID)
+        if dt < cutoff_dt.astimezone(MADRID):
             continue
         cap = cap or 0
         series_by_ts[ts] = {
