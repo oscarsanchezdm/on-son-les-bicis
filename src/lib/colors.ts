@@ -1,6 +1,6 @@
 import type { MetricMode } from "./data";
 
-/** Red = scarce, green = abundant (for bikes). Inverted for docks / fora de servei. */
+/** Red = scarce, green = abundant. Inverted only for fora de servei (high = bad). */
 export function pctColor(value: number, invert = false): string {
   const v = invert ? 100 - value : value;
   if (v <= 10) return "#b91c1c";
@@ -14,5 +14,5 @@ export function pctColor(value: number, invert = false): string {
 export function metricPctColor(value: number, mode: MetricMode): string {
   if (!Number.isFinite(value)) return "#cbd5e1";
   if (mode === "out_of_service") return pctColor(value, true);
-  return pctColor(value, mode === "docks");
+  return pctColor(value, false);
 }
