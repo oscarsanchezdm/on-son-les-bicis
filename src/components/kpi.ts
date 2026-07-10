@@ -8,6 +8,7 @@ import {
 import type { BarriSparklineSeries, SparklineMetricKey, Summary7d } from "../lib/history";
 import {
   currentMadridHour,
+  filterChartPointsLast24h,
   hourlyAverage,
   labeledChartPoints,
   sparklineChartPoints,
@@ -81,13 +82,13 @@ function chartPoints(
   sparklines: BarriSparklineSeries | null,
   summary: Summary7d | null
 ) {
+  let points: ReturnType<typeof sparklineChartPoints> = [];
   if (sparklines?.labels.length) {
-    return labeledChartPoints(sparklines.labels, sparklines[metric]);
+    points = labeledChartPoints(sparklines.labels, sparklines[metric], sparklines.keys);
+  } else if (summary?.series.length) {
+    points = sparklineChartPoints(summary.series, metric);
   }
-  if (summary?.series.length) {
-    return sparklineChartPoints(summary.series, metric);
-  }
-  return [];
+  return filterChartPointsLast24h(points);
 }
 
 function kpiCard(
@@ -141,7 +142,7 @@ export function renderKpis(
   const ebikePoints = showSpark ? chartPoints("pct_ebike", sparklines, summary) : [];
   const oosPoints = showSpark ? chartPoints("pct_oos_fleet", sparklines, summary) : [];
 
-  const chartSubtitle = `Últims ${Math.max(bikesPoints.length, 1)} punts · ${scopeLabel}`;
+  const chartSubtitle = `Últimes 24 h · ${scopeLabel}`;
   const charts: Record<string, KpiChartSpec | undefined> = showSpark
     ? {
         bikes: bikesPoints.length

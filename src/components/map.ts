@@ -79,6 +79,12 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
   let heatLayer: ColorHeatLayer | null = null;
   let heatMode: MetricMode | null = null;
 
+  map.on("popupopen", () => {
+    stationLayer.eachLayer((layer) => {
+      (layer as L.CircleMarker).closeTooltip();
+    });
+  });
+
   function update(
     mode: MetricMode,
     barris: Barri[],
@@ -159,13 +165,19 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
         const popup = stationPopupHtml(s);
         const tooltip = stationTooltipHtml(s);
 
-        const bindStationUi = (layer: L.CircleMarker) =>
-          layer
+        const bindStationUi = (layer: L.CircleMarker) => {
+          const tooltipOptions = { sticky: true, className: "station-tooltip" };
+          return layer
             .bindPopup(popup)
-            .bindTooltip(tooltip, { sticky: true, className: "station-tooltip" })
+            .bindTooltip(tooltip, tooltipOptions)
             .on("popupopen", () => {
               layer.closeTooltip();
+              layer.unbindTooltip();
+            })
+            .on("popupclose", () => {
+              layer.bindTooltip(tooltip, tooltipOptions);
             });
+        };
 
         if (expandedHit) {
           const hitMarker = bindStationUi(

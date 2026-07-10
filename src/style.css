@@ -36,7 +36,7 @@ main,
 .site-header--sticky {
   position: sticky;
   top: 0;
-  z-index: 1000;
+  z-index: 1100;
   max-width: none;
   margin: 0;
   padding: 0;
@@ -396,6 +396,11 @@ body.kpi-chart-open {
   border: 1px solid var(--border);
   overflow: hidden;
   background: #e2e8f0;
+  isolation: isolate;
+}
+
+#map .leaflet-control {
+  z-index: 500;
 }
 
 .legend {
