@@ -148,7 +148,7 @@ function averageBarriSnapshots(samples: HourlyBarriSnapshot[]): Barri {
   const bikes = avg((s) => s.bikes_total);
   const docks = avg((s) => s.docks_available_total);
   const cap = Math.round(capacity);
-  const oos = bikesOutOfService(cap, Math.round(mechanical), Math.round(ebike), Math.round(docks));
+  const oos = bikesOutOfService(cap, Math.round(mechanical), Math.round(ebike), Math.round(docks), Math.round(bikes));
 
   return {
     barri_codi: samples[0]!.barri_codi,
@@ -172,7 +172,8 @@ function averageBarriSnapshots(samples: HourlyBarriSnapshot[]): Barri {
       cap,
       Math.round(mechanical),
       Math.round(ebike),
-      Math.round(docks)
+      Math.round(docks),
+      Math.round(bikes)
     ),
     superficie_ha: null,
   };
@@ -212,7 +213,7 @@ export function barrisToLatestData(barris: Barri[], lastUpdated: string): Latest
   const zeroEbike = barris.reduce((s, b) => s + b.stations_zero_ebike, 0);
   const zeroMech = barris.reduce((s, b) => s + (b.stations_zero_mechanical ?? 0), 0);
   const zeroAny = barris.reduce((s, b) => s + b.stations_zero_any, 0);
-  const oos = bikesOutOfService(capacity, mechanical, ebike, docks);
+  const oos = bikesOutOfService(capacity, mechanical, ebike, docks, bikes);
 
   return {
     last_updated: lastUpdated,
@@ -231,7 +232,7 @@ export function barrisToLatestData(barris: Barri[], lastUpdated: string): Latest
       pct_mechanical: capacity ? Math.round((100 * mechanical) / capacity * 100) / 100 : 0,
       pct_ebike: capacity ? Math.round((100 * ebike) / capacity * 100) / 100 : 0,
       bikes_out_of_service: oos,
-      pct_bikes_out_of_service: pctBikesOutOfService(capacity, mechanical, ebike, docks),
+      pct_bikes_out_of_service: pctBikesOutOfService(capacity, mechanical, ebike, docks, bikes),
       worst_barri: null,
     },
     stations: [],
@@ -311,7 +312,8 @@ export async function loadBarriSparklineSeries(
       b.capacity_total,
       b.bikes_mechanical,
       b.bikes_ebike,
-      b.docks_available_total
+      b.docks_available_total,
+      b.bikes_total
     );
     pct_bikes.push(b.pct_bikes);
     pct_mechanical.push((100 * b.bikes_mechanical) / b.capacity_total);
@@ -353,7 +355,7 @@ export async function loadCitySparklineSeries(
     }
     if (capacity <= 0) continue;
 
-    const oos = bikesOutOfService(capacity, mechanical, ebike, docks);
+    const oos = bikesOutOfService(capacity, mechanical, ebike, docks, bikes);
     pct_bikes.push((100 * bikes) / capacity);
     pct_mechanical.push((100 * mechanical) / capacity);
     pct_ebike.push((100 * ebike) / capacity);
