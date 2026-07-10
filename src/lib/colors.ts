@@ -25,10 +25,10 @@ export const PCT_SCALE_STOPS: ReadonlyArray<{ pct: number; color: string }> = [
 /** Fora de servei: verd (cap/poc) → vermell (molt); sense blau. */
 export const PCT_OOS_STOPS: ReadonlyArray<{ pct: number; color: string }> = [
   { pct: 0, color: "#22c55e" },
-  { pct: 12, color: "#22c55e" },
-  { pct: 22, color: "#a3e635" },
-  { pct: 38, color: "#facc15" },
-  { pct: 58, color: "#fb923c" },
+  { pct: 15, color: "#facc15" },
+  { pct: 25, color: "#facc15" },
+  { pct: 50, color: "#fb923c" },
+  { pct: 80, color: "#fb923c" },
   { pct: 100, color: "#b91c1c" },
 ];
 
