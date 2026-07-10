@@ -159,3 +159,8 @@ export function pctBikesOutOfService(
   if (capacity <= 0) return 0;
   return (100 * bikesOutOfService(capacity, mechanical, ebike, docksAvailable)) / capacity;
 }
+
+export function pctOfStations(count: number, stationsActive: number): number {
+  if (stationsActive <= 0) return 0;
+  return (100 * count) / stationsActive;
+}

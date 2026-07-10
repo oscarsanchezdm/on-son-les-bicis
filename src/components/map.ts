@@ -1,7 +1,7 @@
 import L from "leaflet";
 import "leaflet.heat";
 import type { Barri, MetricMode, Station } from "../lib/data";
-import { barriMetric, bikesOutOfService, stationMetric } from "../lib/data";
+import { barriMetric, bikesOutOfService, pctOfStations, stationMetric } from "../lib/data";
 import { isStationActive } from "../lib/status";
 import { heatGradient, heatIntensity, pctColor, scarcityScore } from "../lib/colors";
 import { formatPct } from "../lib/format";
@@ -58,11 +58,12 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
           Elèctriques: ${formatPct(barri.pct_ebike)} · Mecàniques: ${formatPct(barri.pct_mechanical)}<br/>
           Ancoratges lliures: ${formatPct(barri.pct_docks_free)}<br/>
           Bicis fora de servei: <strong>${oos}</strong><br/>
-          Sense elèctriques: ${barri.stations_zero_ebike} · Sense mecàniques: ${barri.stations_zero_mechanical ?? 0}`
+          Sense elèctriques: ${formatPct(pctOfStations(barri.stations_zero_ebike, barri.stations_active))} · Sense mecàniques: ${formatPct(pctOfStations(barri.stations_zero_mechanical ?? 0, barri.stations_active))}`
         );
-        layer.bindTooltip(`${barri.barri_nom}: ${formatPct(barriMetric(barri, mode))}`, {
-          sticky: true,
-        });
+        layer.bindTooltip(
+          `${barri.barri_nom}: ${formatPct(barriMetric(barri, mode))} · fora servei: ${oos}`,
+          { sticky: true }
+        );
       },
     });
 
@@ -95,7 +96,11 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
           Barri: ${s.barri_nom || "—"}<br/>
           Mecàniques: ${s.mechanical} · Elèctriques: ${s.ebike}<br/>
           Bicis: ${formatPct(s.pct_bikes)} · Ancoratges lliures: ${formatPct(s.pct_docks_free)}<br/>
-          Bicis fora de servei: <strong>${oos}</strong> · Capacitat: ${s.capacity}`
+          <strong>Bicis fora de servei: ${oos}</strong> · Capacitat: ${s.capacity}`
+        )
+        .bindTooltip(
+          `${s.name}: ${formatPct(value)} · fora servei: ${oos}`,
+          { sticky: true }
         )
         .addTo(stationLayer);
     }

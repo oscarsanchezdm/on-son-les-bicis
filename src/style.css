@@ -325,6 +325,13 @@ h1 {
   font-size: 0.75rem;
 }
 
+.zero-stations-cell small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.75rem;
+  margin-top: 0.15rem;
+}
+
 .pct-badge {
   display: inline-block;
   padding: 0.15rem 0.45rem;

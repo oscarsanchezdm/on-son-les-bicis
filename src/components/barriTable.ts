@@ -1,5 +1,5 @@
 import type { Barri, MetricMode } from "../lib/data";
-import { barriMetric, bikesOutOfService, pctBikesOutOfService } from "../lib/data";
+import { barriMetric, bikesOutOfService, pctBikesOutOfService, pctOfStations } from "../lib/data";
 import { pctColor } from "../lib/colors";
 import { formatPct } from "../lib/format";
 
@@ -56,9 +56,9 @@ function sortValue(barri: Barri, key: BarriSortKey): string | number {
     case "bikes_out_of_service":
       return barriOos(barri);
     case "stations_zero_ebike":
-      return barri.stations_zero_ebike;
+      return pctOfStations(barri.stations_zero_ebike, barri.stations_active);
     case "stations_zero_mechanical":
-      return barri.stations_zero_mechanical ?? 0;
+      return pctOfStations(barri.stations_zero_mechanical ?? 0, barri.stations_active);
   }
 }
 
@@ -90,6 +90,15 @@ function oosCell(barri: Barri): string {
   </td>`;
 }
 
+function zeroStationsCell(count: number, active: number): string {
+  const pct = pctOfStations(count, active);
+  const scarcity = Math.min(100, pct);
+  return `<td class="zero-stations-cell">
+    <span class="pct-badge" style="background:${pctColor(100 - scarcity)}">${formatPct(pct)}</span>
+    <small>${count} de ${active}</small>
+  </td>`;
+}
+
 export function renderBarriTable(
   container: HTMLElement,
   barris: Barri[],
@@ -109,8 +118,8 @@ export function renderBarriTable(
             ${header("Bicis", "bikes_total")}
             ${header("Ancoratges lliures", "pct_docks_free")}
             ${header("Bicis fora de servei", "bikes_out_of_service")}
-            ${header("Sense elèctriques", "stations_zero_ebike")}
-            ${header("Sense mecàniques", "stations_zero_mechanical")}
+            ${header("% est. sense elèctriques", "stations_zero_ebike")}
+            ${header("% est. sense mecàniques", "stations_zero_mechanical")}
           </tr>
         </thead>
         <tbody>
@@ -126,8 +135,8 @@ export function renderBarriTable(
                 <td>${b.bikes_total} / ${b.capacity_total}</td>
                 <td><span class="pct-badge" style="background:${pctColor(b.pct_docks_free, true)}">${formatPct(b.pct_docks_free)}</span></td>
                 ${oosCell(b)}
-                <td>${b.stations_zero_ebike}</td>
-                <td>${b.stations_zero_mechanical ?? 0}</td>
+                ${zeroStationsCell(b.stations_zero_ebike, b.stations_active)}
+                ${zeroStationsCell(b.stations_zero_mechanical ?? 0, b.stations_active)}
               </tr>`;
             })
             .join("")}

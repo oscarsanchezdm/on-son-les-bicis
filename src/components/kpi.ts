@@ -1,5 +1,5 @@
 import type { LatestData } from "../lib/data";
-import { bikesOutOfService, pctBikesOutOfService } from "../lib/data";
+import { bikesOutOfService, pctBikesOutOfService, pctOfStations } from "../lib/data";
 import type { Summary7d } from "../lib/history";
 import { hourlyAverage, sparklineValues } from "../lib/history";
 import { formatDateTime, formatPct, formatRelativeTime } from "../lib/format";
@@ -35,6 +35,9 @@ export function renderKpis(
   const pctOutOfService =
     t.pct_bikes_out_of_service ??
     pctBikesOutOfService(t.capacity, t.bikes_mechanical, t.bikes_ebike, t.docks_available);
+  const pctMechOfFleet = t.bikes_total ? (100 * t.bikes_mechanical) / t.bikes_total : 0;
+  const pctZeroEbike = pctOfStations(t.stations_zero_ebike, t.stations_active);
+  const pctZeroMech = pctOfStations(t.stations_zero_mechanical ?? 0, t.stations_active);
 
   const sparkBikes = renderSparkline(sparklineValues(summary?.series ?? [], "pct_bikes"));
   const sparkMech = renderSparkline(sparklineValues(summary?.series ?? [], "pct_mechanical"));
@@ -56,8 +59,8 @@ export function renderKpis(
       </article>
       <article class="kpi-card">
         <span class="kpi-label">Mecàniques</span>
-        <strong>${t.bikes_mechanical.toLocaleString("ca-ES")}</strong>
-        <small>${formatPct(pctMech)} del total d'ancoratges</small>
+        <strong>${formatPct(pctMech)}</strong>
+        <small>${t.bikes_mechanical.toLocaleString("ca-ES")} bicis · ${formatPct(pctMechOfFleet)} del parc disponible</small>
         ${sparkMech}
         <small class="kpi-hist">${histNote(summary, hour, "pct_mechanical", pctMech)}</small>
       </article>
@@ -70,13 +73,13 @@ export function renderKpis(
       </article>
       <article class="kpi-card">
         <span class="kpi-label">Estacions sense elèctriques</span>
-        <strong>${t.stations_zero_ebike}</strong>
-        <small>de ${t.stations_active} en servei</small>
+        <strong>${formatPct(pctZeroEbike)}</strong>
+        <small>${t.stations_zero_ebike} de ${t.stations_active} estacions</small>
       </article>
       <article class="kpi-card">
         <span class="kpi-label">Estacions sense mecàniques</span>
-        <strong>${t.stations_zero_mechanical ?? 0}</strong>
-        <small>de ${t.stations_active} en servei</small>
+        <strong>${formatPct(pctZeroMech)}</strong>
+        <small>${t.stations_zero_mechanical ?? 0} de ${t.stations_active} estacions</small>
       </article>
       <article class="kpi-card kpi-card--alert">
         <span class="kpi-label">Bicicletes fora de servei</span>
