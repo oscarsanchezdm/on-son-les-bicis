@@ -240,7 +240,7 @@ def _export_latest(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
             {
                 "last_updated": ts_iso,
                 "exported_at": datetime.now(timezone.utc).isoformat(),
-                "source": "Open Data BCN — Bicing",
+                "source": "Bicing (GBFS — B:SM)",
                 "station_count": len(station_list),
                 "barri_count": len(barri_list),
                 "disclaimer": "Dades amb retard d'uns minuts. Només estacions en servei entren als percentatges agregats.",

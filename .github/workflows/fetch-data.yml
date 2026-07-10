@@ -26,22 +26,8 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Validate BICING_TOKEN secret
-        env:
-          BICING_TOKEN: ${{ secrets.BICING_TOKEN }}
-        run: |
-          if [ -z "$BICING_TOKEN" ]; then
-            echo "::error::BICING_TOKEN secret is empty. Set it at Settings → Secrets → Actions."
-            exit 1
-          fi
-          if [[ "$BICING_TOKEN" == BICING_TOKEN=* ]]; then
-            echo "::warning::BICING_TOKEN secret includes the 'BICING_TOKEN=' prefix; stripping it in code."
-          fi
-
       - name: Fetch static data if missing
         if: hashFiles('public/data/static/barris.geojson') == ''
-        env:
-          BICING_TOKEN: ${{ secrets.BICING_TOKEN }}
         run: python scripts/fetch_static_data.py
 
       - name: Ingest and export

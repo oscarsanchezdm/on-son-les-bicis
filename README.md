@@ -4,7 +4,8 @@ Eina periodística per visualitzar la disponibilitat de bicicletes del Bicing a 
 
 ## Dades
 
-- [Estat d'estacions Bicing](https://opendata-ajuntament.barcelona.cat/data/ca/dataset/estat-estacions-bicing) (temps real, token)
+- [GBFS Bicing](https://barcelona.publicbikesystem.net/customer/gbfs/v3.0/gbfs.json) (temps real, sense token — font principal a GitHub Actions)
+- [Estat d'estacions Bicing (Open Data)](https://opendata-ajuntament.barcelona.cat/data/ca/dataset/estat-estacions-bicing) (opcional, requereix token)
 - [Informació d'estacions](https://opendata-ajuntament.barcelona.cat/data/ca/dataset/informacio-estacions-bicing)
 - [Unitats administratives (barris)](https://opendata-ajuntament.barcelona.cat/data/ca/dataset/20170706-districtes-barris)
 - [Superfície de barris](https://opendata-ajuntament.barcelona.cat/data/ca/dataset/est-superficie) (opcional)
@@ -17,7 +18,7 @@ Eina periodística per visualitzar la disponibilitat de bicicletes del Bicing a 
 
 ## Arquitectura
 
-1. **GitHub Actions** (`fetch-data.yml`): cada ~10 min consulta l'API del Bicing, exporta JSON i fa commit a `public/data/`
+1. **GitHub Actions** (`fetch-data.yml`): cada ~10 min consulta el feed GBFS del Bicing (sense token), exporta JSON i fa commit a `public/data/`
 2. **GitHub Pages** (`pages.yml`): frontend estàtic (Vite + Leaflet) que llegeix `public/data/*.json`
 
 El repo és **públic**, així que les Actions no consumeixen minuts de facturació.
@@ -25,7 +26,7 @@ El repo és **públic**, així que les Actions no consumeixen minuts de facturac
 ## Desenvolupament local
 
 ```bash
-cp .env.example .env   # afegir BICING_TOKEN
+cp .env.example .env   # opcional: BICING_TOKEN només per fallback Open Data
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 python scripts/fetch_static_data.py
