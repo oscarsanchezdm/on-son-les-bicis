@@ -41,7 +41,9 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
   const barriPane = map.createPane("barriPane");
   barriPane.style.zIndex = "410";
   const heatPane = map.createPane("heatPane");
-  heatPane.style.zIndex = "430";
+  heatPane.style.zIndex = "420";
+  const stationPane = map.createPane("stationPane");
+  stationPane.style.zIndex = "450";
 
   L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
     attribution:
@@ -122,6 +124,7 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
         const value = stationMetric(s, mode);
 
         L.circleMarker([s.lat, s.lon], {
+          pane: "stationPane",
           radius: stationMarkerRadius(s.capacity),
           fillColor: pctColor(value, invert),
           color: "#334155",
