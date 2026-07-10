@@ -2,8 +2,14 @@ import L from "leaflet";
 import "leaflet.heat";
 import type { Barri, MetricMode, Station } from "../lib/data";
 import { barriMetric, bikesOutOfService, pctOfStations, stationMetric } from "../lib/data";
+import {
+  HEAT_LAYER_OPTIONS,
+  buildHeatContext,
+  buildStationHeatPoints,
+  stationStress,
+} from "../lib/heatmap";
 import { isStationActive } from "../lib/status";
-import { heatGradient, heatIntensity, pctColor, scarcityScore } from "../lib/colors";
+import { pctColor } from "../lib/colors";
 import { formatPct } from "../lib/format";
 
 export type MapView = {
@@ -68,27 +74,31 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
     });
 
     if (heatLayer) map.removeLayer(heatLayer);
-    const heatPoints: [number, number, number][] = [];
     stationLayer.clearLayers();
 
     const activeStations = stations.filter((s) => isStationActive(s.status));
-    const scarcities = activeStations.map((s) => scarcityScore(stationMetric(s, mode)));
-    const maxScarcity = Math.max(...scarcities, 1);
+    const availabilityValues = activeStations.map((s) => stationMetric(s, mode));
+    const heatCtx = buildHeatContext(availabilityValues);
+    const heatPoints = buildStationHeatPoints(
+      activeStations.map((s) => ({
+        lat: s.lat,
+        lon: s.lon,
+        availability: stationMetric(s, mode),
+      })),
+      heatCtx
+    );
 
     for (const s of activeStations) {
       const value = stationMetric(s, mode);
-      const scarcity = scarcityScore(value);
-      const intensity = heatIntensity(scarcity, maxScarcity);
-      heatPoints.push([s.lat, s.lon, intensity]);
-
-      const markerRadius = 4 + (scarcity / 100) * 5;
+      const stress = stationStress(value, heatCtx);
       const oos = bikesOutOfService(s.capacity, s.mechanical, s.ebike, s.docks_available);
+      const markerRadius = 4 + (stress / 100) * 4;
 
       L.circleMarker([s.lat, s.lon], {
         radius: markerRadius,
         fillColor: pctColor(value, invert),
-        color: scarcity >= 75 ? "#7f1d1d" : "#1e293b",
-        weight: scarcity >= 75 ? 2 : 1,
+        color: stress >= 60 ? "#7f1d1d" : "#1e293b",
+        weight: stress >= 60 ? 2 : 1,
         fillOpacity: 0.95,
       })
         .bindPopup(
@@ -98,10 +108,7 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
           Bicis: ${formatPct(s.pct_bikes)} · Ancoratges lliures: ${formatPct(s.pct_docks_free)}<br/>
           <strong>Bicis fora de servei: ${oos}</strong> · Capacitat: ${s.capacity}`
         )
-        .bindTooltip(
-          `${s.name}: ${formatPct(value)} · fora servei: ${oos}`,
-          { sticky: true }
-        )
+        .bindTooltip(`${s.name}: ${formatPct(value)} · fora servei: ${oos}`, { sticky: true })
         .addTo(stationLayer);
     }
 
@@ -111,14 +118,7 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
           points: [number, number, number][],
           opts: Record<string, unknown>
         ) => L.Layer;
-      }).heatLayer(heatPoints, {
-        radius: 20,
-        blur: 12,
-        maxZoom: 16,
-        max: 1,
-        minOpacity: 0.45,
-        gradient: heatGradient(),
-      });
+      }).heatLayer(heatPoints, { ...HEAT_LAYER_OPTIONS });
       heatLayer.addTo(map);
     }
 

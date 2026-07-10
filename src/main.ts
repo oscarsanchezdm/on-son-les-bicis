@@ -34,9 +34,9 @@ app.innerHTML = `
         <p><span>Escassetat</span><span>Abundància</span></p>
         <p class="legend-heading">Mapa de calor</p>
         <div class="legend-bar legend-bar--heat"></div>
-        <p><span>Cap problema</span><span>Molta escassetat</span></p>
+        <p><span>Normal</span><span>Pitjor que la mitjana</span></p>
         <p class="legend-note" id="legend-note">Mapa de calor + barris + estacions segons la mètrica seleccionada.</p>
-        <p class="legend-heat">El calor marca on falta disponibilitat (% baix), no on n'hi ha més.</p>
+        <p class="legend-heat">El calor només marca estacions per sota de la mitjana de la ciutat (no pinta tot de vermell).</p>
       </aside>
     </section>
     <section id="timeline"></section>
@@ -64,12 +64,12 @@ function refresh() {
   const note = document.getElementById("legend-note")!;
   note.textContent =
     mode === "docks"
-      ? "Mapa de calor (escassetat d'ancoratges lliures) + barris + punts d'estació."
+      ? "Calor = estacions amb menys ancoratges lliures que la mitjana. Punts = estacions."
       : mode === "ebike"
-        ? "Mapa de calor (escassetat d'elèctriques) + barris + punts d'estació."
+        ? "Calor = estacions amb menys elèctriques que la mitjana. Punts = estacions."
         : mode === "mechanical"
-          ? "Mapa de calor (escassetat de mecàniques) + barris + punts d'estació."
-          : "Mapa de calor (escassetat de bicis) + barris + punts d'estació.";
+          ? "Calor = estacions amb menys mecàniques que la mitjana. Punts = estacions."
+          : "Calor = estacions amb menys bicis que la mitjana. Punts = estacions.";
 }
 
 async function init() {

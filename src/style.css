@@ -218,7 +218,7 @@ h1 {
 }
 
 .legend-bar--heat {
-  background: linear-gradient(90deg, rgba(148, 163, 184, 0.15), #fef08a, #fb923c, #ef4444, #7f1d1d);
+  background: linear-gradient(90deg, rgba(148, 163, 184, 0.1), #fef08a, #fb923c, #ef4444, #450a0a);
 }
 
 .legend-heading {
