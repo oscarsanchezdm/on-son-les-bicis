@@ -1,7 +1,7 @@
 import L from "leaflet";
 import "leaflet-rotate";
 import type { Barri, MetricMode, Station } from "../lib/data";
-import { barriMetric, bikesOutOfService, pctOfStations, stationMetric } from "../lib/data";
+import { barriMetric, bikesOutOfService, pctOfStations, pctOosOfBikeFleet, stationMetric } from "../lib/data";
 import {
   createColorHeatLayer,
   stationMarkerRadius,
@@ -125,6 +125,7 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
             barri.bikes_ebike,
             barri.docks_available_total
           );
+        const pctOos = pctOosOfBikeFleet(barri.bikes_total, oos);
         const suffix =
           timeView.kind === "hour"
             ? "<br/><em>Mitjana històrica a aquesta franja</em>"
@@ -135,8 +136,8 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
           Bicis: ${formatPct(barri.pct_bikes)} (${barri.bikes_total}/${barri.capacity_total})<br/>
           Elèctriques: ${formatPct(barri.pct_ebike)} · Mecàniques: ${formatPct(barri.pct_mechanical)}<br/>
           Ancoratges lliures: ${formatPct(barri.pct_docks_free)}<br/>
-          Bicis fora de servei: ${oos}<br/>
-          Sense elèctriques: ${formatPct(pctOfStations(barri.stations_zero_ebike, barri.stations_active))} · Sense mecàniques: ${formatPct(pctOfStations(barri.stations_zero_mechanical ?? 0, barri.stations_active))}`
+          Bicis fora de servei: ${formatPct(pctOos)}<br/>
+          Estacions sense elèctriques: ${formatPct(pctOfStations(barri.stations_zero_ebike, barri.stations_active))} · Sense mecàniques: ${formatPct(pctOfStations(barri.stations_zero_mechanical ?? 0, barri.stations_active))}`
         );
       },
     });

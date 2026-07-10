@@ -281,3 +281,34 @@ export function sampleCountForView(
 ): number {
   return filesForAverage(index, view.hour, view.dayType).length;
 }
+
+export type BarriSparklineSeries = {
+  pct_bikes: number[];
+  pct_mechanical: number[];
+  pct_ebike: number[];
+};
+
+/** Recent hourly snapshots for one barri (for KPI sparklines). */
+export async function loadBarriSparklineSeries(
+  index: HistoryIndex | null,
+  barriCodi: string
+): Promise<BarriSparklineSeries | null> {
+  if (!index?.files?.length) return null;
+
+  const pct_bikes: number[] = [];
+  const pct_mechanical: number[] = [];
+  const pct_ebike: number[] = [];
+
+  for (const file of [...index.files].sort((a, b) => a.key.localeCompare(b.key))) {
+    const url = `${BASE}data/history/hourly/${file.key}.json.gz`;
+    const barris = await loadHourlyGz(url);
+    const b = barris.find((x) => x.barri_codi === barriCodi);
+    if (!b || b.capacity_total <= 0) continue;
+    pct_bikes.push(b.pct_bikes);
+    pct_mechanical.push((100 * b.bikes_mechanical) / b.capacity_total);
+    pct_ebike.push(b.pct_ebike);
+  }
+
+  if (!pct_bikes.length) return null;
+  return { pct_bikes, pct_mechanical, pct_ebike };
+}

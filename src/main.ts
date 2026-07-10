@@ -10,6 +10,7 @@ import {
   hourViewScopeLabel,
   isHistoricalView,
   loadBarriHourlyAverage,
+  loadBarriSparklineSeries,
   loadHistoryIndex,
   loadSummary7d,
   sampleCountForView,
@@ -189,18 +190,24 @@ function updateTimelineStatus() {
   );
 }
 
-function refresh() {
+async function refresh() {
   if (!mapView || !latestData) return;
 
   const kpiData = buildKpiData();
   if (!kpiData) return;
+
+  const barriSparklines =
+    selectedBarri && !isHistoricalView(timeView)
+      ? await loadBarriSparklineSeries(historyIndex, selectedBarri.barri_codi)
+      : null;
 
   renderKpis(
     document.getElementById("kpis")!,
     kpiData,
     summaryData,
     kpiScopeLabel(),
-    timeView.kind === "hour"
+    timeView.kind === "hour",
+    barriSparklines
   );
   mapView.update(
     mode,
@@ -224,13 +231,13 @@ function refresh() {
 
 function selectBarri(barri: Barri) {
   selectedBarri = selectedBarri?.barri_codi === barri.barri_codi ? null : barri;
-  refresh();
+  void refresh();
   mapView?.focusBarri(selectedBarri?.barri_codi ?? null, displayStations);
 }
 
 function resetBarriFilter() {
   selectedBarri = null;
-  refresh();
+  void refresh();
   mapView?.focusBarri(null, null);
 }
 
@@ -261,7 +268,7 @@ async function applyTimeView(view: TimeView) {
       void applyTimeView(v);
     },
   });
-  refresh();
+  void refresh();
 }
 
 async function init() {
@@ -281,7 +288,7 @@ async function init() {
     displayStations = latest.stations;
 
     mapView = createMap(document.getElementById("map")!, geo);
-    refresh();
+    void refresh();
 
     renderTimeSelector(document.getElementById("timeline")!, {
       index,
@@ -302,7 +309,7 @@ document.querySelectorAll<HTMLButtonElement>(".mode-toggle button").forEach((btn
     document.querySelectorAll(".mode-toggle button").forEach((b) => b.classList.remove("active"));
     btn.classList.add("active");
     mode = btn.dataset.mode as MetricMode;
-    refresh();
+    void refresh();
   });
 });
 
