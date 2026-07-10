@@ -153,12 +153,7 @@ export function stationCount(station: Station, mode: MetricMode): number {
     case "docks":
       return station.docks_available;
     case "out_of_service":
-      return bikesOutOfService(
-        station.capacity,
-        station.mechanical,
-        station.ebike,
-        station.docks_available
-      );
+      return stationOosCount(station);
     default:
       return station.total;
   }
@@ -169,19 +164,33 @@ export function bikesOutOfService(
   capacity: number,
   mechanical: number,
   ebike: number,
-  docksAvailable: number
+  docksAvailable: number,
+  bikesAvailable?: number
 ): number {
+  const available = bikesAvailable ?? mechanical + ebike;
+  if (available <= 0) return 0;
   return Math.max(0, capacity - mechanical - ebike - docksAvailable);
+}
+
+export function stationOosCount(station: Station): number {
+  return bikesOutOfService(
+    station.capacity,
+    station.mechanical,
+    station.ebike,
+    station.docks_available,
+    station.total
+  );
 }
 
 export function pctBikesOutOfService(
   capacity: number,
   mechanical: number,
   ebike: number,
-  docksAvailable: number
+  docksAvailable: number,
+  bikesAvailable?: number
 ): number {
   if (capacity <= 0) return 0;
-  return (100 * bikesOutOfService(capacity, mechanical, ebike, docksAvailable)) / capacity;
+  return (100 * bikesOutOfService(capacity, mechanical, ebike, docksAvailable, bikesAvailable)) / capacity;
 }
 
 /** % de bicis FS sobre el parc de bicis (disponibles + fora de servei). */
@@ -198,22 +207,37 @@ export function barriOosFleetPct(barri: Barri): number {
       barri.capacity_total,
       barri.bikes_mechanical,
       barri.bikes_ebike,
-      barri.docks_available_total
+      barri.docks_available_total,
+      barri.bikes_total
     );
   return pctOosOfBikeFleet(barri.bikes_total, oos);
 }
 
 export function stationOosFleetPct(station: Station): number {
-  const oos = bikesOutOfService(
-    station.capacity,
-    station.mechanical,
-    station.ebike,
-    station.docks_available
-  );
+  const oos = stationOosCount(station);
   return pctOosOfBikeFleet(station.total, oos);
 }
 
 export function pctOfStations(count: number, stationsActive: number): number {
   if (stationsActive <= 0) return 0;
   return (100 * count) / stationsActive;
+}
+
+/** Recompute OOS totals per barri from station snapshots (avoids phantom FS on empty stations). */
+export function enrichBarrisWithFleetOos(barris: Barri[], stations: Station[]): Barri[] {
+  const oosByBarri = new Map<string, number>();
+  for (const station of stations) {
+    oosByBarri.set(
+      station.barri_codi,
+      (oosByBarri.get(station.barri_codi) ?? 0) + stationOosCount(station)
+    );
+  }
+  return barris.map((barri) => ({
+    ...barri,
+    bikes_out_of_service: oosByBarri.get(barri.barri_codi) ?? 0,
+  }));
+}
+
+export function cityOosFromStations(stations: Station[]): number {
+  return stations.reduce((sum, station) => sum + stationOosCount(station), 0);
 }

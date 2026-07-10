@@ -19,7 +19,8 @@ export function latestFromBarri(barri: Barri, lastUpdated: string): LatestData {
       barri.capacity_total,
       barri.bikes_mechanical,
       barri.bikes_ebike,
-      barri.docks_available_total
+      barri.docks_available_total,
+      barri.bikes_total
     );
   const pctOos =
     barri.pct_bikes_out_of_service ??
@@ -27,7 +28,8 @@ export function latestFromBarri(barri: Barri, lastUpdated: string): LatestData {
       barri.capacity_total,
       barri.bikes_mechanical,
       barri.bikes_ebike,
-      barri.docks_available_total
+      barri.docks_available_total,
+      barri.bikes_total
     );
 
   return {
@@ -84,7 +86,7 @@ export function renderKpis(
   const pctEbike = t.pct_ebike ?? (t.capacity ? (100 * t.bikes_ebike) / t.capacity : 0);
   const outOfService =
     t.bikes_out_of_service ??
-    bikesOutOfService(t.capacity, t.bikes_mechanical, t.bikes_ebike, t.docks_available);
+    bikesOutOfService(t.capacity, t.bikes_mechanical, t.bikes_ebike, t.docks_available, t.bikes_total);
   const pctOutOfService = pctOosOfBikeFleet(t.bikes_total, outOfService);
   const pctZeroEbike = pctOfStations(t.stations_zero_ebike, t.stations_active);
   const pctZeroMech = pctOfStations(t.stations_zero_mechanical ?? 0, t.stations_active);

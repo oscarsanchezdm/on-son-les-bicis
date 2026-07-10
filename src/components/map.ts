@@ -1,7 +1,7 @@
 import L from "leaflet";
 import "leaflet-rotate";
 import type { Barri, MetricMode, Station } from "../lib/data";
-import { barriMetric, bikesOutOfService, pctOfStations, pctOosOfBikeFleet, stationMetric } from "../lib/data";
+import { barriMetric, bikesOutOfService, pctOfStations, pctOosOfBikeFleet, stationOosCount, stationMetric } from "../lib/data";
 import {
   createColorHeatLayer,
   stationMarkerRadius,
@@ -14,12 +14,12 @@ import { formatPct } from "../lib/format";
 import { countIconHtml } from "../lib/icons";
 
 function stationCountsShort(s: Station): string {
-  const fs = bikesOutOfService(s.capacity, s.mechanical, s.ebike, s.docks_available);
+  const fs = stationOosCount(s);
   return `${countIconHtml("ebike")} ${s.ebike} ${countIconHtml("mechanical")} ${s.mechanical} ${countIconHtml("dock")} ${s.docks_available} ${countIconHtml("maintenance")} ${fs}`;
 }
 
 function stationPopupHtml(s: Station): string {
-  const fs = bikesOutOfService(s.capacity, s.mechanical, s.ebike, s.docks_available);
+  const fs = stationOosCount(s);
   return `<strong>${s.name}</strong><br/>
 ${countIconHtml("dock")} ${s.capacity} ancoratges totals<br/>
 ${countIconHtml("ebike")} ${s.ebike} elèctriques<br/>
@@ -124,7 +124,8 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
             barri.capacity_total,
             barri.bikes_mechanical,
             barri.bikes_ebike,
-            barri.docks_available_total
+            barri.docks_available_total,
+            barri.bikes_total
           );
         const pctOos = pctOosOfBikeFleet(barri.bikes_total, oos);
         const suffix =

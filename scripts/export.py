@@ -29,6 +29,20 @@ def _normalize_ts(ts: str | int | float) -> str:
     return str(ts).replace("Z", "+00:00")
 
 
+def _bikes_out_of_service(
+    capacity: int,
+    mechanical: int,
+    ebike: int,
+    docks_available: int,
+    bikes_available: int | None = None,
+) -> int:
+    """Infer FS bikes; empty stations (0 available) must not count offline docks as FS."""
+    available = bikes_available if bikes_available is not None else mechanical + ebike
+    if available <= 0:
+        return 0
+    return max(0, capacity - mechanical - ebike - docks_available)
+
+
 def _latest_ts(conn: sqlite3.Connection) -> str | None:
     rows = conn.execute("SELECT DISTINCT ts FROM snapshots").fetchall()
     if not rows:
@@ -53,6 +67,8 @@ def _export_latest(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
 
     station_list = []
     features = []
+    barri_oos: dict[str, int] = defaultdict(int)
+    total_oos = 0
     totals = {
         "capacity": 0,
         "bikes_total": 0,
@@ -111,6 +127,10 @@ def _export_latest(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
             }
         )
         if is_station_active(status):
+            station_oos = _bikes_out_of_service(capacity, mechanical, ebike, docks, total)
+            total_oos += station_oos
+            if barri_codi:
+                barri_oos[barri_codi] += station_oos
             totals["capacity"] += capacity
             totals["bikes_total"] += total
             totals["bikes_mechanical"] += mechanical
@@ -158,16 +178,11 @@ def _export_latest(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
             "stations_zero_any": row[15],
             "superficie_ha": row[16],
         }
-        oos = max(
-            0,
-            item["capacity_total"]
-            - item["bikes_mechanical"]
-            - item["bikes_ebike"]
-            - item["docks_available_total"],
-        )
+        oos = barri_oos.get(item["barri_codi"], 0)
+        fleet = item["bikes_total"] + oos
         item["bikes_out_of_service"] = oos
         item["pct_bikes_out_of_service"] = (
-            round(100 * oos / item["capacity_total"], 2) if item["capacity_total"] else 0
+            round(100 * oos / fleet, 2) if fleet else 0
         )
         barri_list.append(item)
         if worst_barri is None or item["pct_bikes"] < worst_barri["pct_bikes"]:
@@ -200,26 +215,12 @@ def _export_latest(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
                     )
                     if totals["capacity"]
                     else 0,
-                    "bikes_out_of_service": max(
-                        0,
-                        totals["capacity"]
-                        - totals["bikes_mechanical"]
-                        - totals["bikes_ebike"]
-                        - totals["docks_available"],
-                    ),
+                    "bikes_out_of_service": total_oos,
                     "pct_bikes_out_of_service": round(
-                        100
-                        * max(
-                            0,
-                            totals["capacity"]
-                            - totals["bikes_mechanical"]
-                            - totals["bikes_ebike"]
-                            - totals["docks_available"],
-                        )
-                        / totals["capacity"],
+                        100 * total_oos / (totals["bikes_total"] + total_oos),
                         2,
                     )
-                    if totals["capacity"]
+                    if totals["bikes_total"] + total_oos
                     else 0,
                     "worst_barri": worst_barri,
                 },
@@ -465,7 +466,7 @@ def _export_summary_7d(conn: sqlite3.Connection, ts_iso: str) -> None:
         docks = docks or 0
         mech = mech or 0
         ebike = ebike or 0
-        oos = max(0, cap - mech - ebike - docks)
+        oos = _bikes_out_of_service(cap, mech, ebike, docks, bikes)
         fleet = bikes + oos
         series_by_ts[ts] = {
             "ts": ts,

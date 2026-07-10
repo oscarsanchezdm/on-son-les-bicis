@@ -4,7 +4,7 @@ import { latestFromBarri, renderKpis } from "./components/kpi";
 import { createMap } from "./components/map";
 import { renderTimeSelector, setTimelineStatus, timeViewLabel, updateTimeSelector } from "./components/timeline";
 import type { Barri, MetricMode, Station } from "./lib/data";
-import { loadBarris, loadBarrisGeo, loadLatest } from "./lib/data";
+import { enrichBarrisWithFleetOos, cityOosFromStations, loadBarris, loadBarrisGeo, loadLatest } from "./lib/data";
 import {
   barrisToLatestData,
   hourViewScopeLabel,
@@ -254,7 +254,7 @@ async function applyTimeView(view: TimeView) {
   const timelineEl = document.getElementById("timeline")!;
 
   if (view.kind === "latest") {
-    displayBarris = barrisData.barris;
+    displayBarris = enrichBarrisWithFleetOos(barrisData.barris, latestData.stations);
     displayStations = latestData.stations;
   } else {
     setTimelineStatus(timelineEl, `${timeViewLabel(view, historyIndex)}: carregant…`);
@@ -283,11 +283,17 @@ async function init() {
       loadSummary7d(),
       loadHistoryIndex(),
     ]);
-    latestData = latest;
+    latestData = {
+      ...latest,
+      totals: {
+        ...latest.totals,
+        bikes_out_of_service: cityOosFromStations(latest.stations),
+      },
+    };
     barrisData = barris;
     summaryData = summary;
     historyIndex = index;
-    displayBarris = barris.barris;
+    displayBarris = enrichBarrisWithFleetOos(barris.barris, latest.stations);
     displayStations = latest.stations;
 
     mapView = createMap(document.getElementById("map")!, geo);
