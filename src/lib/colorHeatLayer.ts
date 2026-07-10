@@ -1,6 +1,6 @@
 /**
  * Color heatmap: paints each station's dot color with weight ∝ capacity.
- * Overlapping areas blend real colors instead of summing intensity toward green.
+ * Extends L.Renderer so leaflet-rotate keeps it aligned with the map.
  */
 
 import L from "leaflet";
@@ -29,18 +29,40 @@ function splatRadius(zoom: number): number {
   return 44;
 }
 
-export type ColorHeatLayer = L.Layer & {
-  setStations: (stations: Station[], mode: MetricMode) => void;
+export type ColorHeatLayer = L.Renderer & {
+  setStations: (stations: Station[], mode: MetricMode) => ColorHeatLayer;
+  redraw: () => ColorHeatLayer;
 };
 
-const ColorHeatLayerImpl = L.Layer.extend({
+const ColorHeatLayerImpl = L.Renderer.extend({
   options: {
     pane: "heatPane",
+    padding: 0.12,
   },
 
   initialize(stations: Station[], mode: MetricMode) {
     this._stations = stations;
     this._mode = mode;
+  },
+
+  onAdd(map: L.Map) {
+    L.Renderer.prototype.onAdd.call(this, map);
+    this._redraw();
+  },
+
+  _initContainer() {
+    const container = (this._container = L.DomUtil.create(
+      "canvas",
+      "leaflet-color-heat"
+    ) as HTMLCanvasElement);
+    container.style.pointerEvents = "none";
+    this._ctx = container.getContext("2d")!;
+  },
+
+  _destroyContainer() {
+    L.DomUtil.remove(this._container);
+    this._container = undefined;
+    this._ctx = undefined;
   },
 
   setStations(stations: Station[], mode: MetricMode) {
@@ -49,81 +71,55 @@ const ColorHeatLayerImpl = L.Layer.extend({
     return this.redraw();
   },
 
-  onAdd(map: L.Map) {
-    this._map = map;
-    this._canvas = L.DomUtil.create("canvas", "leaflet-color-heat") as HTMLCanvasElement;
-    this._canvas.style.pointerEvents = "none";
-
-    const pane = map.getPane(this.options.pane) ?? map.getPanes().overlayPane;
-    pane.appendChild(this._canvas);
-
-    map.on("moveend zoomend", this._reset, this);
-    if (map.options.zoomAnimation && L.Browser.any3d) {
-      map.on("zoomanim", this._animateZoom, this);
-    }
-    this._reset();
-  },
-
-  onRemove(map: L.Map) {
-    map.off("moveend zoomend", this._reset, this);
-    if (map.options.zoomAnimation) {
-      map.off("zoomanim", this._animateZoom, this);
-    }
-    this._canvas?.remove();
-    this._canvas = undefined;
-  },
-
   redraw() {
-    if (this._map && !this._frame) {
-      this._frame = L.Util.requestAnimFrame(() => {
-        this._frame = null;
-        this._redraw();
-      });
-    }
+    if (this._map) this._redraw();
     return this;
   },
 
-  _reset() {
-    if (!this._map || !this._canvas) return;
-    const topLeft = this._map.containerPointToLayerPoint([0, 0]);
-    L.DomUtil.setPosition(this._canvas, topLeft);
-    const size = this._map.getSize();
-    if (this._canvas.width !== size.x) this._canvas.width = size.x;
-    if (this._canvas.height !== size.y) this._canvas.height = size.y;
+  _update() {
+    if (this._map._animatingZoom && this._bounds) return;
+
+    L.Renderer.prototype._update.call(this);
+
+    const bounds = this._bounds;
+    const container = this._container as HTMLCanvasElement;
+    const ctx = this._ctx as CanvasRenderingContext2D;
+    if (!bounds || !container || !ctx) return;
+
+    const size = bounds.getSize();
+    L.DomUtil.setPosition(container, bounds.min);
+    container.width = size.x;
+    container.height = size.y;
+    container.style.width = `${size.x}px`;
+    container.style.height = `${size.y}px`;
+
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.translate(-bounds.min.x, -bounds.min.y);
     this._redraw();
   },
 
-  _animateZoom(e: L.ZoomAnimEvent) {
-    if (!this._map || !this._canvas) return;
-    const scale = this._map.getZoomScale(e.zoom);
-    const offset = this._map
-      ._getCenterOffset(e.center)
-      .multiplyBy(-scale)
-      .subtract(this._map._getMapPanePos());
-    L.DomUtil.setTransform(this._canvas, offset, scale);
-  },
-
   _redraw() {
-    if (!this._map || !this._canvas) return;
-    const ctx = this._canvas.getContext("2d");
-    if (!ctx) return;
+    const map = this._map;
+    const ctx = this._ctx as CanvasRenderingContext2D | undefined;
+    const bounds = this._bounds as L.Bounds | undefined;
+    if (!map || !ctx || !bounds) return;
 
-    const size = this._map.getSize();
+    const size = bounds.getSize();
     ctx.clearRect(0, 0, size.x, size.y);
 
     const active = (this._stations as Station[]).filter((s) => s.capacity > 0);
     if (!active.length) return;
 
     const maxCapacity = Math.max(...active.map((s) => s.capacity));
-    const radius = splatRadius(this._map.getZoom());
+    const radius = splatRadius(map.getZoom());
 
     for (const s of active) {
-      const point = this._map.latLngToContainerPoint([s.lat, s.lon]);
+      const point = map.latLngToLayerPoint([s.lat, s.lon]);
       if (
-        point.x < -radius ||
-        point.y < -radius ||
-        point.x > size.x + radius ||
-        point.y > size.y + radius
+        point.x < bounds.min.x - radius ||
+        point.y < bounds.min.y - radius ||
+        point.x > bounds.max.x + radius ||
+        point.y > bounds.max.y + radius
       ) {
         continue;
       }
