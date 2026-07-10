@@ -21,6 +21,7 @@ app.innerHTML = `
       <button type="button" data-mode="mechanical">Mecàniques</button>
       <button type="button" data-mode="ebike">Elèctriques</button>
       <button type="button" data-mode="docks">Ancoratges lliures</button>
+      <button type="button" data-mode="out_of_service">Fora de servei</button>
     </div>
   </header>
   <main>
@@ -62,15 +63,23 @@ let mapView: ReturnType<typeof createMap> | null = null;
 let displayBarris: Barri[] = [];
 let displayStations: Station[] | null = null;
 
+function metricLabel(): string {
+  switch (mode) {
+    case "docks":
+      return "ancoratges lliures";
+    case "ebike":
+      return "elèctriques";
+    case "mechanical":
+      return "mecàniques";
+    case "out_of_service":
+      return "fora de servei";
+    default:
+      return "bicis";
+  }
+}
+
 function legendText(): string {
-  const metric =
-    mode === "docks"
-      ? "ancoratges lliures"
-      : mode === "ebike"
-        ? "elèctriques"
-        : mode === "mechanical"
-          ? "mecàniques"
-          : "bicis";
+  const metric = metricLabel();
   if (selectedBarri) {
     return `Filtrat per ${selectedBarri.barri_nom}: ${metric} del barri.`;
   }
@@ -140,11 +149,13 @@ function refresh() {
 function selectBarri(barri: Barri) {
   selectedBarri = selectedBarri?.barri_codi === barri.barri_codi ? null : barri;
   refresh();
+  mapView?.focusBarri(selectedBarri?.barri_codi ?? null, mapStations());
 }
 
 function resetBarriFilter() {
   selectedBarri = null;
   refresh();
+  mapView?.focusBarri(null, null);
 }
 
 async function applyTimeView(view: TimeView) {
