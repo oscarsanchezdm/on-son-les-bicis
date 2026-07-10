@@ -1,9 +1,9 @@
 import L from "leaflet";
 import "leaflet.heat";
 import type { Barri, MetricMode, Station } from "../lib/data";
-import { barriMetric, stationMetric } from "../lib/data";
+import { barriMetric, bikesOutOfService, stationMetric } from "../lib/data";
 import { isStationActive } from "../lib/status";
-import { pctColor } from "../lib/colors";
+import { heatGradient, heatIntensity, pctColor, scarcityScore } from "../lib/colors";
 import { formatPct } from "../lib/format";
 
 export type MapView = {
@@ -35,7 +35,7 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
         const value = barri ? barriMetric(barri, mode) : 0;
         return {
           fillColor: pctColor(value, invert),
-          fillOpacity: 0.45,
+          fillOpacity: 0.42,
           color: "#334155",
           weight: 1,
         };
@@ -44,12 +44,20 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
         const codi = String(feature?.properties?.codi_barri ?? "");
         const barri = byCode.get(codi);
         if (!barri) return;
+        const oos =
+          barri.bikes_out_of_service ??
+          bikesOutOfService(
+            barri.capacity_total,
+            barri.bikes_mechanical,
+            barri.bikes_ebike,
+            barri.docks_available_total
+          );
         layer.bindPopup(
           `<strong>${barri.barri_nom}</strong><br/>
           Bicis: ${formatPct(barri.pct_bikes)} (${barri.bikes_total}/${barri.capacity_total})<br/>
-          Elèctriques: ${formatPct(barri.pct_ebike)}<br/>
-          Mecàniques: ${formatPct(barri.pct_mechanical)}<br/>
+          Elèctriques: ${formatPct(barri.pct_ebike)} · Mecàniques: ${formatPct(barri.pct_mechanical)}<br/>
           Ancoratges lliures: ${formatPct(barri.pct_docks_free)}<br/>
+          Bicis fora de servei: <strong>${oos}</strong><br/>
           Sense elèctriques: ${barri.stations_zero_ebike} · Sense mecàniques: ${barri.stations_zero_mechanical ?? 0}`
         );
         layer.bindTooltip(`${barri.barri_nom}: ${formatPct(barriMetric(barri, mode))}`, {
@@ -62,17 +70,24 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
     const heatPoints: [number, number, number][] = [];
     stationLayer.clearLayers();
 
-    for (const s of stations) {
-      if (!isStationActive(s.status)) continue;
+    const activeStations = stations.filter((s) => isStationActive(s.status));
+    const scarcities = activeStations.map((s) => scarcityScore(stationMetric(s, mode)));
+    const maxScarcity = Math.max(...scarcities, 1);
+
+    for (const s of activeStations) {
       const value = stationMetric(s, mode);
-      const intensity = Math.max(0.15, value / 100);
+      const scarcity = scarcityScore(value);
+      const intensity = heatIntensity(scarcity, maxScarcity);
       heatPoints.push([s.lat, s.lon, intensity]);
 
+      const markerRadius = 4 + (scarcity / 100) * 5;
+      const oos = bikesOutOfService(s.capacity, s.mechanical, s.ebike, s.docks_available);
+
       L.circleMarker([s.lat, s.lon], {
-        radius: 5,
+        radius: markerRadius,
         fillColor: pctColor(value, invert),
-        color: "#1e293b",
-        weight: 1,
+        color: scarcity >= 75 ? "#7f1d1d" : "#1e293b",
+        weight: scarcity >= 75 ? 2 : 1,
         fillOpacity: 0.95,
       })
         .bindPopup(
@@ -80,7 +95,7 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
           Barri: ${s.barri_nom || "—"}<br/>
           Mecàniques: ${s.mechanical} · Elèctriques: ${s.ebike}<br/>
           Bicis: ${formatPct(s.pct_bikes)} · Ancoratges lliures: ${formatPct(s.pct_docks_free)}<br/>
-          Capacitat: ${s.capacity}`
+          Bicis fora de servei: <strong>${oos}</strong> · Capacitat: ${s.capacity}`
         )
         .addTo(stationLayer);
     }
@@ -92,13 +107,12 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
           opts: Record<string, unknown>
         ) => L.Layer;
       }).heatLayer(heatPoints, {
-        radius: 28,
-        blur: 22,
-        maxZoom: 14,
-        minOpacity: 0.35,
-        gradient: invert
-          ? { 0.2: "#b91c1c", 0.5: "#f59e0b", 0.8: "#84cc16", 1: "#15803d" }
-          : { 0.2: "#b91c1c", 0.5: "#f59e0b", 0.8: "#84cc16", 1: "#15803d" },
+        radius: 20,
+        blur: 12,
+        maxZoom: 16,
+        max: 1,
+        minOpacity: 0.45,
+        gradient: heatGradient(),
       });
       heatLayer.addTo(map);
     }

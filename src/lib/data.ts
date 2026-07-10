@@ -34,6 +34,8 @@ export type Barri = {
   stations_zero_ebike: number;
   stations_zero_mechanical: number;
   stations_zero_any: number;
+  bikes_out_of_service?: number;
+  pct_bikes_out_of_service?: number;
   superficie_ha: number | null;
 };
 
@@ -53,8 +55,8 @@ export type LatestData = {
     pct_docks_free: number;
     pct_mechanical?: number;
     pct_ebike?: number;
-    docks_out_of_service?: number;
-    pct_out_of_service?: number;
+    bikes_out_of_service?: number;
+    pct_bikes_out_of_service?: number;
     worst_barri: Barri | null;
   };
   stations: Station[];
@@ -136,4 +138,24 @@ export function stationMetric(station: Station, mode: MetricMode): number {
     default:
       return station.pct_bikes;
   }
+}
+
+/** Bicis fora de servei = capacitat − mecàniques − elèctriques − ancoratges lliures. */
+export function bikesOutOfService(
+  capacity: number,
+  mechanical: number,
+  ebike: number,
+  docksAvailable: number
+): number {
+  return Math.max(0, capacity - mechanical - ebike - docksAvailable);
+}
+
+export function pctBikesOutOfService(
+  capacity: number,
+  mechanical: number,
+  ebike: number,
+  docksAvailable: number
+): number {
+  if (capacity <= 0) return 0;
+  return (100 * bikesOutOfService(capacity, mechanical, ebike, docksAvailable)) / capacity;
 }

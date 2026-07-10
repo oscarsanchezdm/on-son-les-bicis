@@ -1,4 +1,5 @@
 import type { LatestData } from "../lib/data";
+import { bikesOutOfService, pctBikesOutOfService } from "../lib/data";
 import type { Summary7d } from "../lib/history";
 import { hourlyAverage, sparklineValues } from "../lib/history";
 import { formatDateTime, formatPct, formatRelativeTime } from "../lib/format";
@@ -29,10 +30,11 @@ export function renderKpis(
     t.pct_mechanical ?? (t.capacity ? (100 * t.bikes_mechanical) / t.capacity : 0);
   const pctEbike = t.pct_ebike ?? (t.capacity ? (100 * t.bikes_ebike) / t.capacity : 0);
   const outOfService =
-    t.docks_out_of_service ??
-    Math.max(0, t.capacity - t.bikes_mechanical - t.bikes_ebike - t.docks_available);
+    t.bikes_out_of_service ??
+    bikesOutOfService(t.capacity, t.bikes_mechanical, t.bikes_ebike, t.docks_available);
   const pctOutOfService =
-    t.pct_out_of_service ?? (t.capacity ? (100 * outOfService) / t.capacity : 0);
+    t.pct_bikes_out_of_service ??
+    pctBikesOutOfService(t.capacity, t.bikes_mechanical, t.bikes_ebike, t.docks_available);
 
   const sparkBikes = renderSparkline(sparklineValues(summary?.series ?? [], "pct_bikes"));
   const sparkMech = renderSparkline(sparklineValues(summary?.series ?? [], "pct_mechanical"));
@@ -77,9 +79,12 @@ export function renderKpis(
         <small>de ${t.stations_active} en servei</small>
       </article>
       <article class="kpi-card kpi-card--alert">
-        <span class="kpi-label">Ancoratges fora de servei</span>
+        <span class="kpi-label">Bicicletes fora de servei</span>
         <strong>${outOfService.toLocaleString("ca-ES")}</strong>
         <small>${formatPct(pctOutOfService)} de ${t.capacity.toLocaleString("ca-ES")} ancoratges</small>
+        <div class="kpi-meter" aria-hidden="true">
+          <span style="width:${Math.min(100, pctOutOfService)}%"></span>
+        </div>
       </article>
       <article class="kpi-card kpi-card--alert">
         <span class="kpi-label">Pitjor barri (bicis)</span>

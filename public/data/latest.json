@@ -14,8 +14,8 @@
     "pct_docks_free": 59.49,
     "pct_mechanical": 17.93,
     "pct_ebike": 11.12,
-    "docks_out_of_service": 1676,
-    "pct_out_of_service": 11.46,
+    "bikes_out_of_service": 1676,
+    "pct_bikes_out_of_service": 11.46,
     "worst_barri": {
       "barri_codi": "0527",
       "barri_nom": "el Putxet i el Farró",
@@ -33,7 +33,9 @@
       "stations_zero_ebike": 2,
       "stations_zero_mechanical": 2,
       "stations_zero_any": 2,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 7,
+      "pct_bikes_out_of_service": 16.28
     }
   },
   "stations": [

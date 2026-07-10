@@ -29,9 +29,14 @@ app.innerHTML = `
       <div id="map"></div>
       <aside class="legend">
         <h2>Llegenda</h2>
+        <p class="legend-heading">Punts i barris</p>
         <div class="legend-bar"></div>
         <p><span>Escassetat</span><span>Abundància</span></p>
+        <p class="legend-heading">Mapa de calor</p>
+        <div class="legend-bar legend-bar--heat"></div>
+        <p><span>Cap problema</span><span>Molta escassetat</span></p>
         <p class="legend-note" id="legend-note">Mapa de calor + barris + estacions segons la mètrica seleccionada.</p>
+        <p class="legend-heat">El calor marca on falta disponibilitat (% baix), no on n'hi ha més.</p>
       </aside>
     </section>
     <section id="timeline"></section>
@@ -59,12 +64,12 @@ function refresh() {
   const note = document.getElementById("legend-note")!;
   note.textContent =
     mode === "docks"
-      ? "Mapa de calor i barris: % d'ancoratges lliures. Els punts són les estacions."
+      ? "Mapa de calor (escassetat d'ancoratges lliures) + barris + punts d'estació."
       : mode === "ebike"
-        ? "Mapa de calor i barris: % d'elèctriques. Els punts són les estacions."
+        ? "Mapa de calor (escassetat d'elèctriques) + barris + punts d'estació."
         : mode === "mechanical"
-          ? "Mapa de calor i barris: % de mecàniques. Els punts són les estacions."
-          : "Mapa de calor i barris: % de bicis disponibles. Els punts són les estacions.";
+          ? "Mapa de calor (escassetat de mecàniques) + barris + punts d'estació."
+          : "Mapa de calor (escassetat de bicis) + barris + punts d'estació.";
 }
 
 async function init() {

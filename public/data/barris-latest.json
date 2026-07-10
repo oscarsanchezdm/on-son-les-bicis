@@ -18,7 +18,9 @@
       "stations_zero_ebike": 2,
       "stations_zero_mechanical": 2,
       "stations_zero_any": 2,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 7,
+      "pct_bikes_out_of_service": 16.28
     },
     {
       "barri_codi": "1064",
@@ -37,7 +39,9 @@
       "stations_zero_ebike": 5,
       "stations_zero_mechanical": 4,
       "stations_zero_any": 4,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 15,
+      "pct_bikes_out_of_service": 11.45
     },
     {
       "barri_codi": "0733",
@@ -56,7 +60,9 @@
       "stations_zero_ebike": 7,
       "stations_zero_mechanical": 8,
       "stations_zero_any": 7,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 26,
+      "pct_bikes_out_of_service": 11.5
     },
     {
       "barri_codi": "0735",
@@ -75,7 +81,9 @@
       "stations_zero_ebike": 5,
       "stations_zero_mechanical": 7,
       "stations_zero_any": 4,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 19,
+      "pct_bikes_out_of_service": 9.0
     },
     {
       "barri_codi": "0853",
@@ -94,7 +102,9 @@
       "stations_zero_ebike": 1,
       "stations_zero_mechanical": 2,
       "stations_zero_any": 1,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 5,
+      "pct_bikes_out_of_service": 9.62
     },
     {
       "barri_codi": "0846",
@@ -113,7 +123,9 @@
       "stations_zero_ebike": 1,
       "stations_zero_mechanical": 2,
       "stations_zero_any": 1,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 3,
+      "pct_bikes_out_of_service": 6.67
     },
     {
       "barri_codi": "0851",
@@ -132,7 +144,9 @@
       "stations_zero_ebike": 1,
       "stations_zero_mechanical": 2,
       "stations_zero_any": 1,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 7,
+      "pct_bikes_out_of_service": 15.91
     },
     {
       "barri_codi": "0628",
@@ -151,7 +165,9 @@
       "stations_zero_ebike": 3,
       "stations_zero_mechanical": 5,
       "stations_zero_any": 3,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 16,
+      "pct_bikes_out_of_service": 13.45
     },
     {
       "barri_codi": "0630",
@@ -170,7 +186,9 @@
       "stations_zero_ebike": 1,
       "stations_zero_mechanical": 2,
       "stations_zero_any": 1,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 17,
+      "pct_bikes_out_of_service": 29.82
     },
     {
       "barri_codi": "0844",
@@ -189,7 +207,9 @@
       "stations_zero_ebike": 2,
       "stations_zero_mechanical": 3,
       "stations_zero_any": 2,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 18,
+      "pct_bikes_out_of_service": 17.82
     },
     {
       "barri_codi": "0631",
@@ -208,7 +228,9 @@
       "stations_zero_ebike": 7,
       "stations_zero_mechanical": 10,
       "stations_zero_any": 5,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 78,
+      "pct_bikes_out_of_service": 21.55
     },
     {
       "barri_codi": "0850",
@@ -227,7 +249,9 @@
       "stations_zero_ebike": 0,
       "stations_zero_mechanical": 1,
       "stations_zero_any": 0,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 0,
+      "pct_bikes_out_of_service": 0.0
     },
     {
       "barri_codi": "0206",
@@ -246,7 +270,9 @@
       "stations_zero_ebike": 10,
       "stations_zero_mechanical": 10,
       "stations_zero_any": 6,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 36,
+      "pct_bikes_out_of_service": 8.89
     },
     {
       "barri_codi": "0962",
@@ -265,7 +291,9 @@
       "stations_zero_ebike": 2,
       "stations_zero_mechanical": 1,
       "stations_zero_any": 0,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 12,
+      "pct_bikes_out_of_service": 9.02
     },
     {
       "barri_codi": "0849",
@@ -284,7 +312,9 @@
       "stations_zero_ebike": 0,
       "stations_zero_mechanical": 1,
       "stations_zero_any": 0,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 5,
+      "pct_bikes_out_of_service": 20.83
     },
     {
       "barri_codi": "0209",
@@ -303,7 +333,9 @@
       "stations_zero_ebike": 9,
       "stations_zero_mechanical": 9,
       "stations_zero_any": 7,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 70,
+      "pct_bikes_out_of_service": 14.52
     },
     {
       "barri_codi": "0852",
@@ -322,7 +354,9 @@
       "stations_zero_ebike": 2,
       "stations_zero_mechanical": 3,
       "stations_zero_any": 2,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 14,
+      "pct_bikes_out_of_service": 14.89
     },
     {
       "barri_codi": "0632",
@@ -341,7 +375,9 @@
       "stations_zero_ebike": 2,
       "stations_zero_mechanical": 3,
       "stations_zero_any": 2,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 20,
+      "pct_bikes_out_of_service": 19.05
     },
     {
       "barri_codi": "0523",
@@ -360,7 +396,9 @@
       "stations_zero_ebike": 1,
       "stations_zero_mechanical": 4,
       "stations_zero_any": 0,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 23,
+      "pct_bikes_out_of_service": 10.6
     },
     {
       "barri_codi": "0737",
@@ -379,7 +417,9 @@
       "stations_zero_ebike": 3,
       "stations_zero_mechanical": 1,
       "stations_zero_any": 1,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 5,
+      "pct_bikes_out_of_service": 6.49
     },
     {
       "barri_codi": "0845",
@@ -398,7 +438,9 @@
       "stations_zero_ebike": 2,
       "stations_zero_mechanical": 3,
       "stations_zero_any": 2,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 16,
+      "pct_bikes_out_of_service": 10.0
     },
     {
       "barri_codi": "0963",
@@ -417,7 +459,9 @@
       "stations_zero_ebike": 3,
       "stations_zero_mechanical": 0,
       "stations_zero_any": 0,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 7,
+      "pct_bikes_out_of_service": 6.03
     },
     {
       "barri_codi": "0961",
@@ -436,7 +480,9 @@
       "stations_zero_ebike": 5,
       "stations_zero_mechanical": 2,
       "stations_zero_any": 2,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 27,
+      "pct_bikes_out_of_service": 13.17
     },
     {
       "barri_codi": "0848",
@@ -455,7 +501,9 @@
       "stations_zero_ebike": 2,
       "stations_zero_mechanical": 2,
       "stations_zero_any": 1,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 10,
+      "pct_bikes_out_of_service": 8.33
     },
     {
       "barri_codi": "1072",
@@ -474,7 +522,9 @@
       "stations_zero_ebike": 3,
       "stations_zero_mechanical": 0,
       "stations_zero_any": 0,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 9,
+      "pct_bikes_out_of_service": 7.76
     },
     {
       "barri_codi": "0317",
@@ -493,7 +543,9 @@
       "stations_zero_ebike": 3,
       "stations_zero_mechanical": 1,
       "stations_zero_any": 0,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 17,
+      "pct_bikes_out_of_service": 12.06
     },
     {
       "barri_codi": "0741",
@@ -512,7 +564,9 @@
       "stations_zero_ebike": 2,
       "stations_zero_mechanical": 3,
       "stations_zero_any": 2,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 12,
+      "pct_bikes_out_of_service": 7.95
     },
     {
       "barri_codi": "0739",
@@ -531,7 +585,9 @@
       "stations_zero_ebike": 1,
       "stations_zero_mechanical": 0,
       "stations_zero_any": 0,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 0,
+      "pct_bikes_out_of_service": 0.0
     },
     {
       "barri_codi": "0318",
@@ -550,7 +606,9 @@
       "stations_zero_ebike": 8,
       "stations_zero_mechanical": 5,
       "stations_zero_any": 3,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 45,
+      "pct_bikes_out_of_service": 16.19
     },
     {
       "barri_codi": "0205",
@@ -569,7 +627,9 @@
       "stations_zero_ebike": 2,
       "stations_zero_mechanical": 0,
       "stations_zero_any": 0,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 50,
+      "pct_bikes_out_of_service": 12.22
     },
     {
       "barri_codi": "0960",
@@ -588,7 +648,9 @@
       "stations_zero_ebike": 5,
       "stations_zero_mechanical": 5,
       "stations_zero_any": 2,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 42,
+      "pct_bikes_out_of_service": 10.12
     },
     {
       "barri_codi": "0736",
@@ -607,7 +669,9 @@
       "stations_zero_ebike": 2,
       "stations_zero_mechanical": 1,
       "stations_zero_any": 1,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 5,
+      "pct_bikes_out_of_service": 6.49
     },
     {
       "barri_codi": "0312",
@@ -626,7 +690,9 @@
       "stations_zero_ebike": 0,
       "stations_zero_mechanical": 1,
       "stations_zero_any": 0,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 3,
+      "pct_bikes_out_of_service": 3.8
     },
     {
       "barri_codi": "0210",
@@ -645,7 +711,9 @@
       "stations_zero_ebike": 13,
       "stations_zero_mechanical": 1,
       "stations_zero_any": 1,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 60,
+      "pct_bikes_out_of_service": 13.04
     },
     {
       "barri_codi": "1069",
@@ -664,7 +732,9 @@
       "stations_zero_ebike": 3,
       "stations_zero_mechanical": 1,
       "stations_zero_any": 0,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 14,
+      "pct_bikes_out_of_service": 5.79
     },
     {
       "barri_codi": "0316",
@@ -683,7 +753,9 @@
       "stations_zero_ebike": 3,
       "stations_zero_mechanical": 3,
       "stations_zero_any": 2,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 9,
+      "pct_bikes_out_of_service": 5.14
     },
     {
       "barri_codi": "0855",
@@ -702,7 +774,9 @@
       "stations_zero_ebike": 1,
       "stations_zero_mechanical": 0,
       "stations_zero_any": 0,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 4,
+      "pct_bikes_out_of_service": 20.0
     },
     {
       "barri_codi": "0314",
@@ -721,7 +795,9 @@
       "stations_zero_ebike": 0,
       "stations_zero_mechanical": 0,
       "stations_zero_any": 0,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 4,
+      "pct_bikes_out_of_service": 10.0
     },
     {
       "barri_codi": "1065",
@@ -740,7 +816,9 @@
       "stations_zero_ebike": 1,
       "stations_zero_mechanical": 1,
       "stations_zero_any": 0,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 30,
+      "pct_bikes_out_of_service": 20.41
     },
     {
       "barri_codi": "0419",
@@ -759,7 +837,9 @@
       "stations_zero_ebike": 5,
       "stations_zero_mechanical": 5,
       "stations_zero_any": 2,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 62,
+      "pct_bikes_out_of_service": 13.57
     },
     {
       "barri_codi": "0315",
@@ -778,7 +858,9 @@
       "stations_zero_ebike": 3,
       "stations_zero_mechanical": 0,
       "stations_zero_any": 0,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 21,
+      "pct_bikes_out_of_service": 10.99
     },
     {
       "barri_codi": "0208",
@@ -797,7 +879,9 @@
       "stations_zero_ebike": 1,
       "stations_zero_mechanical": 4,
       "stations_zero_any": 1,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 63,
+      "pct_bikes_out_of_service": 17.6
     },
     {
       "barri_codi": "0311",
@@ -816,7 +900,9 @@
       "stations_zero_ebike": 2,
       "stations_zero_mechanical": 4,
       "stations_zero_any": 1,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 49,
+      "pct_bikes_out_of_service": 15.12
     },
     {
       "barri_codi": "0525",
@@ -835,7 +921,9 @@
       "stations_zero_ebike": 0,
       "stations_zero_mechanical": 4,
       "stations_zero_any": 0,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 13,
+      "pct_bikes_out_of_service": 8.02
     },
     {
       "barri_codi": "0104",
@@ -854,7 +942,9 @@
       "stations_zero_ebike": 1,
       "stations_zero_mechanical": 1,
       "stations_zero_any": 0,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 54,
+      "pct_bikes_out_of_service": 12.3
     },
     {
       "barri_codi": "0957",
@@ -873,7 +963,9 @@
       "stations_zero_ebike": 3,
       "stations_zero_mechanical": 1,
       "stations_zero_any": 1,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 11,
+      "pct_bikes_out_of_service": 9.02
     },
     {
       "barri_codi": "0421",
@@ -892,7 +984,9 @@
       "stations_zero_ebike": 1,
       "stations_zero_mechanical": 5,
       "stations_zero_any": 0,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 29,
+      "pct_bikes_out_of_service": 9.54
     },
     {
       "barri_codi": "0101",
@@ -911,7 +1005,9 @@
       "stations_zero_ebike": 9,
       "stations_zero_mechanical": 2,
       "stations_zero_any": 1,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 63,
+      "pct_bikes_out_of_service": 14.48
     },
     {
       "barri_codi": "0743",
@@ -930,7 +1026,9 @@
       "stations_zero_ebike": 4,
       "stations_zero_mechanical": 2,
       "stations_zero_any": 0,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 10,
+      "pct_bikes_out_of_service": 4.31
     },
     {
       "barri_codi": "1071",
@@ -949,7 +1047,9 @@
       "stations_zero_ebike": 1,
       "stations_zero_mechanical": 0,
       "stations_zero_any": 0,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 25,
+      "pct_bikes_out_of_service": 9.36
     },
     {
       "barri_codi": "0207",
@@ -968,7 +1068,9 @@
       "stations_zero_ebike": 8,
       "stations_zero_mechanical": 11,
       "stations_zero_any": 5,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 127,
+      "pct_bikes_out_of_service": 12.25
     },
     {
       "barri_codi": "0103",
@@ -987,7 +1089,9 @@
       "stations_zero_ebike": 4,
       "stations_zero_mechanical": 1,
       "stations_zero_any": 0,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 57,
+      "pct_bikes_out_of_service": 13.13
     },
     {
       "barri_codi": "0524",
@@ -1006,7 +1110,9 @@
       "stations_zero_ebike": 1,
       "stations_zero_mechanical": 4,
       "stations_zero_any": 1,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 12,
+      "pct_bikes_out_of_service": 6.15
     },
     {
       "barri_codi": "0313",
@@ -1025,7 +1131,9 @@
       "stations_zero_ebike": 1,
       "stations_zero_mechanical": 0,
       "stations_zero_any": 0,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 11,
+      "pct_bikes_out_of_service": 3.89
     },
     {
       "barri_codi": "0526",
@@ -1044,7 +1152,9 @@
       "stations_zero_ebike": 2,
       "stations_zero_mechanical": 3,
       "stations_zero_any": 0,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 41,
+      "pct_bikes_out_of_service": 11.45
     },
     {
       "barri_codi": "1070",
@@ -1063,7 +1173,9 @@
       "stations_zero_ebike": 2,
       "stations_zero_mechanical": 1,
       "stations_zero_any": 1,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 15,
+      "pct_bikes_out_of_service": 5.62
     },
     {
       "barri_codi": "0420",
@@ -1082,7 +1194,9 @@
       "stations_zero_ebike": 1,
       "stations_zero_mechanical": 2,
       "stations_zero_any": 0,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 29,
+      "pct_bikes_out_of_service": 9.6
     },
     {
       "barri_codi": "1067",
@@ -1101,7 +1215,9 @@
       "stations_zero_ebike": 3,
       "stations_zero_mechanical": 0,
       "stations_zero_any": 0,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 62,
+      "pct_bikes_out_of_service": 11.31
     },
     {
       "barri_codi": "1073",
@@ -1120,7 +1236,9 @@
       "stations_zero_ebike": 3,
       "stations_zero_mechanical": 0,
       "stations_zero_any": 0,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 19,
+      "pct_bikes_out_of_service": 13.48
     },
     {
       "barri_codi": "0959",
@@ -1139,7 +1257,9 @@
       "stations_zero_ebike": 1,
       "stations_zero_mechanical": 0,
       "stations_zero_any": 0,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 14,
+      "pct_bikes_out_of_service": 6.93
     },
     {
       "barri_codi": "0102",
@@ -1158,7 +1278,9 @@
       "stations_zero_ebike": 4,
       "stations_zero_mechanical": 0,
       "stations_zero_any": 0,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 35,
+      "pct_bikes_out_of_service": 10.84
     },
     {
       "barri_codi": "1068",
@@ -1177,7 +1299,9 @@
       "stations_zero_ebike": 5,
       "stations_zero_mechanical": 0,
       "stations_zero_any": 0,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 49,
+      "pct_bikes_out_of_service": 10.14
     },
     {
       "barri_codi": "1066",
@@ -1196,7 +1320,9 @@
       "stations_zero_ebike": 0,
       "stations_zero_mechanical": 0,
       "stations_zero_any": 0,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 40,
+      "pct_bikes_out_of_service": 11.4
     },
     {
       "barri_codi": "0958",
@@ -1215,7 +1341,9 @@
       "stations_zero_ebike": 0,
       "stations_zero_mechanical": 0,
       "stations_zero_any": 0,
-      "superficie_ha": 0.0
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 5,
+      "pct_bikes_out_of_service": 9.8
     }
   ]
 }
