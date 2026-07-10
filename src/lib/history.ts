@@ -1,4 +1,4 @@
-import type { Barri, LatestData } from "./data";
+import type { Barri, LatestData, Station } from "./data";
 import { bikesOutOfService, pctBikesOutOfService, pctOosOfBikeFleet } from "./data";
 import { formatDateTime, formatHour, historyFileLabel } from "./format";
 
@@ -66,6 +66,47 @@ type HourlyBarriSnapshot = {
   stations_zero_mechanical?: number;
 };
 
+/** Compact metrics per station: [mechanical, ebike, total, docks, bikes_disabled]. */
+export type StationTuple = [number, number, number, number, number];
+
+type HourlySnapshot = {
+  ts: string;
+  barris: HourlyBarriSnapshot[];
+  v?: StationTuple[];
+};
+
+export type StationIdsManifest = {
+  generated_at: string;
+  ids: string[];
+};
+
+const hourlyCache = new Map<string, HourlySnapshot | null>();
+
+export async function loadStationIds(): Promise<StationIdsManifest | null> {
+  const res = await fetch(`${BASE}data/station-ids.json`);
+  if (!res.ok) return null;
+  return res.json();
+}
+
+async function loadHourlySnapshot(key: string): Promise<HourlySnapshot | null> {
+  const cached = hourlyCache.get(key);
+  if (cached !== undefined) return cached;
+
+  const url = `${BASE}data/history/hourly/${key}.json.gz`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    hourlyCache.set(key, null);
+    return null;
+  }
+  const ds = new DecompressionStream("gzip");
+  const decompressed = res.body!.pipeThrough(ds);
+  const text = await new Response(decompressed).text();
+  const data = JSON.parse(text) as HourlySnapshot;
+  data.barris ??= [];
+  hourlyCache.set(key, data);
+  return data;
+}
+
 export async function loadSummary7d(): Promise<Summary7d | null> {
   const res = await fetch(`${BASE}data/history/summary-7d.json`);
   if (!res.ok) return null;
@@ -76,16 +117,6 @@ export async function loadHistoryIndex(): Promise<HistoryIndex | null> {
   const res = await fetch(`${BASE}data/history/history-index.json`);
   if (!res.ok) return null;
   return res.json();
-}
-
-async function loadHourlyGz(url: string): Promise<HourlyBarriSnapshot[]> {
-  const res = await fetch(url);
-  if (!res.ok) return [];
-  const ds = new DecompressionStream("gzip");
-  const decompressed = res.body!.pipeThrough(ds);
-  const text = await new Response(decompressed).text();
-  const data = JSON.parse(text) as { barris?: HourlyBarriSnapshot[] };
-  return data.barris ?? [];
 }
 
 export function dayTypeLabel(dayType: DayType): string {
@@ -179,28 +210,112 @@ function averageBarriSnapshots(samples: HourlyBarriSnapshot[]): Barri {
   };
 }
 
+function averageStationTuples(samples: StationTuple[]): StationTuple {
+  const n = samples.length;
+  const avg = (i: number) => samples.reduce((sum, t) => sum + t[i]!, 0) / n;
+  return [
+    Math.round(avg(0)),
+    Math.round(avg(1)),
+    Math.round(avg(2)),
+    Math.round(avg(3)),
+    Math.round(avg(4)),
+  ];
+}
+
+export function stationsFromAverages(
+  base: Station[],
+  idOrder: string[],
+  averages: Map<string, StationTuple>
+): Station[] {
+  const byId = new Map(base.map((s) => [s.station_id, s]));
+  const out: Station[] = [];
+
+  for (const sid of idOrder) {
+    const tuple = averages.get(sid);
+    const s = byId.get(sid);
+    if (!tuple || !s) continue;
+    const [mechanical, ebike, total, docks, bikes_disabled] = tuple;
+    const cap = s.capacity;
+    out.push({
+      ...s,
+      mechanical,
+      ebike,
+      total,
+      docks_available: docks,
+      bikes_disabled,
+      pct_bikes: cap > 0 ? Math.round((100 * total) / cap * 100) / 100 : 0,
+      pct_docks_free: cap > 0 ? Math.round((100 * docks) / cap * 100) / 100 : 0,
+    });
+  }
+
+  return out;
+}
+
+export type HourlyViewData = {
+  barris: Barri[];
+  stations: Station[] | null;
+};
+
+/** Average barri and station metrics for a local hour and day-type (30 days). */
+export async function loadHourlyViewData(
+  index: HistoryIndex | null,
+  hour: number,
+  dayType: DayType,
+  baseStations: Station[],
+  stationIds: string[] | null
+): Promise<HourlyViewData> {
+  const matches = filesForAverage(index, hour, dayType);
+  const byCode = new Map<string, HourlyBarriSnapshot[]>();
+  const byStationIdx = new Map<number, StationTuple[]>();
+  const idOrder = stationIds ?? [...baseStations].sort((a, b) => a.station_id.localeCompare(b.station_id)).map((s) => s.station_id);
+
+  for (const file of matches) {
+    const snapshot = await loadHourlySnapshot(file.key);
+    if (!snapshot) continue;
+
+    for (const b of snapshot.barris) {
+      const list = byCode.get(b.barri_codi) ?? [];
+      list.push(b);
+      byCode.set(b.barri_codi, list);
+    }
+
+    if (snapshot.v?.length) {
+      for (let i = 0; i < snapshot.v.length; i++) {
+        const tuple = snapshot.v[i]!;
+        const list = byStationIdx.get(i) ?? [];
+        list.push(tuple);
+        byStationIdx.set(i, list);
+      }
+    }
+  }
+
+  const barris = [...byCode.values()]
+    .map(averageBarriSnapshots)
+    .sort((a, b) => a.barri_nom.localeCompare(b.barri_nom, "ca"));
+
+  if (!byStationIdx.size || !idOrder.length) {
+    return { barris, stations: null };
+  }
+
+  const averages = new Map<string, StationTuple>();
+  for (const [idx, samples] of byStationIdx) {
+    const sid = idOrder[idx];
+    if (!sid || !samples.length) continue;
+    averages.set(sid, averageStationTuples(samples));
+  }
+
+  const stations = stationsFromAverages(baseStations, idOrder, averages);
+  return { barris, stations: stations.length ? stations : null };
+}
+
 /** Average barri metrics for local hour and day-type across stored history (30 days). */
 export async function loadBarriHourlyAverage(
   index: HistoryIndex | null,
   hour: number,
   dayType: DayType
 ): Promise<Barri[]> {
-  const matches = filesForAverage(index, hour, dayType);
-  const byCode = new Map<string, HourlyBarriSnapshot[]>();
-
-  for (const file of matches) {
-    const url = `${BASE}data/history/hourly/${file.key}.json.gz`;
-    const barris = await loadHourlyGz(url);
-    for (const b of barris) {
-      const list = byCode.get(b.barri_codi) ?? [];
-      list.push(b);
-      byCode.set(b.barri_codi, list);
-    }
-  }
-
-  return [...byCode.values()]
-    .map(averageBarriSnapshots)
-    .sort((a, b) => a.barri_nom.localeCompare(b.barri_nom, "ca"));
+  const { barris } = await loadHourlyViewData(index, hour, dayType, [], null);
+  return barris;
 }
 
 export function barrisToLatestData(barris: Barri[], lastUpdated: string): LatestData {
@@ -370,8 +485,8 @@ export async function loadBarriSparklineSeries(
   const keys: string[] = [];
 
   for (const file of [...index.files].sort((a, b) => a.key.localeCompare(b.key))) {
-    const url = `${BASE}data/history/hourly/${file.key}.json.gz`;
-    const barris = await loadHourlyGz(url);
+    const snapshot = await loadHourlySnapshot(file.key);
+    const barris = snapshot?.barris ?? [];
     const b = barris.find((x) => x.barri_codi === barriCodi);
     if (!b || b.capacity_total <= 0) continue;
     const oos = bikesOutOfService(
@@ -407,8 +522,8 @@ export async function loadCitySparklineSeries(
   const keys: string[] = [];
 
   for (const file of [...index.files].sort((a, b) => a.key.localeCompare(b.key))) {
-    const url = `${BASE}data/history/hourly/${file.key}.json.gz`;
-    const barris = await loadHourlyGz(url);
+    const snapshot = await loadHourlySnapshot(file.key);
+    const barris = snapshot?.barris ?? [];
     if (!barris.length) continue;
 
     let capacity = 0;

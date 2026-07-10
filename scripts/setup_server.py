@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Provision ingest container on the private server via SSH."""
+"""Provision ingest container on the private server via SSH.
+
+DESACTIVAT (juliol 2026): el pipeline és 100% GitHub Actions. Es conserva el script
+per si cal reactivar desplegament local / servidor propi.
+"""
 
 from __future__ import annotations
 

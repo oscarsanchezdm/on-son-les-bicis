@@ -9,10 +9,11 @@ import {
   barrisToLatestData,
   hourViewScopeLabel,
   isHistoricalView,
-  loadBarriHourlyAverage,
   loadBarriSparklineSeries,
   loadCitySparklineSeries,
   loadHistoryIndex,
+  loadHourlyViewData,
+  loadStationIds,
   loadSummary7d,
   sampleCountForView,
   type HistoryIndex,
@@ -75,6 +76,7 @@ let latestData: Awaited<ReturnType<typeof loadLatest>> | null = null;
 let barrisData: Awaited<ReturnType<typeof loadBarris>> | null = null;
 let summaryData: Awaited<ReturnType<typeof loadSummary7d>> | null = null;
 let historyIndex: HistoryIndex | null = null;
+let stationIdOrder: string[] | null = null;
 let mapView: ReturnType<typeof createMap> | null = null;
 let displayBarris: Barri[] = [];
 let displayStations: Station[] | null = null;
@@ -100,7 +102,7 @@ function legendText(): string {
     return `Barri: ${selectedBarri.barri_nom}. Mètrica: ${metric}.`;
   }
   if (isHistoricalView(timeView)) {
-    return `Mitjana històrica de ${metric} (${timeViewLabel(timeView, historyIndex)}).`;
+    return `Mitjana històrica de ${metric} (${timeViewLabel(timeView, historyIndex)}) · barris i estacions.`;
   }
   return `Escala de ${metric} al mapa de calor, barris i estacions.`;
 }
@@ -258,9 +260,16 @@ async function applyTimeView(view: TimeView) {
     displayStations = latestData.stations;
   } else {
     setTimelineStatus(timelineEl, `${timeViewLabel(view, historyIndex)}: carregant…`);
-    displayBarris = await loadBarriHourlyAverage(historyIndex, view.hour, view.dayType);
+    const { barris, stations } = await loadHourlyViewData(
+      historyIndex,
+      view.hour,
+      view.dayType,
+      latestData.stations,
+      stationIdOrder
+    );
     if (requestId !== timeViewRequest) return;
-    displayStations = null;
+    displayBarris = barris;
+    displayStations = stations;
     selectedBarri = null;
   }
 
@@ -276,12 +285,13 @@ async function applyTimeView(view: TimeView) {
 
 async function init() {
   try {
-    const [latest, barris, geo, summary, index] = await Promise.all([
+    const [latest, barris, geo, summary, index, stationIds] = await Promise.all([
       loadLatest(),
       loadBarris(),
       loadBarrisGeo(),
       loadSummary7d(),
       loadHistoryIndex(),
+      loadStationIds(),
     ]);
     latestData = {
       ...latest,
@@ -293,6 +303,7 @@ async function init() {
     barrisData = barris;
     summaryData = summary;
     historyIndex = index;
+    stationIdOrder = stationIds?.ids ?? null;
     displayBarris = enrichBarrisWithFleetOos(barris.barris, latest.stations);
     displayStations = latest.stations;
 

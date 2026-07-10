@@ -20,9 +20,10 @@ function stationCountsShort(s: Station): string {
   return `${countIconHtml("ebike")} ${s.ebike} ${countIconHtml("mechanical")} ${s.mechanical} ${countIconHtml("dock")} ${s.docks_available} ${countIconHtml("maintenance")} ${fs}`;
 }
 
-function stationPopupHtml(s: Station): string {
+function stationPopupHtml(s: Station, historical = false): string {
   const fs = stationOosCount(s);
-  return `<strong>${s.name}</strong><br/>
+  const suffix = historical ? "<br/><em>Mitjana històrica a aquesta franja</em>" : "";
+  return `<strong>${s.name}</strong>${suffix}<br/>
 ${countIconHtml("dock")} ${s.capacity} ancoratges totals<br/>
 ${countIconHtml("ebike")} ${s.ebike} elèctriques<br/>
 ${countIconHtml("mechanical")} ${s.mechanical} mecàniques<br/>
@@ -93,7 +94,8 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
     selectedBarriCodi: string | null = null
   ) {
     const byCode = new Map(barris.map((b) => [b.barri_codi, b]));
-    const showStations = timeView.kind === "latest" && stations !== null;
+    const showStations = stations !== null;
+    const isHistorical = timeView.kind === "hour";
 
     if (barriLayer) {
       map.removeLayer(barriLayer);
@@ -162,7 +164,7 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
       for (const s of activeStations) {
         const value = stationMetric(s, mode);
         const visualRadius = stationMarkerRadius(s.capacity);
-        const popup = stationPopupHtml(s);
+        const popup = stationPopupHtml(s, isHistorical);
         const tooltip = stationTooltipHtml(s);
 
         const bindStationUi = (layer: L.CircleMarker) => {

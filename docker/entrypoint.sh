@@ -1,4 +1,7 @@
 #!/bin/bash
+# =============================================================================
+# DESACTIVAT (juliol 2026): ingestió local via Docker. Pipeline actiu: GitHub Actions.
+# =============================================================================
 set -euo pipefail
 
 if [[ ! -f /data/history.db ]]; then

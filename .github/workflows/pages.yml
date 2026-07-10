@@ -12,8 +12,8 @@ on:
     workflows: ["Fetch Bicing data"]
     types: [completed]
   schedule:
-    # Cada 10 min, uns minuts després del fetch, per si workflow_run falla.
-    - cron: "3,13,23,33,43,53 * * * *"
+    # Cada 30 min, uns minuts després del fetch, per si workflow_run falla.
+    - cron: "2,32 * * * *"
 
 permissions:
   contents: read
