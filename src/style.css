@@ -492,7 +492,7 @@ h1 {
   margin: 0;
 }
 
-.time-select-label {
+.hour-select-label {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -518,6 +518,16 @@ h1 {
 .time-select:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.time-btn {
+  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: white;
+  font-weight: 600;
+  font-size: 0.82rem;
+  cursor: pointer;
 }
 
 .time-btn.active {
