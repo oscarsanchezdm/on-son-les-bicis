@@ -19,7 +19,7 @@ import {
   type HistoryIndex,
   type TimeView,
 } from "./lib/history";
-import { heatLegendGradient, PCT_LEGEND_LABELS, type HeatScaleMode } from "./lib/colors";
+import { heatLegendGradient, pctLegendLabels, type HeatScaleMode } from "./lib/colors";
 import { metricIconHtml } from "./lib/icons";
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
@@ -108,7 +108,9 @@ function legendText(): string {
   const scalePart =
     heatScale === "absolute"
       ? "Mode quantitat: color del filtre, intensitat segons el nombre o el %."
-      : "Mode percentatge: escala difuminada (vermell <10%, verd abundant, blau = saturació).";
+      : mode === "out_of_service"
+        ? "Mode percentatge: verd (poc FS) → vermell (molt FS), sense saturació blava."
+        : "Mode percentatge: escala difuminada (vermell <10%, verd abundant, blau = saturació).";
   if (selectedBarri) {
     return `${scalePart} Barri: ${selectedBarri.barri_nom}. Mètrica: ${metric}.`;
   }
@@ -126,12 +128,13 @@ function updateLegend(): void {
 
   if (bar) bar.style.background = heatLegendGradient(mode, heatScale);
   if (labels) {
+    const legendLabels = pctLegendLabels(mode, heatScale);
     if (heatScale === "absolute") {
       labels.className = "legend-scale-labels";
-      labels.innerHTML = "<span>Pocs</span><span>Molts</span>";
+      labels.innerHTML = legendLabels.map((l) => `<span>${l}</span>`).join("");
     } else {
       labels.className = "legend-scale-labels legend-scale-labels--quad";
-      labels.innerHTML = PCT_LEGEND_LABELS.map((l) => `<span>${l}</span>`).join("");
+      labels.innerHTML = legendLabels.map((l) => `<span>${l}</span>`).join("");
     }
   }
   document.querySelectorAll<HTMLButtonElement>(".heat-scale-toggle button").forEach((btn) => {
