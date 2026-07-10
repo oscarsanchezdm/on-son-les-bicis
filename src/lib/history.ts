@@ -26,7 +26,7 @@ export type Summary7d = {
   hourly: HourlyBucket[];
 };
 
-export type DayType = "weekday" | "saturday" | "sunday";
+export type DayType = "weekday" | "friday" | "saturday" | "sunday";
 
 export type TimeView =
   | { kind: "latest" }
@@ -68,19 +68,22 @@ async function loadHourlyGz(url: string): Promise<HourlyBarriSnapshot[]> {
 
 function matchesDayType(date: Date, dayType: DayType): boolean {
   const dow = date.getUTCDay();
+  if (dayType === "friday") return dow === 5;
   if (dayType === "saturday") return dow === 6;
   if (dayType === "sunday") return dow === 0;
-  return dow >= 1 && dow <= 5;
+  return dow >= 1 && dow <= 4;
 }
 
-function dayTypeLabel(dayType: DayType): string {
+export function dayTypeLabel(dayType: DayType): string {
   switch (dayType) {
+    case "friday":
+      return "divendres";
     case "saturday":
       return "dissabtes";
     case "sunday":
       return "diumenges";
     default:
-      return "feiners";
+      return "feiners (dl.–dj.)";
   }
 }
 

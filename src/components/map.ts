@@ -11,24 +11,36 @@ import type { TimeView } from "../lib/history";
 import { isStationActive } from "../lib/status";
 import { metricPctColor } from "../lib/colors";
 import { formatPct } from "../lib/format";
+import { countIconHtml, metricIcon } from "../lib/icons";
 
 function stationCountsShort(s: Station): string {
   const fs = bikesOutOfService(s.capacity, s.mechanical, s.ebike, s.docks_available);
-  return `${s.ebike} E, ${s.mechanical} M, ${s.docks_available} A, ${fs} FS`;
+  return `${countIconHtml("ebike")} ${s.ebike} ${countIconHtml("mechanical")} ${s.mechanical} ${countIconHtml("dock")} ${s.docks_available} ${countIconHtml("maintenance")} ${fs}`;
 }
 
 function stationPopupHtml(s: Station): string {
   const fs = bikesOutOfService(s.capacity, s.mechanical, s.ebike, s.docks_available);
   return `<strong>${s.name}</strong><br/>
-${s.ebike} elèctriques<br/>
-${s.mechanical} mecàniques<br/>
-${s.docks_available} ancoratges lliures<br/>
-${fs} fora de servei<br/>
-${s.capacity} ancoratges totals`;
+${countIconHtml("ebike")} ${s.ebike} elèctriques<br/>
+${countIconHtml("mechanical")} ${s.mechanical} mecàniques<br/>
+${countIconHtml("dock")} ${s.docks_available} ancoratges lliures<br/>
+${countIconHtml("maintenance")} ${fs} fora de servei<br/>
+${countIconHtml("dock")} ${s.capacity} ancoratges totals`;
 }
 
 function stationTooltipHtml(s: Station): string {
   return `<strong>${s.name}</strong><br/>${stationCountsShort(s)}`;
+}
+
+function stationMarkerIcon(fillColor: string, mode: MetricMode, capacity: number): L.DivIcon {
+  const diameter = stationMarkerRadius(capacity) * 2;
+  const iconPx = Math.max(10, Math.round(diameter * 0.52));
+  return L.divIcon({
+    className: "station-div-icon",
+    html: `<div class="station-dot" style="--fill:${fillColor};--size:${diameter}px">${metricIcon(mode, iconPx)}</div>`,
+    iconSize: [diameter, diameter],
+    iconAnchor: [diameter / 2, diameter / 2],
+  });
 }
 
 export type MapView = {
@@ -147,14 +159,11 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
 
       for (const s of activeStations) {
         const value = stationMetric(s, mode);
+        const fillColor = metricPctColor(value, mode);
 
-        L.circleMarker([s.lat, s.lon], {
+        L.marker([s.lat, s.lon], {
           pane: "stationPane",
-          radius: stationMarkerRadius(s.capacity),
-          fillColor: metricPctColor(value, mode),
-          color: "#334155",
-          weight: 1,
-          fillOpacity: 0.92,
+          icon: stationMarkerIcon(fillColor, mode, s.capacity),
         })
           .bindPopup(stationPopupHtml(s))
           .bindTooltip(stationTooltipHtml(s), { sticky: true, className: "station-tooltip" })
