@@ -11,14 +11,29 @@ export const METRIC_ABSOLUTE_COLORS: Record<MetricMode, string> = {
   out_of_service: "#f97316",
 };
 
-/** Red = scarce, green = abundant. Inverted only for fora de servei (high = bad). */
+/** Option B: escassetat → normal → abundant → saturació. Vermell només <10%. */
+export const PCT_SCALE_BREAKS = {
+  red: 10,
+  orange: 30,
+  amber: 55,
+  green: 70,
+} as const;
+
+export const PCT_SCALE_COLORS = {
+  red: "#b91c1c",
+  orange: "#ea580c",
+  amber: "#f59e0b",
+  green: "#22c55e",
+  saturation: "#4f46e5",
+} as const;
+
 export function pctColor(value: number, invert = false): string {
   const v = invert ? 100 - value : value;
-  if (v <= 10) return "#b91c1c";
-  if (v <= 25) return "#ea580c";
-  if (v <= 40) return "#f59e0b";
-  if (v <= 60) return "#84cc16";
-  return "#15803d";
+  if (v < PCT_SCALE_BREAKS.red) return PCT_SCALE_COLORS.red;
+  if (v < PCT_SCALE_BREAKS.orange) return PCT_SCALE_COLORS.orange;
+  if (v < PCT_SCALE_BREAKS.amber) return PCT_SCALE_COLORS.amber;
+  if (v < PCT_SCALE_BREAKS.green) return PCT_SCALE_COLORS.green;
+  return PCT_SCALE_COLORS.saturation;
 }
 
 /** Map/barris/heat colors for the active metric. */
@@ -51,10 +66,25 @@ export function absoluteStationRadius(
   return Math.min(14, base * scale);
 }
 
-const PCT_LEGEND_GRADIENT = "linear-gradient(90deg, #b91c1c, #f59e0b, #84cc16, #15803d)";
+const PCT_LEGEND_GRADIENT = [
+  `${PCT_SCALE_COLORS.red} 0%`,
+  `${PCT_SCALE_COLORS.red} ${PCT_SCALE_BREAKS.red}%`,
+  `${PCT_SCALE_COLORS.orange} ${PCT_SCALE_BREAKS.red}%`,
+  `${PCT_SCALE_COLORS.orange} ${PCT_SCALE_BREAKS.orange}%`,
+  `${PCT_SCALE_COLORS.amber} ${PCT_SCALE_BREAKS.orange}%`,
+  `${PCT_SCALE_COLORS.amber} ${PCT_SCALE_BREAKS.amber}%`,
+  `${PCT_SCALE_COLORS.green} ${PCT_SCALE_BREAKS.amber}%`,
+  `${PCT_SCALE_COLORS.green} ${PCT_SCALE_BREAKS.green}%`,
+  `${PCT_SCALE_COLORS.saturation} ${PCT_SCALE_BREAKS.green}%`,
+  `${PCT_SCALE_COLORS.saturation} 100%`,
+].join(", ");
+
+export const PCT_LEGEND_GRADIENT_CSS = `linear-gradient(90deg, ${PCT_LEGEND_GRADIENT})`;
+
+export const PCT_LEGEND_LABELS = ["Escassetat", "Normal", "Abundant", "Saturat"] as const;
 
 export function heatLegendGradient(mode: MetricMode, scale: HeatScaleMode): string {
-  if (scale === "percent") return PCT_LEGEND_GRADIENT;
+  if (scale === "percent") return PCT_LEGEND_GRADIENT_CSS;
   const color = METRIC_ABSOLUTE_COLORS[mode];
   return `linear-gradient(90deg, ${hexWithAlpha(color, 0.15)}, ${color})`;
 }

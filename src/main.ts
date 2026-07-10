@@ -19,7 +19,7 @@ import {
   type HistoryIndex,
   type TimeView,
 } from "./lib/history";
-import { heatLegendGradient, type HeatScaleMode } from "./lib/colors";
+import { heatLegendGradient, PCT_LEGEND_LABELS, type HeatScaleMode } from "./lib/colors";
 import { metricIconHtml } from "./lib/icons";
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
@@ -58,7 +58,9 @@ app.innerHTML = `
           <button type="button" data-heat-scale="absolute">Quantitat</button>
         </div>
         <div class="legend-bar" id="legend-bar"></div>
-        <p class="legend-scale-labels" id="legend-labels"><span>Escassetat</span><span>Abundància</span></p>
+        <p class="legend-scale-labels legend-scale-labels--quad" id="legend-labels">
+          <span>Escassetat</span><span>Normal</span><span>Abundant</span><span>Saturat</span>
+        </p>
         <p class="legend-note" id="legend-note">Escala compartida entre mapa, barris, estacions i taula.</p>
       </aside>
     </section>
@@ -106,7 +108,7 @@ function legendText(): string {
   const scalePart =
     heatScale === "absolute"
       ? "Mode quantitat: color del filtre, intensitat segons el nombre o el %."
-      : "Mode percentatge: escala d'escassetat a abundància.";
+      : "Mode percentatge: vermell <10%, taronja/ambre = normal, verd = abundant, blau = saturació.";
   if (selectedBarri) {
     return `${scalePart} Barri: ${selectedBarri.barri_nom}. Mètrica: ${metric}.`;
   }
@@ -124,10 +126,13 @@ function updateLegend(): void {
 
   if (bar) bar.style.background = heatLegendGradient(mode, heatScale);
   if (labels) {
-    labels.innerHTML =
-      heatScale === "absolute"
-        ? "<span>Pocs</span><span>Molts</span>"
-        : "<span>Escassetat</span><span>Abundància</span>";
+    if (heatScale === "absolute") {
+      labels.className = "legend-scale-labels";
+      labels.innerHTML = "<span>Pocs</span><span>Molts</span>";
+    } else {
+      labels.className = "legend-scale-labels legend-scale-labels--quad";
+      labels.innerHTML = PCT_LEGEND_LABELS.map((l) => `<span>${l}</span>`).join("");
+    }
   }
   document.querySelectorAll<HTMLButtonElement>(".heat-scale-toggle button").forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.heatScale === heatScale);
