@@ -32,6 +32,25 @@ export function metricAbsoluteColor(mode: MetricMode): string {
   return METRIC_ABSOLUTE_COLORS[mode];
 }
 
+/** Opacity for barri/station fills in absolute mode from metric % (0–100). */
+export function metricAbsoluteOpacity(pct: number): number {
+  if (!Number.isFinite(pct) || pct <= 0) return 0.06;
+  const t = Math.min(100, pct) / 100;
+  return 0.1 + 0.48 * Math.pow(t, 0.85);
+}
+
+/** Station dot radius in absolute mode: larger when count is higher. */
+export function absoluteStationRadius(
+  count: number,
+  maxCount: number,
+  capacity: number
+): number {
+  if (count <= 0 || maxCount <= 0) return 0;
+  const base = Math.min(8, Math.max(4, 3.2 + capacity * 0.07));
+  const scale = 0.55 + 0.95 * Math.pow(count / maxCount, 0.7);
+  return Math.min(14, base * scale);
+}
+
 const PCT_LEGEND_GRADIENT = "linear-gradient(90deg, #b91c1c, #f59e0b, #84cc16, #15803d)";
 
 export function heatLegendGradient(mode: MetricMode, scale: HeatScaleMode): string {

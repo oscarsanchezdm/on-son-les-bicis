@@ -61,8 +61,8 @@ app.innerHTML = `
         <div class="legend-bar" id="legend-heat-bar"></div>
         <p class="legend-scale-labels" id="legend-heat-labels"><span>Escassetat</span><span>Abundància</span></p>
         <p class="legend-heading">Barris i estacions</p>
-        <div class="legend-bar legend-bar--metric"></div>
-        <p class="legend-scale-labels"><span>Escassetat</span><span>Abundància</span></p>
+        <div class="legend-bar legend-bar--metric" id="legend-metric-bar"></div>
+        <p class="legend-scale-labels" id="legend-metric-labels"><span>Escassetat</span><span>Abundància</span></p>
         <p class="legend-note" id="legend-note">Escala de percentatge compartida entre barris i punts.</p>
       </aside>
     </section>
@@ -109,7 +109,7 @@ function legendText(): string {
   const metric = metricLabel();
   const heatPart =
     heatScale === "absolute"
-      ? "El mapa de calor mostra la quantitat absoluta; la intensitat indica el nombre de bicis del filtre."
+      ? "Mapa de calor, barris i estacions en mode quantitat: color del filtre, intensitat i mida segons el nombre o el %."
       : "El mapa de calor mostra el percentatge de disponibilitat.";
   if (selectedBarri) {
     return `${heatPart} Barri: ${selectedBarri.barri_nom}. Mètrica: ${metric}.`;
@@ -117,17 +117,34 @@ function legendText(): string {
   if (isHistoricalView(timeView)) {
     return `${heatPart} Mitjana històrica de ${metric} (${timeViewLabel(timeView, historyIndex)}).`;
   }
-  return `${heatPart} Barris i estacions: escala de ${metric} en percentatge.`;
+  return heatScale === "absolute"
+    ? `${heatPart} Estacions sense ${metric} s'oculten.`
+    : `${heatPart} Barris i estacions: escala de ${metric} en percentatge.`;
 }
 
 function updateLegend(): void {
-  const bar = document.getElementById("legend-heat-bar");
-  const labels = document.getElementById("legend-heat-labels");
-  if (bar) bar.style.background = heatLegendGradient(mode, heatScale);
-  if (labels) {
-    labels.innerHTML =
+  const heatBar = document.getElementById("legend-heat-bar");
+  const heatLabels = document.getElementById("legend-heat-labels");
+  const metricBar = document.getElementById("legend-metric-bar");
+  const metricLabels = document.getElementById("legend-metric-labels");
+  const pctGradient = "linear-gradient(90deg, #b91c1c, #f59e0b, #84cc16, #15803d)";
+
+  if (heatBar) heatBar.style.background = heatLegendGradient(mode, heatScale);
+  if (heatLabels) {
+    heatLabels.innerHTML =
       heatScale === "absolute"
         ? "<span>Pocs</span><span>Molts</span>"
+        : "<span>Escassetat</span><span>Abundància</span>";
+  }
+
+  if (metricBar) {
+    metricBar.style.background =
+      heatScale === "absolute" ? heatLegendGradient(mode, "absolute") : pctGradient;
+  }
+  if (metricLabels) {
+    metricLabels.innerHTML =
+      heatScale === "absolute"
+        ? "<span>Baixa intensitat</span><span>Alta intensitat</span>"
         : "<span>Escassetat</span><span>Abundància</span>";
   }
   document.querySelectorAll<HTMLButtonElement>(".heat-scale-toggle button").forEach((btn) => {
