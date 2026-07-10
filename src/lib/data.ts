@@ -76,7 +76,7 @@ export type MetaData = {
   disclaimer: string;
 };
 
-export type MetricMode = "total" | "mechanical" | "ebike" | "docks";
+export type MetricMode = "total" | "mechanical" | "ebike" | "docks" | "out_of_service";
 
 const BASE = import.meta.env.BASE_URL;
 
@@ -113,6 +113,10 @@ export async function loadDailyHistory(day: string): Promise<Array<Record<string
   return JSON.parse(text);
 }
 
+export function metricColorInvert(mode: MetricMode): boolean {
+  return mode === "docks" || mode === "out_of_service";
+}
+
 export function barriMetric(barri: Barri, mode: MetricMode): number {
   switch (mode) {
     case "mechanical":
@@ -121,6 +125,16 @@ export function barriMetric(barri: Barri, mode: MetricMode): number {
       return barri.pct_ebike;
     case "docks":
       return barri.pct_docks_free;
+    case "out_of_service":
+      return (
+        barri.pct_bikes_out_of_service ??
+        pctBikesOutOfService(
+          barri.capacity_total,
+          barri.bikes_mechanical,
+          barri.bikes_ebike,
+          barri.docks_available_total
+        )
+      );
     default:
       return barri.pct_bikes;
   }
@@ -135,6 +149,13 @@ export function stationMetric(station: Station, mode: MetricMode): number {
       return (100 * station.ebike) / station.capacity;
     case "docks":
       return station.pct_docks_free;
+    case "out_of_service":
+      return pctBikesOutOfService(
+        station.capacity,
+        station.mechanical,
+        station.ebike,
+        station.docks_available
+      );
     default:
       return station.pct_bikes;
   }
@@ -148,6 +169,13 @@ export function stationCount(station: Station, mode: MetricMode): number {
       return station.ebike;
     case "docks":
       return station.docks_available;
+    case "out_of_service":
+      return bikesOutOfService(
+        station.capacity,
+        station.mechanical,
+        station.ebike,
+        station.docks_available
+      );
     default:
       return station.total;
   }

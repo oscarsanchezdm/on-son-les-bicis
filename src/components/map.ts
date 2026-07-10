@@ -1,6 +1,6 @@
 import L from "leaflet";
 import type { Barri, MetricMode, Station } from "../lib/data";
-import { barriMetric, bikesOutOfService, pctOfStations, stationMetric } from "../lib/data";
+import { barriMetric, bikesOutOfService, metricColorInvert, pctOfStations, stationMetric } from "../lib/data";
 import {
   createColorHeatLayer,
   stationMarkerRadius,
@@ -39,7 +39,11 @@ export type MapView = {
     timeView: TimeView,
     selectedBarriCodi?: string | null
   ) => void;
+  focusBarri: (codi: string | null, stations: Station[] | null) => void;
 };
+
+const CITY_CENTER: L.LatLngExpression = [41.387, 2.17];
+const CITY_ZOOM = 12;
 
 export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection): MapView {
   const map = L.map(container, { scrollWheelZoom: true }).setView([41.387, 2.17], 12);
@@ -70,7 +74,7 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
     selectedBarriCodi: string | null = null
   ) {
     const byCode = new Map(barris.map((b) => [b.barri_codi, b]));
-    const invert = mode === "docks";
+    const invert = metricColorInvert(mode);
     const showStations = timeView.kind === "latest" && stations !== null;
 
     if (barriLayer) {
@@ -172,5 +176,29 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
     barriLayer.addTo(map);
   }
 
-  return { map, update };
+  function focusBarri(codi: string | null, stations: Station[] | null) {
+    if (!codi) {
+      map.flyTo(CITY_CENTER, CITY_ZOOM, { duration: 0.7 });
+      return;
+    }
+
+    const feature = geo.features.find(
+      (f) => String(f.properties?.codi_barri ?? "") === codi
+    );
+    if (feature) {
+      const bounds = L.geoJSON(feature).getBounds();
+      if (bounds.isValid()) {
+        map.flyToBounds(bounds, { padding: [48, 48], maxZoom: 15, duration: 0.7 });
+        return;
+      }
+    }
+
+    const barriStations = stations?.filter((s) => s.barri_codi === codi) ?? [];
+    if (barriStations.length) {
+      const bounds = L.latLngBounds(barriStations.map((s) => [s.lat, s.lon] as L.LatLngTuple));
+      map.flyToBounds(bounds, { padding: [56, 56], maxZoom: 16, duration: 0.7 });
+    }
+  }
+
+  return { map, update, focusBarri };
 }

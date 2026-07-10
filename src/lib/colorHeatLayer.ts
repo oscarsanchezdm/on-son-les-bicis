@@ -5,7 +5,7 @@
 
 import L from "leaflet";
 import type { MetricMode, Station } from "./data";
-import { stationMetric } from "./data";
+import { metricColorInvert, stationMetric } from "./data";
 import { pctColor } from "./colors";
 
 export function stationMarkerRadius(capacity: number): number {
@@ -111,7 +111,7 @@ const ColorHeatLayerImpl = L.Layer.extend({
     const size = this._map.getSize();
     ctx.clearRect(0, 0, size.x, size.y);
 
-    const invert = this._mode === "docks";
+      const invert = metricColorInvert(this._mode as MetricMode);
     const active = (this._stations as Station[]).filter((s) => s.capacity > 0);
     if (!active.length) return;
 
