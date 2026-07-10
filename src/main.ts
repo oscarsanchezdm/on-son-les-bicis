@@ -19,7 +19,7 @@ import {
   type HistoryIndex,
   type TimeView,
 } from "./lib/history";
-import { metricIconHtml } from "./lib/icons";
+import { heatLegendGradient, type HeatScaleMode } from "./lib/colors";
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 
@@ -52,10 +52,17 @@ app.innerHTML = `
       <div id="map"></div>
       <aside class="legend">
         <h2>Llegenda</h2>
-        <p class="legend-heading">Mapa</p>
-        <div class="legend-bar"></div>
-        <p><span>Escassetat</span><span>Abundància</span></p>
-        <p class="legend-note" id="legend-note">Escala compartida entre calor, barris i estacions.</p>
+        <p class="legend-heading">Mapa de calor</p>
+        <div class="heat-scale-toggle" role="group" aria-label="Tipus de mapa de calor">
+          <button type="button" data-heat-scale="percent" class="active">Percentatge</button>
+          <button type="button" data-heat-scale="absolute">Quantitat</button>
+        </div>
+        <div class="legend-bar" id="legend-heat-bar"></div>
+        <p class="legend-scale-labels" id="legend-heat-labels"><span>Escassetat</span><span>Abundància</span></p>
+        <p class="legend-heading">Barris i estacions</p>
+        <div class="legend-bar legend-bar--metric"></div>
+        <p class="legend-scale-labels"><span>Escassetat</span><span>Abundància</span></p>
+        <p class="legend-note" id="legend-note">Escala de percentatge compartida entre barris i punts.</p>
       </aside>
     </section>
     <section class="barri-section">
@@ -70,6 +77,7 @@ app.innerHTML = `
 `;
 
 let mode: MetricMode = "total";
+let heatScale: HeatScaleMode = "percent";
 let timeView: TimeView = { kind: "latest" };
 let selectedBarri: Barri | null = null;
 let latestData: Awaited<ReturnType<typeof loadLatest>> | null = null;
@@ -98,13 +106,32 @@ function metricLabel(): string {
 
 function legendText(): string {
   const metric = metricLabel();
+  const heatPart =
+    heatScale === "absolute"
+      ? "El mapa de calor mostra la quantitat absoluta; la intensitat indica el nombre de bicis del filtre."
+      : "El mapa de calor mostra el percentatge de disponibilitat.";
   if (selectedBarri) {
-    return `Barri: ${selectedBarri.barri_nom}. Mètrica: ${metric}.`;
+    return `${heatPart} Barri: ${selectedBarri.barri_nom}. Mètrica: ${metric}.`;
   }
   if (isHistoricalView(timeView)) {
-    return `Mitjana històrica de ${metric} (${timeViewLabel(timeView, historyIndex)}) · barris i estacions.`;
+    return `${heatPart} Mitjana històrica de ${metric} (${timeViewLabel(timeView, historyIndex)}).`;
   }
-  return `Escala de ${metric} al mapa de calor, barris i estacions.`;
+  return `${heatPart} Barris i estacions: escala de ${metric} en percentatge.`;
+}
+
+function updateLegend(): void {
+  const bar = document.getElementById("legend-heat-bar");
+  const labels = document.getElementById("legend-heat-labels");
+  if (bar) bar.style.background = heatLegendGradient(mode, heatScale);
+  if (labels) {
+    labels.innerHTML =
+      heatScale === "absolute"
+        ? "<span>Pocs</span><span>Molts</span>"
+        : "<span>Escassetat</span><span>Abundància</span>";
+  }
+  document.querySelectorAll<HTMLButtonElement>(".heat-scale-toggle button").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.heatScale === heatScale);
+  });
 }
 
 function tableNote(): string {
@@ -219,7 +246,8 @@ async function refresh() {
     displayBarris,
     mapStations(),
     timeView,
-    selectedBarri?.barri_codi ?? null
+    selectedBarri?.barri_codi ?? null,
+    heatScale
   );
   renderBarriTable(document.getElementById("barri-table")!, displayBarris, mode, timeView, {
     selectedCodi: selectedBarri?.barri_codi ?? null,
@@ -227,6 +255,7 @@ async function refresh() {
   });
 
   updateBarriFilterBar();
+  updateLegend();
   const note = document.getElementById("legend-note")!;
   note.textContent = legendText();
   const tnote = document.getElementById("table-note")!;
@@ -329,6 +358,16 @@ document.querySelectorAll<HTMLButtonElement>(".mode-toggle button").forEach((btn
     document.querySelectorAll(".mode-toggle button").forEach((b) => b.classList.remove("active"));
     btn.classList.add("active");
     mode = btn.dataset.mode as MetricMode;
+    void refresh();
+  });
+});
+
+document.querySelectorAll<HTMLButtonElement>(".heat-scale-toggle button").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const next = btn.dataset.heatScale as HeatScaleMode | undefined;
+    if (!next || next === heatScale) return;
+    heatScale = next;
+    updateLegend();
     void refresh();
   });
 });
