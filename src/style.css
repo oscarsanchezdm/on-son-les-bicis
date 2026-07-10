@@ -454,6 +454,14 @@ body.kpi-chart-open {
   margin: 0 0 0.5rem;
 }
 
+.legend-scale-labels--quad {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.2rem;
+  text-align: center;
+  font-size: 0.72rem;
+}
+
 .leaflet-color-heat {
   position: absolute;
   left: 0;
