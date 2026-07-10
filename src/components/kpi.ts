@@ -65,10 +65,10 @@ export function renderKpis(
   container: HTMLElement,
   data: LatestData,
   summary: Summary7d | null,
-  scopeLabel = "ciutat"
+  scopeLabel = "ciutat",
+  isHistorical = false
 ): void {
   const t = data.totals;
-  const worst = t.worst_barri;
   const hour = new Date(data.last_updated).getHours();
   const pctMech =
     t.pct_mechanical ?? (t.capacity ? (100 * t.bikes_mechanical) / t.capacity : 0);
@@ -79,40 +79,31 @@ export function renderKpis(
   const pctOutOfService =
     t.pct_bikes_out_of_service ??
     pctBikesOutOfService(t.capacity, t.bikes_mechanical, t.bikes_ebike, t.docks_available);
-  const pctMechOfFleet = t.bikes_total ? (100 * t.bikes_mechanical) / t.bikes_total : 0;
   const pctZeroEbike = pctOfStations(t.stations_zero_ebike, t.stations_active);
   const pctZeroMech = pctOfStations(t.stations_zero_mechanical ?? 0, t.stations_active);
 
   const sparkBikes =
-    scopeLabel === "ciutat"
+    !isHistorical && scopeLabel === "ciutat"
       ? renderSparkline(sparklineValues(summary?.series ?? [], "pct_bikes"))
       : "";
   const sparkMech =
-    scopeLabel === "ciutat"
+    !isHistorical && scopeLabel === "ciutat"
       ? renderSparkline(sparklineValues(summary?.series ?? [], "pct_mechanical"))
       : "";
   const sparkEbike =
-    scopeLabel === "ciutat"
+    !isHistorical && scopeLabel === "ciutat"
       ? renderSparkline(sparklineValues(summary?.series ?? [], "pct_ebike"))
       : "";
   const histBikes =
-    scopeLabel === "ciutat" ? histNote(summary, hour, "pct_bikes", t.pct_bikes) : "";
+    !isHistorical && scopeLabel === "ciutat" ? histNote(summary, hour, "pct_bikes", t.pct_bikes) : "";
   const histMech =
-    scopeLabel === "ciutat" ? histNote(summary, hour, "pct_mechanical", pctMech) : "";
+    !isHistorical && scopeLabel === "ciutat" ? histNote(summary, hour, "pct_mechanical", pctMech) : "";
   const histEbike =
-    scopeLabel === "ciutat" ? histNote(summary, hour, "pct_ebike", pctEbike) : "";
-  const worstCard =
-    scopeLabel === "ciutat"
-      ? `<article class="kpi-card kpi-card--alert">
-        <span class="kpi-label">Pitjor barri (bicis)</span>
-        <strong>${worst?.barri_nom ?? "—"}</strong>
-        <small>${worst ? formatPct(worst.pct_bikes) : ""}</small>
-      </article>`
-      : "";
+    !isHistorical && scopeLabel === "ciutat" ? histNote(summary, hour, "pct_ebike", pctEbike) : "";
 
   container.innerHTML = `
     <div class="kpi-grid">
-      <article class="kpi-card">
+      <article class="kpi-card kpi-card--meta">
         <span class="kpi-label">Darrera actualització</span>
         <strong>${formatRelativeTime(data.last_updated)}</strong>
         <small>${formatDateTime(data.last_updated)}</small>
@@ -127,7 +118,7 @@ export function renderKpis(
       <article class="kpi-card">
         <span class="kpi-label">Mecàniques</span>
         <strong>${formatPct(pctMech)}</strong>
-        <small>${t.bikes_mechanical.toLocaleString("ca-ES")} bicis · ${formatPct(pctMechOfFleet)} del parc disponible</small>
+        <small>${t.bikes_mechanical.toLocaleString("ca-ES")} bicis</small>
         ${sparkMech}
         ${histMech ? `<small class="kpi-hist">${histMech}</small>` : ""}
       </article>
@@ -139,14 +130,9 @@ export function renderKpis(
         ${histEbike ? `<small class="kpi-hist">${histEbike}</small>` : ""}
       </article>
       <article class="kpi-card">
-        <span class="kpi-label">Estacions sense elèctriques</span>
-        <strong>${formatPct(pctZeroEbike)}</strong>
-        <small>${t.stations_zero_ebike} de ${t.stations_active} estacions</small>
-      </article>
-      <article class="kpi-card">
-        <span class="kpi-label">Estacions sense mecàniques</span>
-        <strong>${formatPct(pctZeroMech)}</strong>
-        <small>${t.stations_zero_mechanical ?? 0} de ${t.stations_active} estacions</small>
+        <span class="kpi-label">Estacions sense un tipus de bici</span>
+        <strong>${formatPct(pctZeroEbike)} E · ${formatPct(pctZeroMech)} M</strong>
+        <small>${t.stations_zero_ebike} sense elèctriques · ${t.stations_zero_mechanical ?? 0} sense mecàniques · ${t.stations_active} actives</small>
       </article>
       <article class="kpi-card kpi-card--alert">
         <span class="kpi-label">Bicicletes fora de servei</span>
@@ -156,7 +142,6 @@ export function renderKpis(
           <span style="width:${Math.min(100, pctOutOfService)}%"></span>
         </div>
       </article>
-      ${worstCard}
     </div>
   `;
 }

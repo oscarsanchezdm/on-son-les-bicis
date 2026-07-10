@@ -97,6 +97,18 @@ h1 {
   gap: 0.15rem;
 }
 
+.kpi-card--meta {
+  padding: 0.55rem 0.75rem;
+}
+
+.kpi-card--meta strong {
+  font-size: 1rem;
+}
+
+.kpi-card--meta small {
+  font-size: 0.72rem;
+}
+
 .kpi-card--alert {
   border-color: #fecaca;
   background: #fff1f2;
@@ -386,6 +398,33 @@ h1 {
 .time-btn.active {
   background: var(--accent, #0f766e);
   border-color: var(--accent, #0f766e);
+  color: white;
+}
+
+.day-type-toggle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.day-type-btn {
+  padding: 0.4rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: white;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.day-type-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.day-type-btn.active {
+  background: #0f766e;
+  border-color: #0f766e;
   color: white;
 }
 
