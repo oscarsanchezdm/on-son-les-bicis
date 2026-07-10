@@ -5,11 +5,18 @@ import {
   pctOfStations,
   pctOosOfBikeFleet,
 } from "../lib/data";
-import type { BarriSparklineSeries, Summary7d } from "../lib/history";
-import { currentMadridHour, hourlyAverage, sparklineValues } from "../lib/history";
+import type { BarriSparklineSeries, SparklineMetricKey, Summary7d } from "../lib/history";
+import {
+  currentMadridHour,
+  hourlyAverage,
+  labeledChartPoints,
+  sparklineChartPoints,
+  sparklineValues,
+} from "../lib/history";
 import { formatDateTime, formatPct, formatRelativeTime } from "../lib/format";
 import { renderSparkline } from "../lib/sparkline";
 import { kpiIconHtml, metricIconHtml } from "../lib/icons";
+import { bindKpiCharts, type KpiChartSpec } from "./kpiChart";
 
 /** Build KPI-shaped data for a single barri filter. */
 export function latestFromBarri(barri: Barri, lastUpdated: string): LatestData {
@@ -69,13 +76,36 @@ function histNote(
   return `Mitjana 7 dies (${String(hour).padStart(2, "0")}:00): ${formatPct(avg)} (${sign}${delta.toFixed(1)} pp)`;
 }
 
+function chartPoints(
+  metric: SparklineMetricKey,
+  sparklines: BarriSparklineSeries | null,
+  summary: Summary7d | null
+) {
+  if (sparklines?.labels.length) {
+    return labeledChartPoints(sparklines.labels, sparklines[metric]);
+  }
+  if (summary?.series.length) {
+    return sparklineChartPoints(summary.series, metric);
+  }
+  return [];
+}
+
+function kpiCard(
+  chartKey: string,
+  chartable: boolean,
+  inner: string
+): string {
+  const attrs = chartable ? ` data-kpi-chart="${chartKey}"` : "";
+  return `<article class="kpi-card${chartable ? " kpi-card--chartable" : ""}"${attrs}>${inner}</article>`;
+}
+
 export function renderKpis(
   container: HTMLElement,
   data: LatestData,
   summary: Summary7d | null,
   scopeLabel = "ciutat",
   isHistorical = false,
-  barriSparklines: BarriSparklineSeries | null = null
+  sparklines: BarriSparklineSeries | null = null
 ): void {
   const t = data.totals;
   const hour = currentMadridHour();
@@ -93,28 +123,42 @@ export function renderKpis(
   const pctZeroAny = pctOfStations(t.stations_zero_any, t.stations_active);
 
   const showSpark = !isHistorical;
-  const sparkBikes = showSpark
-    ? renderSparkline(
-        barriSparklines?.pct_bikes ?? sparklineValues(summary?.series ?? [], "pct_bikes")
-      )
-    : "";
-  const sparkMech = showSpark
-    ? renderSparkline(
-        barriSparklines?.pct_mechanical ??
-          sparklineValues(summary?.series ?? [], "pct_mechanical")
-      )
-    : "";
-  const sparkEbike = showSpark
-    ? renderSparkline(
-        barriSparklines?.pct_ebike ?? sparklineValues(summary?.series ?? [], "pct_ebike")
-      )
-    : "";
-  const sparkOos = showSpark
-    ? renderSparkline(
-        barriSparklines?.pct_oos_fleet ??
-          sparklineValues(summary?.series ?? [], "pct_oos_fleet")
-      )
-    : "";
+  const bikesValues = showSpark
+    ? sparklines?.pct_bikes ?? sparklineValues(summary?.series ?? [], "pct_bikes")
+    : [];
+  const mechValues = showSpark
+    ? sparklines?.pct_mechanical ?? sparklineValues(summary?.series ?? [], "pct_mechanical")
+    : [];
+  const ebikeValues = showSpark
+    ? sparklines?.pct_ebike ?? sparklineValues(summary?.series ?? [], "pct_ebike")
+    : [];
+  const oosValues = showSpark
+    ? sparklines?.pct_oos_fleet ?? sparklineValues(summary?.series ?? [], "pct_oos_fleet")
+    : [];
+
+  const bikesPoints = showSpark ? chartPoints("pct_bikes", sparklines, summary) : [];
+  const mechPoints = showSpark ? chartPoints("pct_mechanical", sparklines, summary) : [];
+  const ebikePoints = showSpark ? chartPoints("pct_ebike", sparklines, summary) : [];
+  const oosPoints = showSpark ? chartPoints("pct_oos_fleet", sparklines, summary) : [];
+
+  const chartSubtitle = `Últims ${Math.max(bikesPoints.length, 1)} punts · ${scopeLabel}`;
+  const charts: Record<string, KpiChartSpec | undefined> = showSpark
+    ? {
+        bikes: bikesPoints.length
+          ? { title: "Bicicletes disponibles (% ancoratges)", subtitle: chartSubtitle, points: bikesPoints }
+          : undefined,
+        mechanical: mechPoints.length
+          ? { title: "Mecàniques (% ancoratges)", subtitle: chartSubtitle, points: mechPoints }
+          : undefined,
+        ebike: ebikePoints.length
+          ? { title: "Elèctriques (% ancoratges)", subtitle: chartSubtitle, points: ebikePoints }
+          : undefined,
+        oos: oosPoints.length
+          ? { title: "Fora de servei (% parc de bicicletes)", subtitle: chartSubtitle, points: oosPoints }
+          : undefined,
+      }
+    : {};
+
   const showCityHist = !isHistorical && scopeLabel === "ciutat";
   const histBikes = showCityHist ? histNote(summary, hour, "pct_bikes", t.pct_bikes) : "";
   const histMech = showCityHist ? histNote(summary, hour, "pct_mechanical", pctMech) : "";
@@ -135,6 +179,10 @@ export function renderKpis(
       ? `<small class="kpi-station-gap kpi-station-gap--warn">${t.stations_zero_any} est. sense bicicletes (${formatPct(pctZeroAny)})</small>`
       : "";
 
+  const sparkHint = showSpark
+    ? `<small class="kpi-chart-hint">Clica per veure el detall</small>`
+    : "";
+
   container.innerHTML = `
     <div class="kpi-panel">
       <p class="kpi-update" title="${formatDateTime(data.last_updated)}">
@@ -143,37 +191,59 @@ export function renderKpis(
         <span class="kpi-update-date">${formatDateTime(data.last_updated)}</span>
       </p>
       <div class="kpi-grid">
-      <article class="kpi-card">
+      ${kpiCard(
+        "bikes",
+        bikesPoints.length > 1,
+        `
         <span class="kpi-label">${kpiIconHtml("total")} Bicicletes disponibles (${scopeLabel})</span>
         <strong>${t.bikes_total.toLocaleString("ca-ES")}</strong>
         <small>${formatPct(t.pct_bikes)} de ${t.capacity.toLocaleString("ca-ES")} ancoratges</small>
         ${zeroAnyNote}
-        ${sparkBikes}
+        ${bikesValues.length ? renderSparkline(bikesValues) : ""}
+        ${bikesPoints.length > 1 ? sparkHint : ""}
         ${histBikes ? `<small class="kpi-hist">${histBikes}</small>` : ""}
-      </article>
-      <article class="kpi-card">
+      `
+      )}
+      ${kpiCard(
+        "mechanical",
+        mechPoints.length > 1,
+        `
         <span class="kpi-label">${kpiIconHtml("mechanical")} Mecàniques</span>
         <strong>${t.bikes_mechanical.toLocaleString("ca-ES")}</strong>
         <small>${formatPct(pctMechOfBikes)} de les bicicletes disponibles</small>
         ${zeroMechNote}
-        ${sparkMech}
+        ${mechValues.length ? renderSparkline(mechValues) : ""}
+        ${mechPoints.length > 1 ? sparkHint : ""}
         ${histMech ? `<small class="kpi-hist">${histMech}</small>` : ""}
-      </article>
-      <article class="kpi-card">
+      `
+      )}
+      ${kpiCard(
+        "ebike",
+        ebikePoints.length > 1,
+        `
         <span class="kpi-label">${kpiIconHtml("ebike")} Elèctriques</span>
         <strong>${t.bikes_ebike.toLocaleString("ca-ES")}</strong>
         <small>${formatPct(pctEbikeOfBikes)} de les bicicletes disponibles</small>
         ${zeroEbikeNote}
-        ${sparkEbike}
+        ${ebikeValues.length ? renderSparkline(ebikeValues) : ""}
+        ${ebikePoints.length > 1 ? sparkHint : ""}
         ${histEbike ? `<small class="kpi-hist">${histEbike}</small>` : ""}
-      </article>
-      <article class="kpi-card">
+      `
+      )}
+      ${kpiCard(
+        "oos",
+        oosPoints.length > 1,
+        `
         <span class="kpi-label">${metricIconHtml("out_of_service", "kpi-icon")} Bicicletes fora de servei</span>
         <strong>${outOfService.toLocaleString("ca-ES")}</strong>
         <small>${formatPct(pctOutOfService)} del parc de bicicletes (disponibles + fora de servei)</small>
-        ${sparkOos}
-      </article>
+        ${oosValues.length ? renderSparkline(oosValues) : ""}
+        ${oosPoints.length > 1 ? sparkHint : ""}
+      `
+      )}
       </div>
     </div>
   `;
+
+  if (showSpark) bindKpiCharts(container, charts);
 }

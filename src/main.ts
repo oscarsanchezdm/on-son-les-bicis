@@ -28,7 +28,7 @@ app.innerHTML = `
       <div class="site-header__row">
         <div class="site-header__brand">
           <p class="eyebrow">Dades obertes · Bicing Barcelona</p>
-          <h1>On són les bicicletes?</h1>
+          <h1>On són les bicis?</h1>
         </div>
         <div id="barri-filter-bar" class="barri-filter-bar hidden" hidden>
           <span id="barri-filter-label"></span>
