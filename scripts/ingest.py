@@ -85,10 +85,16 @@ def _load_superficie() -> None:
 
 
 def _assign_barri(lat: float, lon: float) -> tuple[str, str, str]:
+    """Match station to barri polygon (GeoJSON is WGS84; legacy UTM coords still supported)."""
+    point_wgs = Point(lon, lat)
     x, y = _TO_UTM.transform(lon, lat)
-    point = Point(x, y)
+    point_utm = Point(x, y)
     for barri in BARRI_POLYGONS:
-        if barri["polygon"].contains(point):
+        polygon = barri["polygon"]
+        if polygon.bounds[0] > 180:
+            if polygon.contains(point_utm):
+                return barri["codi"], barri["nom"], barri["districte"]
+        elif polygon.contains(point_wgs):
             return barri["codi"], barri["nom"], barri["districte"]
     return "", "Desconegut", ""
 
