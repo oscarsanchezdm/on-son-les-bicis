@@ -8,7 +8,3 @@ export function pctColor(value: number, invert = false): string {
   if (v <= 60) return "#84cc16";
   return "#15803d";
 }
-
-export function pctColorCss(value: number, invert = false): string {
-  return pctColor(value, invert);
-}

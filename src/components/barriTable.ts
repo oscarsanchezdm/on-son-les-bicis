@@ -10,7 +10,6 @@ export function renderBarriTable(
   onSelect?: (barri: Barri) => void
 ): void {
   const sorted = [...barris].sort((a, b) => barriMetric(a, mode) - barriMetric(b, mode));
-  const invert = mode === "docks";
 
   container.innerHTML = `
     <div class="table-wrap">
@@ -28,7 +27,6 @@ export function renderBarriTable(
         <tbody>
           ${sorted
             .map((b) => {
-              const val = barriMetric(b, mode);
               const desert = b.pct_ebike < 10 ? "row-desert" : "";
               return `<tr class="${desert}" data-codi="${b.barri_codi}">
                 <td>${b.barri_nom}</td>
