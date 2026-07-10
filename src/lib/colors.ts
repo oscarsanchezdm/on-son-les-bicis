@@ -12,6 +12,7 @@ export function pctColor(value: number, invert = false): string {
 
 /** Map/barris/heat colors for the active metric. */
 export function metricPctColor(value: number, mode: MetricMode): string {
+  if (!Number.isFinite(value)) return "#cbd5e1";
   if (mode === "out_of_service") return pctColor(value, true);
   return pctColor(value, mode === "docks");
 }
