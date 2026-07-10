@@ -183,6 +183,7 @@ h1 {
   border-radius: 12px;
   border: 1px solid var(--border);
   overflow: hidden;
+  background: #e2e8f0;
 }
 
 .legend {
