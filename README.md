@@ -34,14 +34,40 @@ python scripts/export.py
 npm install && npm run dev
 ```
 
-## Desplegament al servidor
+## Publicar a GitHub
 
 ```bash
-# A /root/on-son-les-bicis
-cp .env.example .env
-# Configurar BICING_TOKEN i deploy key a deploy/ssh/
+# 1. Crea el repo (amb GitHub CLI)
+chmod +x scripts/publish_github.sh
+./scripts/publish_github.sh
+
+# O manualment:
+# - Crea https://github.com/new → on-son-les-bicis
+# - git remote add origin https://github.com/oscarsanchezdm/on-son-les-bicis.git
+# - git push -u origin main
+# - Settings → Secrets → BICING_TOKEN
+# - Settings → Pages → Build: GitHub Actions
+```
+
+## Desplegament al servidor (`10.10.100.104`)
+
+```bash
+# Genera deploy key i afegeix-la al repo GitHub (Settings → Deploy keys)
+./scripts/setup_deploy_key.sh
+
+# Provisiona el contenidor (requereix paramiko: pip install paramiko)
+export INGEST_PASSWORD=cursor   # o la contrasenya real
+export BICING_TOKEN=...         # o deixa que ho llegeixi de .env
+python3 scripts/setup_server.py
+
+# O manualment a /root/on-son-les-bicis:
+git clone git@github.com:oscarsanchezdm/on-son-les-bicis.git .
+cp .env.example .env   # afegir BICING_TOKEN
+mkdir -p db deploy/ssh
+cp deploy/ssh/id_ed25519 deploy/ssh/
 docker compose up -d --build
 ```
+
 
 ## Llicència
 
