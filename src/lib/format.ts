@@ -29,3 +29,13 @@ export function formatRelativeTime(iso: string): string {
 export function formatHour(hour: number): string {
   return `${String(hour).padStart(2, "0")}:00`;
 }
+
+/** Label for hourly history file keys (e.g. 2026-07-10-14 → 10/07 14:00). */
+export function historyFileLabel(key: string): string {
+  const parts = key.split("-");
+  if (parts.length >= 4) {
+    const [, month, day, hour] = parts;
+    return `${day}/${month} ${hour!.padStart(2, "0")}:00`;
+  }
+  return key;
+}
