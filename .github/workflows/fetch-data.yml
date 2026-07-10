@@ -5,6 +5,10 @@ on:
     # Evita el minut :00 (GitHub pot endarrerir jobs programats a l'inici d'hora)
     - cron: "7,17,27,37,47,57 * * * *"
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "public/data/**"
 
 permissions:
   contents: write
