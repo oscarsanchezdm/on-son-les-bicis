@@ -1,0 +1,260 @@
+:root {
+  color-scheme: light;
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --accent: #dc2626;
+  font-family: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  line-height: 1.5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+a {
+  color: #b91c1c;
+}
+
+.site-header,
+main,
+.site-footer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem 1.25rem;
+}
+
+.site-header {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid var(--border);
+  background: var(--card);
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin: 0 0 0.25rem;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+}
+
+.lede {
+  max-width: 48ch;
+  color: var(--muted);
+}
+
+.mode-toggle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.mode-toggle button {
+  border: 1px solid var(--border);
+  background: var(--bg);
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.mode-toggle button.active {
+  background: var(--text);
+  color: white;
+  border-color: var(--text);
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.kpi-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.kpi-card--alert {
+  border-color: #fecaca;
+  background: #fff1f2;
+}
+
+.kpi-label {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.kpi-card strong {
+  font-size: 1.35rem;
+}
+
+.map-section {
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  gap: 1rem;
+}
+
+#map {
+  height: 520px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.legend {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.legend-bar {
+  height: 12px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #b91c1c, #f59e0b, #84cc16, #15803d);
+  margin: 0.75rem 0;
+}
+
+.legend p {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.legend-note,
+.section-note,
+.timeline-note {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.table-wrap {
+  overflow-x: auto;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.barri-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.barri-table th,
+.barri-table td {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+.barri-table tbody tr:hover {
+  background: #f1f5f9;
+  cursor: pointer;
+}
+
+.row-desert {
+  background: #fff1f2;
+}
+
+.pct-badge {
+  display: inline-block;
+  padding: 0.15rem 0.45rem;
+  border-radius: 6px;
+  color: white;
+  font-weight: 600;
+  font-size: 0.82rem;
+}
+
+.timeline {
+  margin: 1.5rem 0;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.timeline-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  min-height: 140px;
+  margin-top: 1rem;
+}
+
+.timeline-bar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.timeline-fill {
+  width: 100%;
+  max-width: 48px;
+  background: linear-gradient(180deg, #15803d, #b91c1c);
+  border-radius: 6px 6px 2px 2px;
+  min-height: 4px;
+}
+
+.timeline-delta.negative {
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.timeline-delta.positive {
+  color: #15803d;
+  font-weight: 600;
+}
+
+.error {
+  padding: 2rem;
+  color: #b91c1c;
+}
+
+.site-footer {
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 900px) {
+  .site-header {
+    flex-direction: column;
+  }
+
+  .map-section {
+    grid-template-columns: 1fr;
+  }
+
+  #map {
+    height: 420px;
+  }
+}

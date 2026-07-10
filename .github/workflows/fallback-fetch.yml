@@ -1,0 +1,62 @@
+name: Fallback fetch Bicing data
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Check data freshness
+        id: freshness
+        run: |
+          python3 <<'PY' >> "$GITHUB_OUTPUT"
+          import json, sys
+          from datetime import datetime, timezone
+          from pathlib import Path
+          p = Path("public/data/meta.json")
+          if not p.exists():
+              print("stale=true")
+              sys.exit(0)
+          meta = json.loads(p.read_text())
+          ts = datetime.fromisoformat(meta["last_updated"].replace("Z", "+00:00"))
+          age_min = (datetime.now(timezone.utc) - ts).total_seconds() / 60
+          print(f"age_minutes={int(age_min)}")
+          print("stale=true" if age_min > 30 else "stale=false")
+          PY
+
+      - name: Fetch static data if missing
+        if: hashFiles('public/data/static/barris.geojson') == ''
+        env:
+          BICING_TOKEN: ${{ secrets.BICING_TOKEN }}
+        run: python scripts/fetch_static_data.py
+
+      - name: Ingest and export
+        if: steps.freshness.outputs.stale == 'true'
+        env:
+          BICING_TOKEN: ${{ secrets.BICING_TOKEN }}
+        run: |
+          python scripts/init_db.py
+          python scripts/ingest.py
+          python scripts/export.py
+
+      - name: Commit changes
+        if: steps.freshness.outputs.stale == 'true'
+        uses: EndBug/add-and-commit@v9
+        with:
+          add: "public/data"
+          message: "Fallback: actualitza dades Bicing"

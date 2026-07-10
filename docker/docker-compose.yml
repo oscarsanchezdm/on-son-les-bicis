@@ -1,0 +1,16 @@
+services:
+  ingest:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: on-son-les-bicis-ingest
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DB_PATH: /data/history.db
+    volumes:
+      - ./db:/data
+      - ./repo:/app
+      - ./ssh:/root/.ssh:ro
+    network_mode: bridge

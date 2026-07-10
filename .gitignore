@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.env
+db/
+*.db
+.DS_Store
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.log
+deploy_key
+deploy_key.pub
+deploy/ssh/
+.ssh/
