@@ -19,6 +19,7 @@ from shapely.geometry import Point, shape
 from config import (
     BARRIS_GEOJSON,
     BICING_TOKEN,
+    DATA_DIR,
     DB_PATH,
     STATION_INFO_URL,
     STATION_STATUS_URL,
@@ -56,19 +57,69 @@ def _fetch_json(url: str, retries: int = 3) -> dict:
     last_error: Exception | None = None
     for attempt in range(1, retries + 1):
         try:
-            resp = requests.get(url, headers=_headers(), timeout=30)
+            resp = requests.get(
+                url,
+                headers=_headers(),
+                timeout=30,
+                allow_redirects=False,
+            )
+            if resp.status_code in {301, 302, 303, 307, 308}:
+                location = resp.headers.get("Location", "")
+                raise RuntimeError(
+                    f"Redirected to {location or 'unknown'} — token invàlid o bot detection"
+                )
             if not resp.ok:
                 raise RuntimeError(
                     f"HTTP {resp.status_code} from {url}: {resp.text[:300]}"
                 )
-            return resp.json()
-        except (requests.RequestException, json.JSONDecodeError, RuntimeError) as exc:
+            try:
+                return resp.json()
+            except json.JSONDecodeError as exc:
+                snippet = resp.text[:300].replace("\n", " ")
+                raise RuntimeError(
+                    f"Non-JSON response from {url} (HTTP {resp.status_code}): {snippet}"
+                ) from exc
+        except (requests.RequestException, RuntimeError) as exc:
             last_error = exc
             if attempt < retries:
                 time.sleep(2 * attempt)
     raise RuntimeError(
         f"Failed to fetch {url} after {retries} attempts: {last_error}"
     ) from last_error
+
+
+def _load_cached_station_info() -> dict[str, dict]:
+    """Reuse committed station metadata; only live status needs the API."""
+    latest_path = DATA_DIR / "latest.json"
+    if not latest_path.exists():
+        return {}
+    try:
+        payload = json.loads(latest_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return {}
+    info_by_id: dict[str, dict] = {}
+    for station in payload.get("stations", []):
+        sid = str(station.get("station_id", ""))
+        if not sid:
+            continue
+        info_by_id[sid] = {
+            "station_id": sid,
+            "name": station.get("name", ""),
+            "lat": station.get("lat", 0),
+            "lon": station.get("lon", 0),
+            "capacity": station.get("capacity", 0),
+            "physical_configuration": station.get("config", ""),
+            "status": station.get("status", "IN_SERVICE"),
+        }
+    return info_by_id
+
+
+def _load_station_info() -> dict[str, dict]:
+    cached = _load_cached_station_info()
+    if cached:
+        return cached
+    info_data = _fetch_json(STATION_INFO_URL)
+    return {str(s["station_id"]): s for s in info_data["data"]["stations"]}
 
 
 def _load_barris() -> None:
@@ -126,15 +177,12 @@ def ingest() -> str:
     _load_barris()
     _load_superficie()
 
-    info_data = _fetch_json(STATION_INFO_URL)
+    info_by_id = _load_station_info()
     status_data = _fetch_json(STATION_STATUS_URL)
-
-    info_by_id = {str(s["station_id"]): s for s in info_data["data"]["stations"]}
     status_list = status_data["data"]["stations"]
 
     ts = _normalize_ts(
         status_data.get("last_updated")
-        or info_data.get("last_updated")
         or datetime.now(timezone.utc).isoformat()
     )
 
