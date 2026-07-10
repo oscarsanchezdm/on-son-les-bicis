@@ -11,6 +11,7 @@ import {
   isHistoricalView,
   loadBarriHourlyAverage,
   loadBarriSparklineSeries,
+  loadCitySparklineSeries,
   loadHistoryIndex,
   loadSummary7d,
   sampleCountForView,
@@ -27,7 +28,7 @@ app.innerHTML = `
       <div class="site-header__row">
         <div class="site-header__brand">
           <p class="eyebrow">Dades obertes · Bicing Barcelona</p>
-          <h1>On són les bicis?</h1>
+          <h1>On són les bicicletes?</h1>
         </div>
         <div id="barri-filter-bar" class="barri-filter-bar hidden" hidden>
           <span id="barri-filter-label"></span>
@@ -50,16 +51,15 @@ app.innerHTML = `
       <div id="map"></div>
       <aside class="legend">
         <h2>Llegenda</h2>
-        <p class="legend-heading">Punts, barris i calor</p>
+        <p class="legend-heading">Mapa</p>
         <div class="legend-bar"></div>
         <p><span>Escassetat</span><span>Abundància</span></p>
-        <p class="legend-note" id="legend-note">Mapa de calor + barris + estacions segons la mètrica seleccionada.</p>
-        <p class="legend-heat">El calor pinta el color real de cada estació (com les boletes); les grans tenen més pes. En agrupar-se, els colors es barregen sense tornar-se verds artificialment.</p>
+        <p class="legend-note" id="legend-note">Escala compartida entre calor, barris i estacions.</p>
       </aside>
     </section>
     <section>
       <h2>Barris</h2>
-      <p class="section-note" id="table-note">Clica una columna per ordenar. Clica un barri per filtrar el mapa i els KPIs.</p>
+      <p class="section-note" id="table-note">Ordeneu per columna o seleccioneu un barri per filtrar.</p>
       <div id="barri-table"></div>
     </section>
   </main>
@@ -90,29 +90,29 @@ function metricLabel(): string {
     case "out_of_service":
       return "fora de servei";
     default:
-      return "bicis";
+      return "bicicletes";
   }
 }
 
 function legendText(): string {
   const metric = metricLabel();
   if (selectedBarri) {
-    return `Filtrat per ${selectedBarri.barri_nom}: ${metric} del barri.`;
+    return `Barri: ${selectedBarri.barri_nom}. Mètrica: ${metric}.`;
   }
   if (isHistoricalView(timeView)) {
-    return `Barris segons mitjana de ${metric} (${timeViewLabel(timeView, historyIndex)}).`;
+    return `Mitjana històrica de ${metric} (${timeViewLabel(timeView, historyIndex)}).`;
   }
-  return `Calor i punts amb la mateixa escala; estacions grans pesen més al mapa de calor.`;
+  return `Escala de ${metric} al mapa de calor, barris i estacions.`;
 }
 
 function tableNote(): string {
   if (selectedBarri) {
-    return `Filtrant per ${selectedBarri.barri_nom}. Clica «Tornar a la ciutat» o un altre barri.`;
+    return `Filtrat per ${selectedBarri.barri_nom}.`;
   }
   if (isHistoricalView(timeView)) {
-    return `Mitjana per barri (${timeViewLabel(timeView, historyIndex)}).`;
+    return `Mitjana per barri · ${timeViewLabel(timeView, historyIndex)}.`;
   }
-  return "Dades actuals per barri. Clica una columna per ordenar o un barri per filtrar.";
+  return "Ordeneu per columna o seleccioneu un barri per filtrar.";
 }
 
 function mapStations(): Station[] | null {
@@ -157,7 +157,7 @@ function updateBarriFilterBar() {
   }
   bar.hidden = false;
   bar.classList.remove("hidden");
-  label.textContent = `Mostrant només: ${selectedBarri.barri_nom}`;
+  label.textContent = `Filtrat: ${selectedBarri.barri_nom}`;
 }
 
 function updateTimelineStatus() {
@@ -165,7 +165,7 @@ function updateTimelineStatus() {
   if (!timelineEl) return;
 
   if (timeView.kind === "latest") {
-    setTimelineStatus(timelineEl, "Mostrant dades actuals (estacions + barris).");
+    setTimelineStatus(timelineEl, "Dades en temps real.");
     return;
   }
 
@@ -175,8 +175,8 @@ function updateTimelineStatus() {
     setTimelineStatus(
       timelineEl,
       n
-        ? `${label}: encara no hi ha dades per aquesta franja.`
-        : `${hourViewScopeLabel(timeView.hour, timeView.dayType)}: encara no hi ha prou mostres (30 dies).`
+        ? `${label}: sense dades per a aquesta franja.`
+        : `${hourViewScopeLabel(timeView.hour, timeView.dayType)}: dades insuficients (30 dies).`
     );
     return;
   }
@@ -186,7 +186,7 @@ function updateTimelineStatus() {
   const agg = barrisToLatestData(displayBarris, latestData!.last_updated).totals;
   setTimelineStatus(
     timelineEl,
-    `${label}: ${agg.pct_bikes.toFixed(1)}% bicis · ${agg.pct_mechanical.toFixed(1)}% mecàniques · ${agg.pct_ebike.toFixed(1)}% elèctriques (${n} mostra${n === 1 ? "" : "es"}).`
+    `${label}: ${agg.pct_bikes.toFixed(1)}% bicicletes · ${agg.pct_mechanical.toFixed(1)}% mecàniques · ${agg.pct_ebike.toFixed(1)}% elèctriques · ${n} mostra${n === 1 ? "" : "es"}.`
   );
 }
 
@@ -196,9 +196,12 @@ async function refresh() {
   const kpiData = buildKpiData();
   if (!kpiData) return;
 
-  const barriSparklines =
-    selectedBarri && !isHistoricalView(timeView)
-      ? await loadBarriSparklineSeries(historyIndex, selectedBarri.barri_codi)
+  const isHistorical = isHistoricalView(timeView);
+  const sparklines =
+    !isHistorical && historyIndex
+      ? selectedBarri
+        ? await loadBarriSparklineSeries(historyIndex, selectedBarri.barri_codi)
+        : await loadCitySparklineSeries(historyIndex)
       : null;
 
   renderKpis(
@@ -206,8 +209,8 @@ async function refresh() {
     kpiData,
     summaryData,
     kpiScopeLabel(),
-    timeView.kind === "hour",
-    barriSparklines
+    isHistorical,
+    sparklines
   );
   mapView.update(
     mode,

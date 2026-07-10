@@ -90,12 +90,12 @@ export function renderBarriTable(
         <thead>
           <tr>
             ${header("Barri", "barri_nom")}
-            ${header("% bicis", "pct_bikes")}
+            ${header("% bicicletes", "pct_bikes")}
             ${header("% mecàniques", "pct_mechanical")}
             ${header("% elèctriques", "pct_ebike")}
             ${header("% ancoratges lliures", "pct_docks_free")}
             ${header("% fora de servei", "pct_bikes_out_of_service")}
-            ${header("Bicis", "bikes_total")}
+            ${header("Bicicletes", "bikes_total")}
           </tr>
         </thead>
         <tbody>
