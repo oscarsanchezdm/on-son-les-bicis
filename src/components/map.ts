@@ -10,7 +10,7 @@ import {
   type ColorHeatLayer,
 } from "../lib/colorHeatLayer";
 import type { TimeView } from "../lib/history";
-import { isStationActive } from "../lib/status";
+import { isStationMappable } from "../lib/status";
 import { metricPctColor } from "../lib/colors";
 import { formatPct } from "../lib/format";
 import { countIconHtml } from "../lib/icons";
@@ -155,7 +155,7 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
     stationLayer.clearLayers();
 
     if (showStations && stations) {
-      const activeStations = stations.filter((s) => isStationActive(s.status));
+      const activeStations = stations.filter((s) => isStationMappable(s));
 
       const expandedHit = stationNeedsExpandedHitTarget();
 
