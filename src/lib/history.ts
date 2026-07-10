@@ -66,6 +66,33 @@ async function loadHourlyGz(url: string): Promise<HourlyBarriSnapshot[]> {
   return data.barris ?? [];
 }
 
+/** Try exact hour, then nearest hours on the same UTC day. */
+async function loadHourlyForDay(
+  y: string,
+  m: string,
+  day: string,
+  hour: number
+): Promise<HourlyBarriSnapshot[]> {
+  const tried = new Set<number>();
+  const order: number[] = [];
+  for (let delta = 0; delta <= 3; delta++) {
+    if (delta === 0) {
+      order.push(hour);
+    } else {
+      order.push(hour - delta, hour + delta);
+    }
+  }
+  for (const h of order) {
+    if (h < 0 || h > 23 || tried.has(h)) continue;
+    tried.add(h);
+    const hh = String(h).padStart(2, "0");
+    const url = `${BASE}data/history/hourly/${y}-${m}-${day}-${hh}.json.gz`;
+    const barris = await loadHourlyGz(url);
+    if (barris.length) return barris;
+  }
+  return [];
+}
+
 function matchesDayType(date: Date, dayType: DayType): boolean {
   const dow = date.getUTCDay();
   if (dayType === "friday") return dow === 5;
@@ -144,9 +171,7 @@ export async function loadBarriHourlyAverage(
     const y = date.getUTCFullYear();
     const m = String(date.getUTCMonth() + 1).padStart(2, "0");
     const day = String(date.getUTCDate()).padStart(2, "0");
-    const hh = String(hour).padStart(2, "0");
-    const url = `${BASE}data/history/hourly/${y}-${m}-${day}-${hh}.json.gz`;
-    const barris = await loadHourlyGz(url);
+    const barris = await loadHourlyForDay(y, m, day, hour);
     for (const b of barris) {
       const list = byCode.get(b.barri_codi) ?? [];
       list.push(b);

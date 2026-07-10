@@ -2,7 +2,7 @@ import "./style.css";
 import { renderBarriTable } from "./components/barriTable";
 import { latestFromBarri, renderKpis } from "./components/kpi";
 import { createMap } from "./components/map";
-import { renderTimeSelector, updateTimeSelectorStatus } from "./components/timeline";
+import { renderTimeSelector, setTimelineStatus, updateTimeSelectorStatus } from "./components/timeline";
 import type { Barri, MetricMode, Station } from "./lib/data";
 import { loadBarris, loadBarrisGeo, loadLatest } from "./lib/data";
 import {
@@ -152,21 +152,27 @@ function updateBarriFilterBar() {
 }
 
 function updateTimelineStatus() {
-  const status = document.querySelector("#timeline-status");
-  if (!status) return;
+  const timelineEl = document.getElementById("timeline");
+  if (!timelineEl) return;
 
   if (timeView.kind === "latest") {
-    status.textContent = "Mostrant dades actuals (estacions + barris).";
+    setTimelineStatus(timelineEl, "Mostrant dades actuals (estacions + barris).");
     return;
   }
 
   if (!displayBarris.length) {
-    status.textContent = `${hourViewScopeLabel(timeView.hour, timeView.dayType)}: encara no hi ha prou mostres històriques.`;
+    setTimelineStatus(
+      timelineEl,
+      `${hourViewScopeLabel(timeView.hour, timeView.dayType)}: encara no hi ha prou mostres històriques.`
+    );
     return;
   }
 
   const agg = barrisToLatestData(displayBarris, latestData!.last_updated).totals;
-  status.textContent = `${hourViewScopeLabel(timeView.hour, timeView.dayType)}: ${agg.pct_bikes.toFixed(1)}% bicis · ${agg.pct_mechanical.toFixed(1)}% mecàniques · ${agg.pct_ebike.toFixed(1)}% elèctriques.`;
+  setTimelineStatus(
+    timelineEl,
+    `${hourViewScopeLabel(timeView.hour, timeView.dayType)}: ${agg.pct_bikes.toFixed(1)}% bicis · ${agg.pct_mechanical.toFixed(1)}% mecàniques · ${agg.pct_ebike.toFixed(1)}% elèctriques.`
+  );
 }
 
 function refresh() {
@@ -214,21 +220,31 @@ function resetBarriFilter() {
   mapView?.focusBarri(null, null);
 }
 
+let timeViewRequest = 0;
+
 async function applyTimeView(view: TimeView) {
   timeView = view;
   if (!barrisData || !latestData) return;
+
+  const requestId = ++timeViewRequest;
+  const timelineEl = document.getElementById("timeline")!;
+  updateTimeSelectorStatus(timelineEl, timeView, summaryData, latestData.last_updated);
 
   if (view.kind === "latest") {
     displayBarris = barrisData.barris;
     displayStations = latestData.stations;
   } else {
+    setTimelineStatus(
+      timelineEl,
+      `${hourViewScopeLabel(view.hour, view.dayType)}: carregant històric…`
+    );
     displayBarris = await loadBarriHourlyAverage(view.hour, view.dayType);
+    if (requestId !== timeViewRequest) return;
     displayStations = null;
     selectedBarri = null;
   }
 
-  const timelineEl = document.getElementById("timeline")!;
-  updateTimeSelectorStatus(timelineEl, timeView, summaryData);
+  updateTimeSelectorStatus(timelineEl, timeView, summaryData, latestData.last_updated);
   refresh();
 }
 

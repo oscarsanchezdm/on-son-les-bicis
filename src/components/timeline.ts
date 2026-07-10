@@ -15,14 +15,56 @@ const DAY_TYPES: { id: DayType; label: string }[] = [
   { id: "sunday", label: "Diumenge" },
 ];
 
-export function renderTimeSelector(container: HTMLElement, opts: TimeSelectorOptions): void {
-  const { summary, currentTs, timeView, onChange } = opts;
-  const currentHour = new Date(currentTs).getHours();
+type TimelineState = {
+  currentTs: string;
+  view: TimeView;
+  onChange: (view: TimeView) => void;
+};
+
+let timelineState: TimelineState | null = null;
+let hourDebounce: ReturnType<typeof setTimeout> | null = null;
+
+function currentHourFromTs(ts: string): number {
+  return new Date(ts).getHours();
+}
+
+function readHour(container: HTMLElement): number {
+  const range = container.querySelector<HTMLInputElement>("#hour-range");
+  if (range && !range.disabled) return Number(range.value);
+  const view = timelineState?.view;
+  if (view?.kind === "hour") return view.hour;
+  return currentHourFromTs(timelineState?.currentTs ?? new Date().toISOString());
+}
+
+function resolveDayType(clicked?: DayType): DayType {
+  if (clicked) return clicked;
+  const view = timelineState?.view;
+  if (view?.kind === "hour") return view.dayType;
+  return "weekday";
+}
+
+function defaultStatus(timeView: TimeView, summary: Summary7d | null, currentTs: string): string {
+  if (timeView.kind === "latest") {
+    return "Mostrant dades actuals (estacions + barris).";
+  }
+  const bucket = summary?.hourly.find((h) => h.hour === timeView.hour);
+  const day = dayTypeLabel(timeView.dayType);
+  if (!bucket || !bucket.samples.length) {
+    return `Mitjana de ${day} a les ${formatHour(timeView.hour)}: carregant històric…`;
+  }
+  return `Mitjana de ${day} a les ${formatHour(timeView.hour)}: ${bucket.avg_pct_bikes.toFixed(1)}% bicis · ${bucket.avg_pct_mechanical.toFixed(1)}% mecàniques · ${bucket.avg_pct_ebike.toFixed(1)}% elèctriques (${bucket.samples.length} mostres recents, tots els dies).`;
+}
+
+function paintTimeline(
+  container: HTMLElement,
+  timeView: TimeView,
+  summary: Summary7d | null,
+  currentTs: string
+) {
+  const currentHour = currentHourFromTs(currentTs);
   const selectedHour = timeView.kind === "hour" ? timeView.hour : currentHour;
   const selectedDayType = timeView.kind === "hour" ? timeView.dayType : "weekday";
   const isLatest = timeView.kind === "latest";
-
-  const bucket = summary?.hourly.find((h) => h.hour === selectedHour);
 
   container.innerHTML = `
     <section class="timeline">
@@ -46,69 +88,106 @@ export function renderTimeSelector(container: HTMLElement, opts: TimeSelectorOpt
           <strong id="hour-label">${formatHour(selectedHour)}</strong>
         </label>
       </div>
-      <p class="timeline-status" id="timeline-status">
-        ${isLatest ? "Mostrant dades actuals (estacions + barris)." : renderHourSummary(bucket, selectedHour, selectedDayType)}
-      </p>
+      <p class="timeline-status" id="timeline-status">${defaultStatus(timeView, summary, currentTs)}</p>
     </section>
   `;
+}
 
-  container.querySelector("#btn-latest")?.addEventListener("click", () => {
-    onChange({ kind: "latest" });
-  });
+function syncTimelineControls(container: HTMLElement, timeView: TimeView) {
+  const isLatest = timeView.kind === "latest";
+  const selectedHour = timeView.kind === "hour" ? timeView.hour : readHour(container);
+  const selectedDayType = timeView.kind === "hour" ? timeView.dayType : "weekday";
 
-  container.querySelectorAll<HTMLButtonElement>(".day-type-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const dayType = btn.dataset.dayType as DayType;
-      onChange({ kind: "hour", hour: selectedHour, dayType });
-    });
-  });
+  container.querySelector("#btn-latest")?.classList.toggle("active", isLatest);
 
   const range = container.querySelector<HTMLInputElement>("#hour-range");
-  range?.addEventListener("input", () => {
-    const hour = Number(range.value);
-    container.querySelector("#hour-label")!.textContent = formatHour(hour);
-    onChange({ kind: "hour", hour, dayType: selectedDayType });
+  if (range) {
+    range.disabled = isLatest;
+    range.value = String(selectedHour);
+  }
+  const label = container.querySelector("#hour-label");
+  if (label) label.textContent = formatHour(selectedHour);
+
+  container.querySelectorAll<HTMLButtonElement>(".day-type-btn").forEach((b) => {
+    const active = !isLatest && b.dataset.dayType === selectedDayType;
+    b.classList.toggle("active", active);
   });
 }
 
-function renderHourSummary(
-  bucket: { avg_pct_bikes: number; avg_pct_mechanical: number; avg_pct_ebike: number; samples: unknown[] } | undefined,
-  hour: number,
-  dayType: DayType
-): string {
-  const day = dayTypeLabel(dayType);
-  if (!bucket || !bucket.samples.length) {
-    return `Mitjana de ${day} a les ${formatHour(hour)}: encara no hi ha prou mostres (es necessiten ~30 dies d'històric).`;
-  }
-  return `Mitjana de ${day} a les ${formatHour(hour)}: ${bucket.avg_pct_bikes.toFixed(1)}% bicis · ${bucket.avg_pct_mechanical.toFixed(1)}% mecàniques · ${bucket.avg_pct_ebike.toFixed(1)}% elèctriques (${bucket.samples.length} mostres, 7 dies).`;
+function bindTimelineEvents(container: HTMLElement) {
+  if (container.dataset.bound === "1") return;
+  container.dataset.bound = "1";
+
+  container.addEventListener("click", (e) => {
+    if (!timelineState) return;
+    const target = e.target as HTMLElement;
+
+    if (target.closest("#btn-latest")) {
+      timelineState.onChange({ kind: "latest" });
+      return;
+    }
+
+    const dayBtn = target.closest<HTMLButtonElement>("[data-day-type]");
+    if (dayBtn?.dataset.dayType) {
+      const dayType = dayBtn.dataset.dayType as DayType;
+      const hour = readHour(container);
+      timelineState.onChange({ kind: "hour", hour, dayType });
+    }
+  });
+
+  container.addEventListener("input", (e) => {
+    if (!timelineState) return;
+    const input = e.target as HTMLElement;
+    if (input.id !== "hour-range" || !(input instanceof HTMLInputElement)) return;
+
+    const hour = Number(input.value);
+    container.querySelector("#hour-label")!.textContent = formatHour(hour);
+    const dayType = resolveDayType();
+    if (hourDebounce) clearTimeout(hourDebounce);
+    hourDebounce = setTimeout(() => {
+      timelineState?.onChange({ kind: "hour", hour, dayType });
+    }, 200);
+  });
+}
+
+export function renderTimeSelector(container: HTMLElement, opts: TimeSelectorOptions): void {
+  timelineState = {
+    currentTs: opts.currentTs,
+    view: opts.timeView,
+    onChange: opts.onChange,
+  };
+  bindTimelineEvents(container);
+  paintTimeline(container, opts.timeView, opts.summary, opts.currentTs);
 }
 
 export function updateTimeSelectorStatus(
   container: HTMLElement,
   timeView: TimeView,
-  summary: Summary7d | null
+  summary: Summary7d | null,
+  currentTs?: string
 ): void {
-  const status = container.querySelector("#timeline-status");
-  const btn = container.querySelector("#btn-latest");
-  const range = container.querySelector<HTMLInputElement>("#hour-range");
-  if (!status || !btn || !range) return;
+  if (timelineState) {
+    timelineState.view = timeView;
+    if (currentTs) timelineState.currentTs = currentTs;
+  }
 
-  const isLatest = timeView.kind === "latest";
-  btn.classList.toggle("active", isLatest);
-  range.disabled = isLatest;
-
-  container.querySelectorAll<HTMLButtonElement>(".day-type-btn").forEach((b) => {
-    const active = !isLatest && timeView.kind === "hour" && b.dataset.dayType === timeView.dayType;
-    b.classList.toggle("active", active);
-  });
-
-  if (isLatest) {
+  if (!container.querySelector("#btn-latest")) {
+    paintTimeline(container, timeView, summary, currentTs ?? timelineState?.currentTs ?? new Date().toISOString());
     return;
   }
 
-  const bucket = summary?.hourly.find((h) => h.hour === timeView.hour);
-  void bucket;
-  range.value = String(timeView.hour);
-  const label = container.querySelector("#hour-label");
-  if (label) label.textContent = formatHour(timeView.hour);
+  syncTimelineControls(container, timeView);
+  const status = container.querySelector("#timeline-status");
+  if (status) {
+    status.textContent = defaultStatus(
+      timeView,
+      summary,
+      currentTs ?? timelineState?.currentTs ?? new Date().toISOString()
+    );
+  }
+}
+
+export function setTimelineStatus(container: HTMLElement, text: string): void {
+  const status = container.querySelector("#timeline-status");
+  if (status) status.textContent = text;
 }
