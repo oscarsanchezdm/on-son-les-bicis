@@ -1,8 +1,11 @@
 import L from "leaflet";
-import "leaflet.heat";
 import type { Barri, MetricMode, Station } from "../lib/data";
 import { barriMetric, bikesOutOfService, pctOfStations, stationMetric } from "../lib/data";
-import { HEAT_LAYER_OPTIONS, buildStationHeatPoints, stationMarkerRadius } from "../lib/heatmap";
+import {
+  createColorHeatLayer,
+  stationMarkerRadius,
+  type ColorHeatLayer,
+} from "../lib/colorHeatLayer";
 import type { TimeView } from "../lib/history";
 import { isStationActive } from "../lib/status";
 import { pctColor } from "../lib/colors";
@@ -49,8 +52,7 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
 
   const stationLayer = L.layerGroup().addTo(map);
   let barriLayer: L.GeoJSON | null = null;
-  let heatLayer: (L.Layer & { setLatLngs?: (pts: [number, number, number][]) => void }) | null =
-    null;
+  let heatLayer: ColorHeatLayer | null = null;
 
   function update(
     mode: MetricMode,
@@ -111,15 +113,10 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
       },
     });
 
-    if (heatLayer) {
-      map.removeLayer(heatLayer);
-      heatLayer = null;
-    }
     stationLayer.clearLayers();
 
     if (showStations && stations) {
       const activeStations = stations.filter((s) => isStationActive(s.status));
-      const heatPoints = buildStationHeatPoints(activeStations, mode);
 
       for (const s of activeStations) {
         const value = stationMetric(s, mode);
@@ -136,21 +133,21 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
           .addTo(stationLayer);
       }
 
-      if (heatPoints.length) {
-        heatLayer = (
-          L as typeof L & {
-            heatLayer: (
-              points: [number, number, number][],
-              opts: Record<string, unknown>
-            ) => L.Layer;
-          }
-        ).heatLayer(heatPoints, { ...HEAT_LAYER_OPTIONS });
+      if (!heatLayer) {
+        heatLayer = createColorHeatLayer(activeStations, mode);
         heatLayer.addTo(map);
+      } else {
+        heatLayer.setStations(activeStations, mode);
+        if (!map.hasLayer(heatLayer)) heatLayer.addTo(map);
       }
 
       if (!map.hasLayer(stationLayer)) stationLayer.addTo(map);
-    } else if (map.hasLayer(stationLayer)) {
-      map.removeLayer(stationLayer);
+    } else {
+      if (heatLayer) {
+        map.removeLayer(heatLayer);
+        heatLayer = null;
+      }
+      if (map.hasLayer(stationLayer)) map.removeLayer(stationLayer);
     }
 
     barriLayer.addTo(map);

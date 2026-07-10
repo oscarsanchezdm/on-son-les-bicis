@@ -33,7 +33,7 @@ app.innerHTML = `
         <div class="legend-bar"></div>
         <p><span>Escassetat</span><span>Abundància</span></p>
         <p class="legend-note" id="legend-note">Mapa de calor + barris + estacions segons la mètrica seleccionada.</p>
-        <p class="legend-heat">El calor usa la mateixa escala de color que les boletes; les estacions grans tenen més pes visual.</p>
+        <p class="legend-heat">El calor pinta el color real de cada estació (com les boletes); les grans tenen més pes. En agrupar-se, els colors es barregen sense tornar-se verds artificialment.</p>
       </aside>
     </section>
     <section id="timeline"></section>

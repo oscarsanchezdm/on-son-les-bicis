@@ -187,8 +187,11 @@ h1 {
   margin: 0.75rem 0;
 }
 
-.legend-bar--heat {
-  background: linear-gradient(90deg, rgba(148, 163, 184, 0.15), #b91c1c, #f59e0b);
+.leaflet-color-heat {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
 }
 
 .legend-heading {
