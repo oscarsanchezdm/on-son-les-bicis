@@ -21,6 +21,7 @@ fi
 if [[ -d /app/.git ]]; then
   git -C /app config user.name "on-son-les-bicis-bot" || true
   git -C /app config user.email "bot@on-son-les-bicis.local" || true
+  git -C /app remote set-url origin git@github.com:oscarsanchezdm/on-son-les-bicis.git || true
 fi
 
 touch /var/log/bicing-ingest.log /var/log/bicing-export.log /var/log/bicing-deploy.log

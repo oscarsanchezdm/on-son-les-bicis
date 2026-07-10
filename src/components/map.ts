@@ -1,6 +1,7 @@
 import L from "leaflet";
 import type { Barri, MetricMode, Station } from "../lib/data";
 import { barriMetric, stationMetric } from "../lib/data";
+import { isStationActive } from "../lib/status";
 import { pctColor } from "../lib/colors";
 import { formatPct } from "../lib/format";
 
@@ -56,7 +57,7 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
 
     stationLayer.clearLayers();
     for (const s of stations) {
-      if (s.status !== "ACTIVE") continue;
+      if (!isStationActive(s.status)) continue;
       const value = stationMetric(s, mode);
       L.circleMarker([s.lat, s.lon], {
         radius: 5,

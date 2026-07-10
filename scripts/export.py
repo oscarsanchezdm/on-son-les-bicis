@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from config import DATA_DIR, DB_PATH, ROOT
+from status import is_station_active
 
 
 def _normalize_ts(ts: str | int | float) -> str:
@@ -104,7 +105,7 @@ def _export_latest(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
                 "properties": {k: v for k, v in item.items() if k not in {"lat", "lon"}},
             }
         )
-        if status == "ACTIVE":
+        if is_station_active(status):
             totals["capacity"] += capacity
             totals["bikes_total"] += total
             totals["bikes_mechanical"] += mechanical
@@ -195,7 +196,7 @@ def _export_latest(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
                 "source": "Open Data BCN — Bicing",
                 "station_count": len(station_list),
                 "barri_count": len(barri_list),
-                "disclaimer": "Dades amb retard d'uns minuts. Només estacions ACTIVE entren als percentatges agregats.",
+                "disclaimer": "Dades amb retard d'uns minuts. Només estacions en servei entren als percentatges agregats.",
             },
             ensure_ascii=False,
             indent=2,

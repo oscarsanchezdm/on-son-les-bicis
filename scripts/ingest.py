@@ -24,6 +24,7 @@ from config import (
     SUPERFICIE_CSV,
 )
 from init_db import init_db
+from status import is_station_active
 
 PREPARED = False
 BARRI_POLYGONS: list[dict] = []
@@ -144,7 +145,7 @@ def ingest() -> str:
         capacity = int(info.get("capacity") or 0)
         name = info.get("name") or f"Estació {sid}"
         config = info.get("physical_configuration") or ""
-        st_status = status.get("status") or info.get("status") or "ACTIVE"
+        st_status = status.get("status") or info.get("status") or "IN_SERVICE"
 
         barri_codi, barri_nom, district = _assign_barri(lat, lon)
         if not barri_codi and info.get("address"):
@@ -192,16 +193,16 @@ def ingest() -> str:
         agg = barri_agg[barri_codi]
         agg["barri_nom"] = barri_nom
         agg["stations_count"] += 1
-        if st_status == "ACTIVE":
+        if is_station_active(st_status):
             agg["stations_active"] += 1
             agg["capacity_total"] += capacity
             agg["docks_available_total"] += docks
             agg["bikes_mechanical"] += mechanical
             agg["bikes_ebike"] += ebike
             agg["bikes_total"] += total
-        if ebike == 0 and st_status == "ACTIVE":
+        if ebike == 0 and is_station_active(st_status):
             agg["stations_zero_ebike"] += 1
-        if total == 0 and st_status == "ACTIVE":
+        if total == 0 and is_station_active(st_status):
             agg["stations_zero_any"] += 1
 
     barri_rows = []
