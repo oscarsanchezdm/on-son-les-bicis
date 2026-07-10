@@ -108,7 +108,7 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
         const value = barriMetric(barri, mode);
         return {
           fillColor: metricPctColor(value, mode),
-          fillOpacity: showStations ? 0.32 : 0.45,
+          fillOpacity: showStations ? 0.14 : 0.45,
           color: selectedBarriCodi === codi ? "#0f766e" : "#64748b",
           weight: selectedBarriCodi === codi ? 2 : 1,
         };
