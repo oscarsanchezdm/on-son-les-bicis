@@ -58,6 +58,7 @@ CREATE TABLE IF NOT EXISTS barri_snapshots (
     pct_mechanical REAL NOT NULL DEFAULT 0,
     pct_ebike REAL NOT NULL DEFAULT 0,
     stations_zero_ebike INTEGER NOT NULL DEFAULT 0,
+    stations_zero_mechanical INTEGER NOT NULL DEFAULT 0,
     stations_zero_any INTEGER NOT NULL DEFAULT 0,
     superficie_ha REAL
 );
@@ -86,6 +87,13 @@ def init_db() -> None:
             )
         except sqlite3.IntegrityError:
             pass
+        for col in ("stations_zero_mechanical",):
+            try:
+                conn.execute(
+                    f"ALTER TABLE barri_snapshots ADD COLUMN {col} INTEGER NOT NULL DEFAULT 0"
+                )
+            except sqlite3.OperationalError:
+                pass
         conn.commit()
     print(f"Database initialized at {DB_PATH}")
 

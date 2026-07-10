@@ -2,6 +2,18 @@ export function formatPct(value: number): string {
   return `${value.toFixed(1)}%`;
 }
 
+export function formatDateDDMM(isoOrDate: string | Date): string {
+  const d = typeof isoOrDate === "string" ? new Date(isoOrDate) : isoOrDate;
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  return `${day}/${month}`;
+}
+
+export function formatDateTime(iso: string): string {
+  const d = new Date(iso);
+  return `${formatDateDDMM(d)} ${d.toLocaleTimeString("ca-ES", { hour: "2-digit", minute: "2-digit" })}`;
+}
+
 export function formatRelativeTime(iso: string): string {
   const then = new Date(iso).getTime();
   const now = Date.now();
@@ -14,9 +26,6 @@ export function formatRelativeTime(iso: string): string {
   return `fa ${hours} hores`;
 }
 
-export function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString("ca-ES", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
+export function formatHour(hour: number): string {
+  return `${String(hour).padStart(2, "0")}:00`;
 }

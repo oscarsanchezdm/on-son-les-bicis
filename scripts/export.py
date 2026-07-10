@@ -7,7 +7,8 @@ import gzip
 import json
 import sqlite3
 import sys
-from datetime import datetime, timezone
+from collections import defaultdict
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from config import DATA_DIR, DB_PATH, ROOT
@@ -57,6 +58,7 @@ def _export_latest(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
         "docks_available": 0,
         "stations_active": 0,
         "stations_zero_ebike": 0,
+        "stations_zero_mechanical": 0,
         "stations_zero_any": 0,
     }
 
@@ -114,6 +116,8 @@ def _export_latest(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
             totals["stations_active"] += 1
             if ebike == 0:
                 totals["stations_zero_ebike"] += 1
+            if mechanical == 0:
+                totals["stations_zero_mechanical"] += 1
             if total == 0:
                 totals["stations_zero_any"] += 1
 
@@ -122,7 +126,7 @@ def _export_latest(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
         SELECT barri_codi, barri_nom, stations_count, stations_active,
                capacity_total, docks_available_total, bikes_mechanical, bikes_ebike,
                bikes_total, pct_bikes, pct_docks_free, pct_mechanical, pct_ebike,
-               stations_zero_ebike, stations_zero_any, superficie_ha
+               stations_zero_ebike, stations_zero_mechanical, stations_zero_any, superficie_ha
         FROM barri_snapshots WHERE ts = ?
         ORDER BY pct_bikes ASC
         """,
@@ -147,8 +151,9 @@ def _export_latest(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
             "pct_mechanical": row[11],
             "pct_ebike": row[12],
             "stations_zero_ebike": row[13],
-            "stations_zero_any": row[14],
-            "superficie_ha": row[15],
+            "stations_zero_mechanical": row[14],
+            "stations_zero_any": row[15],
+            "superficie_ha": row[16],
         }
         barri_list.append(item)
         if worst_barri is None or item["pct_bikes"] < worst_barri["pct_bikes"]:
@@ -168,6 +173,37 @@ def _export_latest(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
                     else 0,
                     "pct_docks_free": round(
                         100 * totals["docks_available"] / totals["capacity"], 2
+                    )
+                    if totals["capacity"]
+                    else 0,
+                    "pct_mechanical": round(
+                        100 * totals["bikes_mechanical"] / totals["capacity"], 2
+                    )
+                    if totals["capacity"]
+                    else 0,
+                    "pct_ebike": round(
+                        100 * totals["bikes_ebike"] / totals["capacity"], 2
+                    )
+                    if totals["capacity"]
+                    else 0,
+                    "docks_out_of_service": max(
+                        0,
+                        totals["capacity"]
+                        - totals["bikes_mechanical"]
+                        - totals["bikes_ebike"]
+                        - totals["docks_available"],
+                    ),
+                    "pct_out_of_service": round(
+                        100
+                        * max(
+                            0,
+                            totals["capacity"]
+                            - totals["bikes_mechanical"]
+                            - totals["bikes_ebike"]
+                            - totals["docks_available"],
+                        )
+                        / totals["capacity"],
+                        2,
                     )
                     if totals["capacity"]
                     else 0,
@@ -261,7 +297,7 @@ def _export_history(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
         city = conn.execute(
             """
             SELECT SUM(bikes_total), SUM(capacity_total), SUM(bikes_ebike),
-                   SUM(docks_available_total)
+                   SUM(bikes_mechanical), SUM(docks_available_total)
             FROM barri_snapshots WHERE ts = ?
             """,
             (ts,),
@@ -272,8 +308,10 @@ def _export_history(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
                 "bikes_total": city[0],
                 "capacity_total": city[1],
                 "bikes_ebike": city[2],
-                "docks_available_total": city[3],
+                "bikes_mechanical": city[3],
+                "docks_available_total": city[4],
                 "pct_bikes": round(100 * city[0] / city[1], 2) if city[1] else 0,
+                "pct_mechanical": round(100 * city[3] / city[1], 2) if city[1] else 0,
                 "pct_ebike": round(100 * city[2] / city[1], 2) if city[1] else 0,
             }
         )
@@ -291,6 +329,75 @@ def _export_history(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
             continue
 
 
+def _export_summary_7d(conn: sqlite3.Connection, ts_iso: str) -> None:
+    """City-level time series and per-hour averages for the last 7 days."""
+    dt_now = datetime.fromisoformat(ts_iso.replace("Z", "+00:00"))
+    cutoff = (dt_now - timedelta(days=7)).isoformat()
+
+    rows = conn.execute(
+        """
+        SELECT ts,
+               SUM(bikes_total), SUM(capacity_total),
+               SUM(bikes_mechanical), SUM(bikes_ebike)
+        FROM barri_snapshots
+        WHERE ts >= ?
+        GROUP BY ts
+        ORDER BY ts
+        """,
+        (cutoff,),
+    ).fetchall()
+
+    series: list[dict] = []
+    by_hour: dict[int, list[dict]] = defaultdict(list)
+
+    for raw_ts, bikes, cap, mech, ebike in rows:
+        ts = _normalize_ts(raw_ts)
+        dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+        cap = cap or 0
+        entry = {
+            "ts": ts,
+            "date": dt.strftime("%d/%m"),
+            "hour": dt.hour,
+            "pct_bikes": round(100 * bikes / cap, 2) if cap else 0,
+            "pct_mechanical": round(100 * mech / cap, 2) if cap else 0,
+            "pct_ebike": round(100 * ebike / cap, 2) if cap else 0,
+        }
+        series.append(entry)
+        by_hour[dt.hour].append(entry)
+
+    hourly: list[dict] = []
+    for hour in range(24):
+        samples = by_hour.get(hour, [])
+        if not samples:
+            continue
+        hourly.append(
+            {
+                "hour": hour,
+                "avg_pct_bikes": round(sum(s["pct_bikes"] for s in samples) / len(samples), 2),
+                "avg_pct_mechanical": round(
+                    sum(s["pct_mechanical"] for s in samples) / len(samples), 2
+                ),
+                "avg_pct_ebike": round(sum(s["pct_ebike"] for s in samples) / len(samples), 2),
+                "samples": samples,
+            }
+        )
+
+    history_dir = DATA_DIR / "history"
+    history_dir.mkdir(parents=True, exist_ok=True)
+    (history_dir / "summary-7d.json").write_text(
+        json.dumps(
+            {
+                "generated_at": ts_iso,
+                "series": series,
+                "hourly": hourly,
+            },
+            ensure_ascii=False,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+
 def export() -> None:
     if not DB_PATH.exists():
         raise FileNotFoundError(f"Database not found: {DB_PATH}")
@@ -302,6 +409,7 @@ def export() -> None:
         ts_iso = _normalize_ts(ts)
         _export_latest(conn, ts, ts_iso)
         _export_history(conn, ts, ts_iso)
+        _export_summary_7d(conn, ts_iso)
 
     print(f"Exported data for {ts}")
 

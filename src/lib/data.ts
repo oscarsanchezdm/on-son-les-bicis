@@ -32,6 +32,7 @@ export type Barri = {
   pct_mechanical: number;
   pct_ebike: number;
   stations_zero_ebike: number;
+  stations_zero_mechanical: number;
   stations_zero_any: number;
   superficie_ha: number | null;
 };
@@ -46,9 +47,14 @@ export type LatestData = {
     docks_available: number;
     stations_active: number;
     stations_zero_ebike: number;
+    stations_zero_mechanical: number;
     stations_zero_any: number;
     pct_bikes: number;
     pct_docks_free: number;
+    pct_mechanical?: number;
+    pct_ebike?: number;
+    docks_out_of_service?: number;
+    pct_out_of_service?: number;
     worst_barri: Barri | null;
   };
   stations: Station[];

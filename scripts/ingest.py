@@ -133,6 +133,7 @@ def ingest() -> str:
             "bikes_ebike": 0,
             "bikes_total": 0,
             "stations_zero_ebike": 0,
+            "stations_zero_mechanical": 0,
             "stations_zero_any": 0,
         }
     )
@@ -202,6 +203,8 @@ def ingest() -> str:
             agg["bikes_total"] += total
         if ebike == 0 and is_station_active(st_status):
             agg["stations_zero_ebike"] += 1
+        if mechanical == 0 and is_station_active(st_status):
+            agg["stations_zero_mechanical"] += 1
         if total == 0 and is_station_active(st_status):
             agg["stations_zero_any"] += 1
 
@@ -225,6 +228,7 @@ def ingest() -> str:
                 _pct(agg["bikes_mechanical"], cap),
                 _pct(agg["bikes_ebike"], cap),
                 agg["stations_zero_ebike"],
+                agg["stations_zero_mechanical"],
                 agg["stations_zero_any"],
                 SUPERFICIE.get(codi),
             )
@@ -260,9 +264,9 @@ def ingest() -> str:
             INSERT INTO barri_snapshots (
                 ts, barri_codi, barri_nom, stations_count, stations_active,
                 capacity_total, docks_available_total, bikes_mechanical, bikes_ebike,
-                bikes_total, pct_bikes, pct_docks_free, pct_mechanical, pct_ebike,
-                stations_zero_ebike, stations_zero_any, superficie_ha
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                bikes_total, pct_bikes, pct_docks_free,                 pct_mechanical, pct_ebike,
+                stations_zero_ebike, stations_zero_mechanical, stations_zero_any, superficie_ha
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             barri_rows,
         )
