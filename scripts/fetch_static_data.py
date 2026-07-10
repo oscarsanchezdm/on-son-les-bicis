@@ -11,8 +11,11 @@ import zipfile
 from io import StringIO
 
 import requests
+from pyproj import Transformer
 
 from config import BARRIS_GEOJSON, BARRIS_SOURCE_URL, STATIC_DIR, SUPERFICIE_CSV
+
+_TO_WGS84 = Transformer.from_crs("EPSG:25831", "EPSG:4326", always_xy=True)
 
 
 def _download_zip_json(url: str) -> dict:
@@ -46,6 +49,20 @@ def _barri_names(points: dict) -> dict[tuple[str, str], dict]:
             "codi_barri": f"{dist}{barri}",
         }
     return names
+
+
+def _reproject_coords(coords):
+    if isinstance(coords[0], (int, float)):
+        lon, lat = _TO_WGS84.transform(coords[0], coords[1])
+        return [lon, lat]
+    return [_reproject_coords(c) for c in coords]
+
+
+def _reproject_geometry(geometry: dict) -> dict:
+    geom = dict(geometry)
+    if geom.get("coordinates"):
+        geom["coordinates"] = _reproject_coords(geom["coordinates"])
+    return geom
 
 
 def download_barris() -> None:
@@ -84,7 +101,7 @@ def download_barris() -> None:
                     "codi_districte": dist,
                     "nom_districte": district_names.get(dist, ""),
                 },
-                "geometry": feature.get("geometry"),
+                "geometry": _reproject_geometry(feature.get("geometry") or {}),
             }
         )
 

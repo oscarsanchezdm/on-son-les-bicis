@@ -149,7 +149,7 @@ function refresh() {
 function selectBarri(barri: Barri) {
   selectedBarri = selectedBarri?.barri_codi === barri.barri_codi ? null : barri;
   refresh();
-  mapView?.focusBarri(selectedBarri?.barri_codi ?? null, mapStations());
+  mapView?.focusBarri(selectedBarri?.barri_codi ?? null, displayStations);
 }
 
 function resetBarriFilter() {

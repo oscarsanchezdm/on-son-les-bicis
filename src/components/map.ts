@@ -181,22 +181,13 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
       return;
     }
 
-    const feature = geo.features.find(
-      (f) => String(f.properties?.codi_barri ?? "") === codi
-    );
-    if (feature) {
-      const bounds = L.geoJSON(feature).getBounds();
-      if (bounds.isValid()) {
-        map.flyToBounds(bounds, { padding: [48, 48], maxZoom: 15, duration: 0.7 });
-        return;
-      }
-    }
-
     const barriStations = stations?.filter((s) => s.barri_codi === codi) ?? [];
-    if (barriStations.length) {
-      const bounds = L.latLngBounds(barriStations.map((s) => [s.lat, s.lon] as L.LatLngTuple));
-      map.flyToBounds(bounds, { padding: [56, 56], maxZoom: 16, duration: 0.7 });
-    }
+    if (!barriStations.length) return;
+
+    const bounds = L.latLngBounds(barriStations.map((s) => [s.lat, s.lon] as L.LatLngTuple));
+    if (!bounds.isValid()) return;
+
+    map.flyToBounds(bounds, { padding: [56, 56], maxZoom: 16, duration: 0.7 });
   }
 
   return { map, update, focusBarri };
