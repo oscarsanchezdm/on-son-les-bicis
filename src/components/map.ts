@@ -1,7 +1,7 @@
 import L from "leaflet";
 import "leaflet-rotate";
 import type { Barri, MetricMode, Station } from "../lib/data";
-import { barriMetric, bikesOutOfService, pctOfStations, pctOosOfBikeFleet, stationOosCount, stationMetric } from "../lib/data";
+import { barriMetric, bikesOutOfService, pctOfStations, pctOosOfBikeFleet, stationCount, stationOosCount, stationMetric } from "../lib/data";
 import {
   createColorHeatLayer,
   stationHitRadius,
@@ -11,7 +11,13 @@ import {
 } from "../lib/colorHeatLayer";
 import type { TimeView } from "../lib/history";
 import { isStationMappable } from "../lib/status";
-import { metricPctColor, type HeatScaleMode } from "../lib/colors";
+import {
+  absoluteStationRadius,
+  metricAbsoluteColor,
+  metricAbsoluteOpacity,
+  metricPctColor,
+  type HeatScaleMode,
+} from "../lib/colors";
 import { formatPct } from "../lib/format";
 import { countIconHtml } from "../lib/icons";
 
@@ -120,6 +126,15 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
           };
         }
         const value = barriMetric(barri, mode);
+        if (heatScale === "absolute") {
+          const fillOpacity = metricAbsoluteOpacity(value);
+          return {
+            fillColor: metricAbsoluteColor(mode),
+            fillOpacity: showStations ? fillOpacity * 0.85 : fillOpacity,
+            color: selectedBarriCodi === codi ? "#0f766e" : "#64748b",
+            weight: selectedBarriCodi === codi ? 2 : 1,
+          };
+        }
         return {
           fillColor: metricPctColor(value, mode),
           fillOpacity: showStations ? 0.14 : 0.45,
@@ -161,12 +176,25 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
 
     if (showStations && stations) {
       const activeStations = stations.filter((s) => isStationMappable(s));
+      const isAbsolute = heatScale === "absolute";
+      const maxCount = isAbsolute
+        ? Math.max(1, ...activeStations.map((s) => stationCount(s, mode)))
+        : 1;
 
       const expandedHit = stationNeedsExpandedHitTarget();
 
       for (const s of activeStations) {
         const value = stationMetric(s, mode);
-        const visualRadius = stationMarkerRadius(s.capacity);
+        const count = stationCount(s, mode);
+        if (isAbsolute && count <= 0) continue;
+
+        const visualRadius = isAbsolute
+          ? absoluteStationRadius(count, maxCount, s.capacity)
+          : stationMarkerRadius(s.capacity);
+        if (visualRadius <= 0) continue;
+
+        const fillColor = isAbsolute ? metricAbsoluteColor(mode) : metricPctColor(value, mode);
+        const fillOpacity = isAbsolute ? 0.55 + 0.4 * Math.pow(count / maxCount, 0.65) : 0.92;
         const popup = stationPopupHtml(s, isHistorical);
         const tooltip = stationTooltipHtml(s);
 
@@ -201,10 +229,10 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
           L.circleMarker([s.lat, s.lon], {
             pane: "stationPane",
             radius: visualRadius,
-            fillColor: metricPctColor(value, mode),
+            fillColor,
             color: "#334155",
             weight: 1,
-            fillOpacity: 0.92,
+            fillOpacity,
             interactive: false,
             className: "station-dot",
           }).addTo(stationLayer);
@@ -213,10 +241,10 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
             L.circleMarker([s.lat, s.lon], {
               pane: "stationPane",
               radius: visualRadius,
-              fillColor: metricPctColor(value, mode),
+              fillColor,
               color: "#334155",
               weight: 1,
-              fillOpacity: 0.92,
+              fillOpacity,
             })
           ).addTo(stationLayer);
         }
