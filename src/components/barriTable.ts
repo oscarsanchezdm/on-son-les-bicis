@@ -83,6 +83,9 @@ export function renderBarriTable(
   const selectedCodi = options?.selectedCodi ?? null;
   const onSelect = options?.onSelect;
   const sorted = sortedBarris(barris);
+  const prevWrap = container.querySelector<HTMLElement>(".table-wrap");
+  const scrollLeft = prevWrap?.scrollLeft ?? 0;
+  const scrollTop = prevWrap?.scrollTop ?? 0;
 
   container.innerHTML = `
     <div class="table-wrap">
@@ -117,6 +120,12 @@ export function renderBarriTable(
       </table>
     </div>
   `;
+
+  const tableWrap = container.querySelector<HTMLElement>(".table-wrap");
+  if (tableWrap) {
+    tableWrap.scrollLeft = scrollLeft;
+    tableWrap.scrollTop = scrollTop;
+  }
 
   container.querySelectorAll<HTMLTableCellElement>("th.sortable").forEach((th) => {
     th.addEventListener("click", () => {
