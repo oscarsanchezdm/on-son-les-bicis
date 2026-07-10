@@ -36,7 +36,7 @@ app.innerHTML = `
         <div class="legend-bar legend-bar--heat"></div>
         <p><span>Normal</span><span>Pitjor que la mitjana</span></p>
         <p class="legend-note" id="legend-note">Mapa de calor + barris + estacions segons la mètrica seleccionada.</p>
-        <p class="legend-heat">El calor només marca estacions per sota de la mitjana de la ciutat (no pinta tot de vermell).</p>
+        <p class="legend-heat">El calor marca estacions per sota de la mitjana de la ciutat. La mida del punt reflecteix la capacitat de l'estació.</p>
       </aside>
     </section>
     <section id="timeline"></section>

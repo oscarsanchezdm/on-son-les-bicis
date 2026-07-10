@@ -6,7 +6,7 @@ import {
   HEAT_LAYER_OPTIONS,
   buildHeatContext,
   buildStationHeatPoints,
-  stationStress,
+  stationMarkerRadius,
 } from "../lib/heatmap";
 import { isStationActive } from "../lib/status";
 import { pctColor } from "../lib/colors";
@@ -20,9 +20,16 @@ export type MapView = {
 export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection): MapView {
   const map = L.map(container, { scrollWheelZoom: true }).setView([41.387, 2.17], 12);
 
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>',
-    maxZoom: 19,
+  const barriPane = map.createPane("barriPane");
+  barriPane.style.zIndex = "410";
+  const heatPane = map.createPane("heatPane");
+  heatPane.style.zIndex = "430";
+
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> · <a href="https://carto.com/">CARTO</a>',
+    subdomains: "abcd",
+    maxZoom: 20,
   }).addTo(map);
 
   const stationLayer = L.layerGroup().addTo(map);
@@ -35,14 +42,15 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
 
     if (barriLayer) map.removeLayer(barriLayer);
     barriLayer = L.geoJSON(geo, {
+      pane: "barriPane",
       style: (feature) => {
         const codi = String(feature?.properties?.codi_barri ?? "");
         const barri = byCode.get(codi);
         const value = barri ? barriMetric(barri, mode) : 0;
         return {
           fillColor: pctColor(value, invert),
-          fillOpacity: 0.42,
-          color: "#334155",
+          fillOpacity: 0.32,
+          color: "#64748b",
           weight: 1,
         };
       },
@@ -90,27 +98,31 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
 
     for (const s of activeStations) {
       const value = stationMetric(s, mode);
-      const stress = stationStress(value, heatCtx);
       const oos = bikesOutOfService(s.capacity, s.mechanical, s.ebike, s.docks_available);
-      const markerRadius = 4 + (stress / 100) * 4;
 
       L.circleMarker([s.lat, s.lon], {
-        radius: markerRadius,
+        radius: stationMarkerRadius(s.capacity),
         fillColor: pctColor(value, invert),
-        color: stress >= 60 ? "#7f1d1d" : "#1e293b",
-        weight: stress >= 60 ? 2 : 1,
-        fillOpacity: 0.95,
+        color: "#334155",
+        weight: 1,
+        fillOpacity: 0.92,
       })
         .bindPopup(
           `<strong>${s.name}</strong><br/>
           Barri: ${s.barri_nom || "—"}<br/>
+          Capacitat: ${s.capacity} ancoratges<br/>
           Mecàniques: ${s.mechanical} · Elèctriques: ${s.ebike}<br/>
           Bicis: ${formatPct(s.pct_bikes)} · Ancoratges lliures: ${formatPct(s.pct_docks_free)}<br/>
-          <strong>Bicis fora de servei: ${oos}</strong> · Capacitat: ${s.capacity}`
+          <strong>Bicis fora de servei: ${oos}</strong>`
         )
-        .bindTooltip(`${s.name}: ${formatPct(value)} · fora servei: ${oos}`, { sticky: true })
+        .bindTooltip(
+          `${s.name}: ${formatPct(value)} · ${s.capacity} ancor. · fora servei: ${oos}`,
+          { sticky: true }
+        )
         .addTo(stationLayer);
     }
+
+    barriLayer.addTo(map);
 
     if (heatPoints.length) {
       heatLayer = (L as typeof L & {
@@ -122,7 +134,6 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
       heatLayer.addTo(map);
     }
 
-    barriLayer.addTo(map);
     if (map.hasLayer(stationLayer)) map.removeLayer(stationLayer);
     stationLayer.addTo(map);
   }

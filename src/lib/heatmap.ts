@@ -42,13 +42,13 @@ export function stationHeatWeight(availabilityPct: number, ctx: HeatContext): nu
 
   const spread = Math.max(ctx.median - ctx.p25, 8);
   const relative = Math.min(1, gap / spread);
-  let weight = Math.pow(relative, 1.15) * 0.42;
+  let weight = Math.pow(relative, 1.05) * 0.55;
 
-  if (availabilityPct <= 0) weight = Math.max(weight, 0.5);
-  else if (availabilityPct < 5) weight = Math.max(weight, 0.35);
-  else if (availabilityPct < 10) weight = Math.max(weight, 0.18);
+  if (availabilityPct <= 0) weight = Math.max(weight, 0.62);
+  else if (availabilityPct < 5) weight = Math.max(weight, 0.48);
+  else if (availabilityPct < 10) weight = Math.max(weight, 0.28);
 
-  return Math.min(0.72, weight);
+  return Math.min(0.85, weight);
 }
 
 /** Stress 0–100 for marker emphasis (vs city median). */
@@ -65,24 +65,30 @@ export function buildStationHeatPoints(
   return stations
     .map((s) => {
       const intensity = stationHeatWeight(s.availability, ctx);
-      if (intensity < 0.04) return null;
+      if (intensity <= 0) return null;
       return [s.lat, s.lon, intensity] as HeatPoint;
     })
     .filter((p): p is HeatPoint => p !== null);
 }
 
 export const HEAT_LAYER_OPTIONS = {
-  radius: 15,
-  blur: 13,
-  maxZoom: 17,
-  max: 0.5,
-  minOpacity: 0.18,
+  radius: 24,
+  blur: 18,
+  maxZoom: 18,
+  max: 0.7,
+  minOpacity: 0.38,
+  pane: "heatPane",
   gradient: {
-    0.0: "rgba(0,0,0,0)",
-    0.15: "rgba(254, 240, 138, 0.25)",
-    0.35: "rgba(251, 146, 60, 0.45)",
-    0.55: "rgba(239, 68, 68, 0.6)",
-    0.8: "rgba(185, 28, 28, 0.75)",
-    1.0: "rgba(69, 10, 10, 0.85)",
+    0.05: "rgba(254, 240, 138, 0.35)",
+    0.25: "rgba(251, 191, 36, 0.55)",
+    0.45: "rgba(249, 115, 22, 0.65)",
+    0.65: "rgba(239, 68, 68, 0.75)",
+    0.85: "rgba(185, 28, 28, 0.85)",
+    1.0: "rgba(127, 29, 29, 0.95)",
   },
 } as const;
+
+/** Marker radius from station capacity (not availability stress). */
+export function stationMarkerRadius(capacity: number): number {
+  return Math.min(8, Math.max(4, 3.2 + capacity * 0.07));
+}
