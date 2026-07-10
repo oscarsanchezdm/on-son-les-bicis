@@ -6,6 +6,7 @@
   --muted: #64748b;
   --border: #e2e8f0;
   --accent: #dc2626;
+  --teal: #0f766e;
   font-family: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
   line-height: 1.5;
 }
@@ -66,12 +67,34 @@ h1 {
 }
 
 .mode-toggle button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   border: 1px solid var(--border);
   background: var(--bg);
   padding: 0.45rem 0.75rem;
   border-radius: 999px;
   cursor: pointer;
   font: inherit;
+}
+
+.metric-icon,
+.count-icon,
+.kpi-icon {
+  display: inline-flex;
+  align-items: center;
+  line-height: 0;
+}
+
+.metric-icon svg,
+.count-icon svg,
+.kpi-icon svg {
+  width: 1em;
+  height: 1em;
+}
+
+.mode-toggle button.active .metric-icon {
+  color: inherit;
 }
 
 .mode-toggle button.active {
@@ -114,9 +137,20 @@ h1 {
   background: #fff1f2;
 }
 
+.kpi-meter--neutral {
+  background: #e2e8f0;
+}
+
+.kpi-meter--neutral > span {
+  background: linear-gradient(90deg, #94a3b8, #64748b);
+}
+
 .kpi-label {
   font-size: 0.8rem;
   color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
 }
 
 .kpi-card strong {
@@ -298,6 +332,33 @@ h1 {
   font-weight: 700;
 }
 
+.station-div-icon {
+  background: transparent;
+  border: none;
+}
+
+.station-dot {
+  width: var(--size, 16px);
+  height: var(--size, 16px);
+  border-radius: 50%;
+  background: var(--fill);
+  border: 1px solid #334155;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.18);
+}
+
+.station-dot svg {
+  display: block;
+}
+
+.station-tooltip .count-icon,
+.leaflet-popup-content .count-icon {
+  margin-right: 0.15rem;
+}
+
 .leaflet-popup-content strong {
   font-weight: 700;
 }
@@ -397,8 +458,8 @@ h1 {
 }
 
 .time-btn.active {
-  background: var(--accent, #0f766e);
-  border-color: var(--accent, #0f766e);
+  background: var(--teal);
+  border-color: var(--teal);
   color: white;
 }
 
@@ -424,8 +485,8 @@ h1 {
 }
 
 .day-type-btn.active {
-  background: #0f766e;
-  border-color: #0f766e;
+  background: var(--teal);
+  border-color: var(--teal);
   color: white;
 }
 

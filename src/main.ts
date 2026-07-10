@@ -12,6 +12,7 @@ import {
   loadSummary7d,
   type TimeView,
 } from "./lib/history";
+import { metricIconHtml } from "./lib/icons";
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 
@@ -23,11 +24,11 @@ app.innerHTML = `
       <p class="lede">Mapa en temps quasi real de la disponibilitat de bicicletes mecàniques i elèctriques del Bicing, per estació i per barri.</p>
     </div>
     <div class="mode-toggle" role="group" aria-label="Mètrica del mapa">
-      <button type="button" data-mode="total" class="active">Totals</button>
-      <button type="button" data-mode="mechanical">Mecàniques</button>
-      <button type="button" data-mode="ebike">Elèctriques</button>
-      <button type="button" data-mode="docks">Ancoratges lliures</button>
-      <button type="button" data-mode="out_of_service">Fora de servei</button>
+      <button type="button" data-mode="total" class="active">${metricIconHtml("total")} Totals</button>
+      <button type="button" data-mode="mechanical">${metricIconHtml("mechanical")} Mecàniques</button>
+      <button type="button" data-mode="ebike">${metricIconHtml("ebike")} Elèctriques</button>
+      <button type="button" data-mode="docks">${metricIconHtml("docks")} Ancoratges lliures</button>
+      <button type="button" data-mode="out_of_service">${metricIconHtml("out_of_service")} Fora de servei</button>
     </div>
   </header>
   <main>

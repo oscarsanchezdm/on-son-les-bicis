@@ -1,4 +1,4 @@
-import type { DayType, Summary7d, TimeView } from "../lib/history";
+import { dayTypeLabel, type DayType, type Summary7d, type TimeView } from "../lib/history";
 import { formatHour } from "../lib/format";
 
 export type TimeSelectorOptions = {
@@ -10,13 +10,10 @@ export type TimeSelectorOptions = {
 
 const DAY_TYPES: { id: DayType; label: string }[] = [
   { id: "weekday", label: "Feiner" },
+  { id: "friday", label: "Divendres" },
   { id: "saturday", label: "Dissabte" },
   { id: "sunday", label: "Diumenge" },
 ];
-
-function dayTypeLabel(dayType: DayType): string {
-  return DAY_TYPES.find((d) => d.id === dayType)?.label.toLowerCase() ?? dayType;
-}
 
 export function renderTimeSelector(container: HTMLElement, opts: TimeSelectorOptions): void {
   const { summary, currentTs, timeView, onChange } = opts;

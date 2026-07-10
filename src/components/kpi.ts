@@ -4,6 +4,7 @@ import type { Summary7d } from "../lib/history";
 import { hourlyAverage, sparklineValues } from "../lib/history";
 import { formatDateTime, formatPct, formatRelativeTime } from "../lib/format";
 import { renderSparkline } from "../lib/sparkline";
+import { metricIconHtml } from "../lib/icons";
 
 /** Build KPI-shaped data for a single barri filter. */
 export function latestFromBarri(barri: Barri, lastUpdated: string): LatestData {
@@ -134,11 +135,11 @@ export function renderKpis(
         <strong>${formatPct(pctZeroEbike)} E · ${formatPct(pctZeroMech)} M</strong>
         <small>${t.stations_zero_ebike} sense elèctriques · ${t.stations_zero_mechanical ?? 0} sense mecàniques · ${t.stations_active} actives</small>
       </article>
-      <article class="kpi-card kpi-card--alert">
-        <span class="kpi-label">Bicicletes fora de servei</span>
+      <article class="kpi-card">
+        <span class="kpi-label">${metricIconHtml("out_of_service", "kpi-icon")} Bicicletes fora de servei</span>
         <strong>${outOfService.toLocaleString("ca-ES")}</strong>
         <small>${formatPct(pctOutOfService)} de ${t.capacity.toLocaleString("ca-ES")} ancoratges</small>
-        <div class="kpi-meter" aria-hidden="true">
+        <div class="kpi-meter kpi-meter--neutral" aria-hidden="true">
           <span style="width:${Math.min(100, pctOutOfService)}%"></span>
         </div>
       </article>
