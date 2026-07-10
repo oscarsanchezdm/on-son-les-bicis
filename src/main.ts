@@ -42,7 +42,7 @@ app.innerHTML = `
     <section id="timeline"></section>
     <section>
       <h2>Barris</h2>
-      <p class="section-note">Clica una columna per ordenar. Files marcades: menys del 10% d'elèctriques.</p>
+      <p class="section-note">Clica una columna per ordenar.</p>
       <div id="barri-table"></div>
     </section>
   </main>

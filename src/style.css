@@ -275,61 +275,64 @@ h1 {
   cursor: pointer;
 }
 
-.row-desert {
-  background: #fff1f2;
+.barri-name {
+  font-weight: 500;
+  min-width: 10rem;
 }
 
-.row-oos {
-  box-shadow: inset 3px 0 0 #ea580c;
+.pct-cell {
+  min-width: 5.5rem;
+  vertical-align: middle;
 }
 
-.oos-cell {
-  min-width: 7rem;
-}
-
-.oos-count {
-  display: block;
-  font-weight: 700;
-  font-size: 1rem;
-}
-
-.oos-meter {
-  display: block;
+.pct-cell-meter {
   height: 5px;
-  background: #fee2e2;
+  background: #e2e8f0;
   border-radius: 999px;
-  margin: 0.2rem 0;
   overflow: hidden;
+  margin-bottom: 0.25rem;
 }
 
-.oos-meter > span {
+.pct-cell-meter > span {
   display: block;
   height: 100%;
   border-radius: 999px;
+  min-width: 2px;
 }
 
-.oos-cell.oos-low .oos-meter > span {
-  background: #fbbf24;
+.pct-cell-num {
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
-.oos-cell.oos-mid .oos-meter > span {
-  background: #f97316;
-}
-
-.oos-cell.oos-high .oos-meter > span {
-  background: #dc2626;
-}
-
-.oos-cell small {
+.pct-cell--muted {
   color: var(--muted);
-  font-size: 0.75rem;
 }
 
-.zero-stations-cell small {
+.pct-cell--muted .pct-cell-num {
+  font-weight: 500;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.pct-cell-sub {
   display: block;
+  font-size: 0.72rem;
+  color: #94a3b8;
+  margin-top: 0.1rem;
+}
+
+.count-cell {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.count-cap {
+  font-weight: 400;
   color: var(--muted);
-  font-size: 0.75rem;
-  margin-top: 0.15rem;
+  font-size: 0.82rem;
 }
 
 .pct-badge {
