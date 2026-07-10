@@ -56,7 +56,7 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
           sticky: true,
         });
       },
-    }).addTo(map);
+    });
 
     if (heatLayer) map.removeLayer(heatLayer);
     const heatPoints: [number, number, number][] = [];
@@ -101,8 +101,11 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
           : { 0.2: "#b91c1c", 0.5: "#f59e0b", 0.8: "#84cc16", 1: "#15803d" },
       });
       heatLayer.addTo(map);
-      stationLayer.bringToFront();
     }
+
+    barriLayer.addTo(map);
+    if (map.hasLayer(stationLayer)) map.removeLayer(stationLayer);
+    stationLayer.addTo(map);
   }
 
   return { map, update };
