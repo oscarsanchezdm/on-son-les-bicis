@@ -730,6 +730,65 @@ body.kpi-chart-open {
   font-size: 0.9rem;
 }
 
+@media (max-width: 640px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .kpi-card {
+    padding: 0.55rem 0.6rem;
+    border-radius: 10px;
+    gap: 0.08rem;
+  }
+
+  .kpi-label {
+    font-size: 0.68rem;
+    line-height: 1.2;
+  }
+
+  .kpi-card strong {
+    font-size: 1.05rem;
+    line-height: 1.15;
+  }
+
+  .kpi-card small {
+    font-size: 0.66rem;
+    line-height: 1.25;
+  }
+
+  .kpi-sparkline {
+    height: 32px;
+    margin-top: 0.2rem;
+  }
+
+  .kpi-chart-hint {
+    font-size: 0.6rem;
+    line-height: 1.2;
+  }
+
+  .kpi-station-gap,
+  .kpi-hist {
+    font-size: 0.62rem;
+    line-height: 1.2;
+  }
+
+  .kpi-update {
+    font-size: 0.78rem;
+    padding: 0.4rem 0.55rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .kpi-update strong {
+    font-size: 0.82rem;
+  }
+
+  .kpi-update-date {
+    width: 100%;
+    font-size: 0.72rem;
+  }
+}
+
 @media (max-width: 900px) {
   .site-header__row {
     flex-direction: column;
