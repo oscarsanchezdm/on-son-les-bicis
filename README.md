@@ -17,9 +17,10 @@ Eina periodística per visualitzar la disponibilitat de bicicletes del Bicing a 
 
 ## Arquitectura
 
-1. **Servidor privat** (`10.10.100.104`): contenidor Docker amb cron cada 10 min → SQLite → export JSON → `git push`
-2. **GitHub Pages**: frontend estàtic (Vite + Leaflet) que llegeix `public/data/*.json`
-3. **GitHub Actions**: deploy del frontend + fallback de dades si el servidor no actualitza
+1. **GitHub Actions** (`fetch-data.yml`): cada ~10 min consulta l'API del Bicing, exporta JSON i fa commit a `public/data/`
+2. **GitHub Pages** (`pages.yml`): frontend estàtic (Vite + Leaflet) que llegeix `public/data/*.json`
+
+El repo és **públic**, així que les Actions no consumeixen minuts de facturació.
 
 ## Desenvolupament local
 

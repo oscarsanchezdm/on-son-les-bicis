@@ -340,10 +340,22 @@ def _export_history(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
             continue
 
 
+def _load_existing_summary_series() -> list[dict]:
+    """Keep 7d history across ephemeral CI runs (SQLite is not committed)."""
+    summary_path = DATA_DIR / "history" / "summary-7d.json"
+    if not summary_path.exists():
+        return []
+    try:
+        payload = json.loads(summary_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return []
+    return payload.get("series", []) if isinstance(payload, dict) else []
+
+
 def _export_summary_7d(conn: sqlite3.Connection, ts_iso: str) -> None:
     """City-level time series and per-hour averages for the last 7 days."""
     dt_now = datetime.fromisoformat(ts_iso.replace("Z", "+00:00"))
-    cutoff = (dt_now - timedelta(days=7)).isoformat()
+    cutoff_dt = dt_now - timedelta(days=7)
 
     rows = conn.execute(
         """
@@ -351,21 +363,24 @@ def _export_summary_7d(conn: sqlite3.Connection, ts_iso: str) -> None:
                SUM(bikes_total), SUM(capacity_total),
                SUM(bikes_mechanical), SUM(bikes_ebike)
         FROM barri_snapshots
-        WHERE ts >= ?
         GROUP BY ts
         ORDER BY ts
         """,
-        (cutoff,),
     ).fetchall()
 
-    series: list[dict] = []
-    by_hour: dict[int, list[dict]] = defaultdict(list)
+    series_by_ts: dict[str, dict] = {
+        entry["ts"]: entry
+        for entry in _load_existing_summary_series()
+        if isinstance(entry, dict) and entry.get("ts")
+    }
 
     for raw_ts, bikes, cap, mech, ebike in rows:
         ts = _normalize_ts(raw_ts)
         dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+        if dt < cutoff_dt:
+            continue
         cap = cap or 0
-        entry = {
+        series_by_ts[ts] = {
             "ts": ts,
             "date": dt.strftime("%d/%m"),
             "hour": dt.hour,
@@ -373,8 +388,11 @@ def _export_summary_7d(conn: sqlite3.Connection, ts_iso: str) -> None:
             "pct_mechanical": round(100 * mech / cap, 2) if cap else 0,
             "pct_ebike": round(100 * ebike / cap, 2) if cap else 0,
         }
-        series.append(entry)
-        by_hour[dt.hour].append(entry)
+
+    series = sorted(series_by_ts.values(), key=lambda entry: entry["ts"])
+    by_hour: dict[int, list[dict]] = defaultdict(list)
+    for entry in series:
+        by_hour[entry["hour"]].append(entry)
 
     hourly: list[dict] = []
     for hour in range(24):

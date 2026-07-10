@@ -1,0 +1,45 @@
+name: Fetch Bicing data
+
+on:
+  schedule:
+    # Evita el minut :00 (GitHub pot endarrerir jobs programats a l'inici d'hora)
+    - cron: "7,17,27,37,47,57 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Fetch static data if missing
+        if: hashFiles('public/data/static/barris.geojson') == ''
+        env:
+          BICING_TOKEN: ${{ secrets.BICING_TOKEN }}
+        run: python scripts/fetch_static_data.py
+
+      - name: Ingest and export
+        env:
+          BICING_TOKEN: ${{ secrets.BICING_TOKEN }}
+        run: |
+          python scripts/init_db.py
+          python scripts/ingest.py
+          python scripts/export.py
+
+      - name: Commit changes
+        uses: EndBug/add-and-commit@v9
+        with:
+          add: "public/data"
+          message: "Actualitza dades Bicing"
+          commit_user_name: github-actions[bot]
+          commit_user_email: 41898282+github-actions[bot]@users.noreply.github.com
