@@ -14,9 +14,9 @@ export const METRIC_ABSOLUTE_COLORS: Record<MetricMode, string> = {
 /** Bicis disponibles: escassetat → normal → abundant → saturació (blau). */
 export const PCT_SCALE_STOPS: ReadonlyArray<{ pct: number; color: string }> = [
   { pct: 0, color: "#b91c1c" },
-  { pct: 10, color: "#ea580c" },
-  { pct: 30, color: "#ea580c" },
-  { pct: 55, color: "#f59e0b" },
+  { pct: 10, color: "#fb923c" },
+  { pct: 30, color: "#facc15" },
+  { pct: 55, color: "#a3e635" },
   { pct: 82, color: "#22c55e" },
   { pct: 88, color: "#22c55e" },
   { pct: 100, color: "#4f46e5" },
@@ -26,8 +26,8 @@ export const PCT_SCALE_STOPS: ReadonlyArray<{ pct: number; color: string }> = [
 export const PCT_OOS_STOPS: ReadonlyArray<{ pct: number; color: string }> = [
   { pct: 0, color: "#22c55e" },
   { pct: 30, color: "#22c55e" },
-  { pct: 50, color: "#f59e0b" },
-  { pct: 75, color: "#ea580c" },
+  { pct: 50, color: "#a3e635" },
+  { pct: 75, color: "#fb923c" },
   { pct: 100, color: "#b91c1c" },
 ];
 
