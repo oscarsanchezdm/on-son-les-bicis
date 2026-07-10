@@ -15,11 +15,11 @@ export function iconBike(size = 16): string {
   );
 }
 
-/** Bicicleta elèctrica. */
+/** Bicicleta elèctrica: bici esquematitzada + llamp destacat. */
 export function iconEbike(size = 16): string {
   return wrap(
     size,
-    `<circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M9 17.5h6M5.5 14l3-7h4l2 4h2"/><path d="M17 7v4M15 9h4"/>`
+    `<circle cx="5.5" cy="18" r="3"/><circle cx="18.5" cy="18" r="3"/><path d="M9 18h6M5.5 15l2.5-6h3l1.5 3h2" opacity="0.55"/><path d="M14 2.5 9 11h3.2l-2.2 8.5L18 10h-3.5l1.5-7.5z" fill="currentColor" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>`
   );
 }
 
