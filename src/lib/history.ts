@@ -1,6 +1,6 @@
 import type { Barri, LatestData, Station } from "./data";
 import { bikesOutOfService, pctBikesOutOfService, pctOosOfBikeFleet } from "./data";
-import { formatDateTime, formatHour, historyFileLabel } from "./format";
+import { formatDateTime, formatHour, historyFileLocalLabel } from "./format";
 
 const BASE = import.meta.env.BASE_URL;
 const HISTORY_DAYS = 30;
@@ -381,13 +381,23 @@ export function historyCutoffKey(hours: number): string {
   return `${y}-${m}-${d}-${h}`;
 }
 
+/** UTC file-key cutoff for comparing history hourly keys (stored in UTC). */
+export function historyCutoffKeyUtc(hours: number): string {
+  const cutoff = new Date(Date.now() - hours * 3_600_000);
+  const y = cutoff.getUTCFullYear();
+  const m = String(cutoff.getUTCMonth() + 1).padStart(2, "0");
+  const d = String(cutoff.getUTCDate()).padStart(2, "0");
+  const h = String(cutoff.getUTCHours()).padStart(2, "0");
+  return `${y}-${m}-${d}-${h}`;
+}
+
 /** Keep chart detail points from the last N hours when timestamps are available. */
 export function filterChartPointsLast24h(
   points: ChartPoint[],
   hours = CHART_DETAIL_HOURS
 ): ChartPoint[] {
   const cutoffMs = Date.now() - hours * 3_600_000;
-  const cutoffKey = historyCutoffKey(hours);
+  const cutoffKey = historyCutoffKeyUtc(hours);
   const filtered = points.filter((p) => {
     if (p.ts) return new Date(p.ts).getTime() >= cutoffMs;
     if (p.key) return p.key >= cutoffKey;
@@ -496,7 +506,7 @@ export async function loadBarriSparklineSeries(
       b.docks_available_total,
       b.bikes_total
     );
-    labels.push(historyFileLabel(file.key));
+    labels.push(historyFileLocalLabel(file.localDate, file.localHour));
     keys.push(file.key);
     pct_bikes.push(b.pct_bikes);
     pct_mechanical.push((100 * b.bikes_mechanical) / b.capacity_total);
@@ -541,7 +551,7 @@ export async function loadCitySparklineSeries(
     if (capacity <= 0) continue;
 
     const oos = bikesOutOfService(capacity, mechanical, ebike, docks, bikes);
-    labels.push(historyFileLabel(file.key));
+    labels.push(historyFileLocalLabel(file.localDate, file.localHour));
     keys.push(file.key);
     pct_bikes.push((100 * bikes) / capacity);
     pct_mechanical.push((100 * mechanical) / capacity);
