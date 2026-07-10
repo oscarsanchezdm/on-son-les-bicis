@@ -8,6 +8,15 @@ import { isStationActive } from "../lib/status";
 import { pctColor } from "../lib/colors";
 import { formatPct } from "../lib/format";
 
+function stationCountsLine(s: Station): string {
+  const fs = bikesOutOfService(s.capacity, s.mechanical, s.ebike, s.docks_available);
+  return `${s.ebike} E, ${s.mechanical} M, ${s.docks_available} A, ${fs} FS`;
+}
+
+function stationPopupHtml(s: Station): string {
+  return `${s.name}<br/>${stationCountsLine(s)}`;
+}
+
 export type MapView = {
   map: L.Map;
   update: (
@@ -109,7 +118,6 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
 
       for (const s of activeStations) {
         const value = stationMetric(s, mode);
-        const oos = bikesOutOfService(s.capacity, s.mechanical, s.ebike, s.docks_available);
 
         L.circleMarker([s.lat, s.lon], {
           radius: stationMarkerRadius(s.capacity),
@@ -118,18 +126,8 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
           weight: 1,
           fillOpacity: 0.92,
         })
-          .bindPopup(
-            `<strong>${s.name}</strong><br/>
-          Barri: ${s.barri_nom || "—"}<br/>
-          Capacitat: ${s.capacity} ancoratges<br/>
-          Mecàniques: ${s.mechanical} · Elèctriques: ${s.ebike}<br/>
-          Bicis: ${formatPct(s.pct_bikes)} · Ancoratges lliures: ${formatPct(s.pct_docks_free)}<br/>
-          <strong>Bicis fora de servei: ${oos}</strong>`
-          )
-          .bindTooltip(
-            `${s.name}: ${formatPct(value)} · ${s.capacity} ancor. · fora servei: ${oos}`,
-            { sticky: true }
-          )
+          .bindPopup(stationPopupHtml(s))
+          .bindTooltip(`${s.name}<br/>${stationCountsLine(s)}`, { sticky: true })
           .addTo(stationLayer);
       }
 
