@@ -1,5 +1,5 @@
 import type { Barri, LatestData } from "./data";
-import { bikesOutOfService, pctBikesOutOfService } from "./data";
+import { bikesOutOfService, pctBikesOutOfService, pctOosOfBikeFleet } from "./data";
 import { formatHour } from "./format";
 
 const BASE = import.meta.env.BASE_URL;
@@ -13,6 +13,7 @@ export type HistoryPoint = {
   pct_bikes: number;
   pct_mechanical: number;
   pct_ebike: number;
+  pct_oos_fleet?: number;
 };
 
 export type HourlyBucket = {
@@ -243,11 +244,11 @@ export function hourViewScopeLabel(hour: number, dayType: DayType): string {
 
 export function sparklineValues(
   series: HistoryPoint[],
-  key: keyof Pick<HistoryPoint, "pct_bikes" | "pct_mechanical" | "pct_ebike">,
+  key: keyof Pick<HistoryPoint, "pct_bikes" | "pct_mechanical" | "pct_ebike" | "pct_oos_fleet">,
   maxPoints = 48
 ): number[] {
   const slice = series.slice(-maxPoints);
-  return slice.map((p) => p[key]);
+  return slice.map((p) => p[key]).filter((v): v is number => v !== undefined);
 }
 
 export function hourlyAverage(
@@ -286,6 +287,7 @@ export type BarriSparklineSeries = {
   pct_bikes: number[];
   pct_mechanical: number[];
   pct_ebike: number[];
+  pct_oos_fleet: number[];
 };
 
 /** Recent hourly snapshots for one barri (for KPI sparklines). */
@@ -298,17 +300,25 @@ export async function loadBarriSparklineSeries(
   const pct_bikes: number[] = [];
   const pct_mechanical: number[] = [];
   const pct_ebike: number[] = [];
+  const pct_oos_fleet: number[] = [];
 
   for (const file of [...index.files].sort((a, b) => a.key.localeCompare(b.key))) {
     const url = `${BASE}data/history/hourly/${file.key}.json.gz`;
     const barris = await loadHourlyGz(url);
     const b = barris.find((x) => x.barri_codi === barriCodi);
     if (!b || b.capacity_total <= 0) continue;
+    const oos = bikesOutOfService(
+      b.capacity_total,
+      b.bikes_mechanical,
+      b.bikes_ebike,
+      b.docks_available_total
+    );
     pct_bikes.push(b.pct_bikes);
     pct_mechanical.push((100 * b.bikes_mechanical) / b.capacity_total);
     pct_ebike.push(b.pct_ebike);
+    pct_oos_fleet.push(pctOosOfBikeFleet(b.bikes_total, oos));
   }
 
   if (!pct_bikes.length) return null;
-  return { pct_bikes, pct_mechanical, pct_ebike };
+  return { pct_bikes, pct_mechanical, pct_ebike, pct_oos_fleet };
 }

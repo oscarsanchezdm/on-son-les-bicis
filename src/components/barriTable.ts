@@ -1,5 +1,5 @@
 import type { Barri, MetricMode } from "../lib/data";
-import { bikesOutOfService, pctBikesOutOfService, pctOfStations } from "../lib/data";
+import { barriOosFleetPct } from "../lib/data";
 import type { TimeView } from "../lib/history";
 import { pctColor } from "../lib/colors";
 import { formatPct } from "../lib/format";
@@ -11,25 +11,11 @@ export type BarriSortKey =
   | "pct_ebike"
   | "pct_docks_free"
   | "pct_bikes_out_of_service"
-  | "bikes_total"
-  | "stations_zero_ebike"
-  | "stations_zero_mechanical";
+  | "bikes_total";
 
 type SortState = { key: BarriSortKey; asc: boolean };
 
 let sortState: SortState = { key: "pct_bikes", asc: true };
-
-function barriOosPct(barri: Barri): number {
-  return (
-    barri.pct_bikes_out_of_service ??
-    pctBikesOutOfService(
-      barri.capacity_total,
-      barri.bikes_mechanical,
-      barri.bikes_ebike,
-      barri.docks_available_total
-    )
-  );
-}
 
 function sortValue(barri: Barri, key: BarriSortKey): string | number {
   switch (key) {
@@ -44,13 +30,9 @@ function sortValue(barri: Barri, key: BarriSortKey): string | number {
     case "pct_docks_free":
       return barri.pct_docks_free;
     case "pct_bikes_out_of_service":
-      return barriOosPct(barri);
+      return barriOosFleetPct(barri);
     case "bikes_total":
       return barri.bikes_total;
-    case "stations_zero_ebike":
-      return pctOfStations(barri.stations_zero_ebike, barri.stations_active);
-    case "stations_zero_mechanical":
-      return pctOfStations(barri.stations_zero_mechanical ?? 0, barri.stations_active);
   }
 }
 
@@ -71,7 +53,6 @@ function header(label: string, key: BarriSortKey): string {
   return `<th class="sortable" data-sort="${key}" scope="col">${label}${arrow}</th>`;
 }
 
-/** Unified % cell: mini bar + value. `invert` when higher % is worse (fora de servei). */
 function pctCell(pct: number, invert = false): string {
   const color = invert ? pctColor(100 - pct) : pctColor(pct);
   const width = Math.min(100, Math.max(0, pct));
@@ -89,13 +70,6 @@ function oosPctCell(pct: number): string {
   </td>`;
 }
 
-function mutedPctCell(pct: number, sublabel: string): string {
-  return `<td class="pct-cell pct-cell--muted">
-    <span class="pct-cell-num">${formatPct(pct)}</span>
-    <small class="pct-cell-sub">${sublabel}</small>
-  </td>`;
-}
-
 export function renderBarriTable(
   container: HTMLElement,
   barris: Barri[],
@@ -106,7 +80,6 @@ export function renderBarriTable(
     onSelect?: (barri: Barri) => void;
   }
 ): void {
-  const isHistorical = timeView.kind === "hour";
   const selectedCodi = options?.selectedCodi ?? null;
   const onSelect = options?.onSelect;
   const sorted = sortedBarris(barris);
@@ -123,26 +96,12 @@ export function renderBarriTable(
             ${header("% ancoratges lliures", "pct_docks_free")}
             ${header("% fora de servei", "pct_bikes_out_of_service")}
             ${header("Bicis", "bikes_total")}
-            ${header("% est. sense elèctriques", "stations_zero_ebike")}
-            ${header("% est. sense mecàniques", "stations_zero_mechanical")}
           </tr>
         </thead>
         <tbody>
           ${sorted
             .map((b) => {
-              const oosPct = barriOosPct(b);
-              const zeroEbikePct = b.stations_active
-                ? pctOfStations(b.stations_zero_ebike, b.stations_active)
-                : 0;
-              const zeroMechPct = b.stations_active
-                ? pctOfStations(b.stations_zero_mechanical ?? 0, b.stations_active)
-                : 0;
-              const zeroEbikeCell = isHistorical
-                ? `<td class="pct-cell pct-cell--muted"><span class="pct-cell-num">—</span></td>`
-                : mutedPctCell(zeroEbikePct, `${b.stations_zero_ebike}/${b.stations_active}`);
-              const zeroMechCell = isHistorical
-                ? `<td class="pct-cell pct-cell--muted"><span class="pct-cell-num">—</span></td>`
-                : mutedPctCell(zeroMechPct, `${b.stations_zero_mechanical ?? 0}/${b.stations_active}`);
+              const oosPct = barriOosFleetPct(b);
               return `<tr data-codi="${b.barri_codi}" class="${b.barri_codi === selectedCodi ? "selected" : ""}">
                 <td class="barri-name">${b.barri_nom}</td>
                 ${pctCell(b.pct_bikes)}
@@ -151,8 +110,6 @@ export function renderBarriTable(
                 ${pctCell(b.pct_docks_free)}
                 ${oosPctCell(oosPct)}
                 <td class="count-cell">${b.bikes_total}<span class="count-cap"> / ${b.capacity_total}</span></td>
-                ${zeroEbikeCell}
-                ${zeroMechCell}
               </tr>`;
             })
             .join("")}

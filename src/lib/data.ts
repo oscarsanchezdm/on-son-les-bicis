@@ -122,15 +122,7 @@ export function barriMetric(barri: Barri, mode: MetricMode): number {
     case "docks":
       return barri.pct_docks_free;
     case "out_of_service":
-      return (
-        barri.pct_bikes_out_of_service ??
-        pctBikesOutOfService(
-          barri.capacity_total,
-          barri.bikes_mechanical,
-          barri.bikes_ebike,
-          barri.docks_available_total
-        )
-      );
+      return barriOosFleetPct(barri);
     default:
       return barri.pct_bikes;
   }
@@ -146,12 +138,7 @@ export function stationMetric(station: Station, mode: MetricMode): number {
     case "docks":
       return station.pct_docks_free;
     case "out_of_service":
-      return pctBikesOutOfService(
-        station.capacity,
-        station.mechanical,
-        station.ebike,
-        station.docks_available
-      );
+      return stationOosFleetPct(station);
     default:
       return station.pct_bikes;
   }
@@ -202,6 +189,28 @@ export function pctOosOfBikeFleet(bikesAvailable: number, bikesOos: number): num
   const fleet = bikesAvailable + bikesOos;
   if (fleet <= 0) return 0;
   return (100 * bikesOos) / fleet;
+}
+
+export function barriOosFleetPct(barri: Barri): number {
+  const oos =
+    barri.bikes_out_of_service ??
+    bikesOutOfService(
+      barri.capacity_total,
+      barri.bikes_mechanical,
+      barri.bikes_ebike,
+      barri.docks_available_total
+    );
+  return pctOosOfBikeFleet(barri.bikes_total, oos);
+}
+
+export function stationOosFleetPct(station: Station): number {
+  const oos = bikesOutOfService(
+    station.capacity,
+    station.mechanical,
+    station.ebike,
+    station.docks_available
+  );
+  return pctOosOfBikeFleet(station.total, oos);
 }
 
 export function pctOfStations(count: number, stationsActive: number): number {

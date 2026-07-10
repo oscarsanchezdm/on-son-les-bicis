@@ -441,7 +441,8 @@ def _export_summary_7d(conn: sqlite3.Connection, ts_iso: str) -> None:
         """
         SELECT ts,
                SUM(bikes_total), SUM(capacity_total),
-               SUM(bikes_mechanical), SUM(bikes_ebike)
+               SUM(bikes_mechanical), SUM(bikes_ebike),
+               SUM(docks_available_total)
         FROM barri_snapshots
         GROUP BY ts
         ORDER BY ts
@@ -454,12 +455,18 @@ def _export_summary_7d(conn: sqlite3.Connection, ts_iso: str) -> None:
         if isinstance(entry, dict) and entry.get("ts")
     }
 
-    for raw_ts, bikes, cap, mech, ebike in rows:
+    for raw_ts, bikes, cap, mech, ebike, docks in rows:
         ts = _normalize_ts(raw_ts)
         dt = datetime.fromisoformat(ts.replace("Z", "+00:00")).astimezone(MADRID)
         if dt < cutoff_dt.astimezone(MADRID):
             continue
         cap = cap or 0
+        bikes = bikes or 0
+        docks = docks or 0
+        mech = mech or 0
+        ebike = ebike or 0
+        oos = max(0, cap - mech - ebike - docks)
+        fleet = bikes + oos
         series_by_ts[ts] = {
             "ts": ts,
             "date": dt.strftime("%d/%m"),
@@ -467,6 +474,7 @@ def _export_summary_7d(conn: sqlite3.Connection, ts_iso: str) -> None:
             "pct_bikes": round(100 * bikes / cap, 2) if cap else 0,
             "pct_mechanical": round(100 * mech / cap, 2) if cap else 0,
             "pct_ebike": round(100 * ebike / cap, 2) if cap else 0,
+            "pct_oos_fleet": round(100 * oos / fleet, 2) if fleet else 0,
         }
 
     series = sorted(series_by_ts.values(), key=lambda entry: entry["ts"])

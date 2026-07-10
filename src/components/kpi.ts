@@ -107,6 +107,12 @@ export function renderKpis(
         barriSparklines?.pct_ebike ?? sparklineValues(summary?.series ?? [], "pct_ebike")
       )
     : "";
+  const sparkOos = showSpark
+    ? renderSparkline(
+        barriSparklines?.pct_oos_fleet ??
+          sparklineValues(summary?.series ?? [], "pct_oos_fleet")
+      )
+    : "";
   const showCityHist = !isHistorical && scopeLabel === "ciutat";
   const histBikes = showCityHist ? histNote(summary, hour, "pct_bikes", t.pct_bikes) : "";
   const histMech = showCityHist ? histNote(summary, hour, "pct_mechanical", pctMech) : "";
@@ -163,9 +169,7 @@ export function renderKpis(
         <span class="kpi-label">${metricIconHtml("out_of_service", "kpi-icon")} Bicicletes fora de servei</span>
         <strong>${outOfService.toLocaleString("ca-ES")}</strong>
         <small>${formatPct(pctOutOfService)} del parc de bicis (disponibles + FS)</small>
-        <div class="kpi-meter kpi-meter--neutral" aria-hidden="true">
-          <span style="width:${Math.min(100, pctOutOfService)}%"></span>
-        </div>
+        ${sparkOos}
       </article>
       </div>
     </div>
