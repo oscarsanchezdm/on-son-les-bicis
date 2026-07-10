@@ -1,109 +1,73 @@
-/** Heatmap: scarcity (below city median) in red–orange; intensity scales with bike count. */
+/**
+ * Heatmap: same red→green scale as station dots.
+ * Larger stations (more capacity) contribute more visual weight.
+ */
 
+import { availabilityNorm } from "./colors";
 import type { MetricMode, Station } from "./data";
-import { stationCount, stationMetric } from "./data";
+import { stationMetric } from "./data";
 
 export type HeatPoint = [lat: number, lon: number, intensity: number];
 
-export type HeatContext = {
-  median: number;
-  spread: number;
-};
-
-function median(values: number[]): number {
-  if (!values.length) return 0;
-  const sorted = [...values].sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  return sorted.length % 2 === 1 ? sorted[mid]! : (sorted[mid - 1]! + sorted[mid]!) / 2;
-}
-
-function percentile(values: number[], p: number): number {
-  if (!values.length) return 0;
-  const sorted = [...values].sort((a, b) => a - b);
-  const idx = (p / 100) * (sorted.length - 1);
-  const lo = Math.floor(idx);
-  const hi = Math.ceil(idx);
-  if (lo === hi) return sorted[lo]!;
-  return sorted[lo]! + (sorted[hi]! - sorted[lo]!) * (idx - lo);
-}
-
-export function buildHeatContext(availabilityValues: number[]): HeatContext {
-  const med = median(availabilityValues);
-  const p25 = percentile(availabilityValues, 25);
-  return {
-    median: med,
-    spread: Math.max(med - p25, 8),
-  };
-}
-
 /**
- * Heat only where availability is below the city median (scarcity).
- * Intensity grows with how far below median and with absolute bike/dock count.
+ * Gradient position from availability (hue) × capacity weight (strength).
+ * A 45-dock station at 50% paints stronger than a 10-dock station at 50%.
  */
 export function stationHeatIntensity(
   availabilityPct: number,
-  count: number,
   capacity: number,
-  maxCount: number,
-  ctx: HeatContext
+  maxCapacity: number,
+  invert: boolean
 ): number {
-  const gap = ctx.median - availabilityPct;
-  if (gap <= 0) return 0;
+  if (capacity <= 0) return 0;
 
-  const capRatio = capacity > 0 ? count / capacity : 0;
-  const absRatio = maxCount > 0 ? count / maxCount : 0;
-  const volume = 0.2 + 0.8 * (0.45 * capRatio + 0.55 * absRatio);
+  const colorPos = availabilityNorm(availabilityPct, invert);
+  const capWeight =
+    maxCapacity > 0 ? 0.12 + 0.88 * Math.pow(capacity / maxCapacity, 0.75) : 0.5;
 
-  const scarcityNorm = Math.min(1, gap / ctx.spread);
-  let intensity = scarcityNorm * volume * 0.65;
-
-  if (availabilityPct <= 0) intensity = Math.max(intensity, 0.5);
-  else if (availabilityPct < 5) intensity = Math.max(intensity, 0.38);
-  else if (availabilityPct < 10) intensity = Math.max(intensity, 0.22);
-
-  return Math.min(0.6, intensity);
+  return Math.min(1, colorPos * capWeight);
 }
 
 export function buildStationHeatPoints(
   stations: Station[],
   mode: MetricMode
 ): HeatPoint[] {
+  const invert = mode === "docks";
   const active = stations.filter((s) => s.capacity > 0);
-  const availabilityValues = active.map((s) => stationMetric(s, mode));
-  const ctx = buildHeatContext(availabilityValues);
-  const counts = active.map((s) => stationCount(s, mode));
-  const maxCount = counts.length ? Math.max(...counts) : 1;
+  const maxCapacity = active.length
+    ? Math.max(...active.map((s) => s.capacity))
+    : 1;
 
   return active
     .map((s) => {
       const availability = stationMetric(s, mode);
-      const count = stationCount(s, mode);
       const intensity = stationHeatIntensity(
         availability,
-        count,
         s.capacity,
-        maxCount,
-        ctx
+        maxCapacity,
+        invert
       );
-      if (intensity <= 0) return null;
+      if (intensity < 0.04) return null;
       return [s.lat, s.lon, intensity] as HeatPoint;
     })
     .filter((p): p is HeatPoint => p !== null);
 }
 
-/** Red → orange: scarcity only (aligned with low end of dot scale). */
+/** Same red→green scale as pctColor / station dots. */
 export const HEAT_LAYER_OPTIONS = {
-  radius: 26,
-  blur: 20,
-  maxZoom: 18,
-  max: 0.6,
-  minOpacity: 0.4,
+  radius: 30,
+  blur: 24,
+  maxZoom: 17,
+  max: 1,
+  minOpacity: 0.32,
   pane: "heatPane",
   gradient: {
-    0.05: "rgba(185, 28, 28, 0.9)",
-    0.25: "rgba(234, 88, 12, 0.85)",
-    0.45: "rgba(245, 158, 11, 0.75)",
-    0.6: "rgba(251, 191, 36, 0.65)",
+    0.08: "rgba(185, 28, 28, 0.85)",
+    0.22: "rgba(234, 88, 12, 0.82)",
+    0.38: "rgba(245, 158, 11, 0.78)",
+    0.58: "rgba(132, 204, 22, 0.72)",
+    0.78: "rgba(34, 139, 34, 0.7)",
+    1.0: "rgba(21, 128, 61, 0.8)",
   },
 } as const;
 
