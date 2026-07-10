@@ -1,17 +1,48 @@
 {
-  "generated_at": "2026-07-10T14:08:19+00:00",
+  "generated_at": "2026-07-10T14:10:47+00:00",
   "timezone": "Europe/Madrid",
   "hoursByDayType": {
     "weekday": [],
-    "friday": [10, 13, 14, 15, 16],
+    "friday": [
+      10,
+      13,
+      14,
+      15,
+      16
+    ],
     "saturday": [],
     "sunday": []
   },
   "files": [
-    { "key": "2026-07-10-08", "localDate": "2026-07-10", "localHour": 10, "dayType": "friday" },
-    { "key": "2026-07-10-11", "localDate": "2026-07-10", "localHour": 13, "dayType": "friday" },
-    { "key": "2026-07-10-12", "localDate": "2026-07-10", "localHour": 14, "dayType": "friday" },
-    { "key": "2026-07-10-13", "localDate": "2026-07-10", "localHour": 15, "dayType": "friday" },
-    { "key": "2026-07-10-14", "localDate": "2026-07-10", "localHour": 16, "dayType": "friday" }
+    {
+      "key": "2026-07-10-08",
+      "localDate": "2026-07-10",
+      "localHour": 10,
+      "dayType": "friday"
+    },
+    {
+      "key": "2026-07-10-11",
+      "localDate": "2026-07-10",
+      "localHour": 13,
+      "dayType": "friday"
+    },
+    {
+      "key": "2026-07-10-12",
+      "localDate": "2026-07-10",
+      "localHour": 14,
+      "dayType": "friday"
+    },
+    {
+      "key": "2026-07-10-13",
+      "localDate": "2026-07-10",
+      "localHour": 15,
+      "dayType": "friday"
+    },
+    {
+      "key": "2026-07-10-14",
+      "localDate": "2026-07-10",
+      "localHour": 16,
+      "dayType": "friday"
+    }
   ]
 }
