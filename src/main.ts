@@ -17,25 +17,28 @@ import { metricIconHtml } from "./lib/icons";
 const app = document.querySelector<HTMLDivElement>("#app")!;
 
 app.innerHTML = `
-  <header class="site-header">
-    <div>
-      <p class="eyebrow">Dades obertes · Bicing Barcelona</p>
-      <h1>On són les bicis?</h1>
-      <p class="lede">Mapa en temps quasi real de la disponibilitat de bicicletes mecàniques i elèctriques del Bicing, per estació i per barri.</p>
-    </div>
-    <div class="mode-toggle" role="group" aria-label="Mètrica del mapa">
-      <button type="button" data-mode="total" class="active">${metricIconHtml("total")} Totals</button>
-      <button type="button" data-mode="mechanical">${metricIconHtml("mechanical")} Mecàniques</button>
-      <button type="button" data-mode="ebike">${metricIconHtml("ebike")} Elèctriques</button>
-      <button type="button" data-mode="docks">${metricIconHtml("docks")} Ancoratges lliures</button>
-      <button type="button" data-mode="out_of_service">${metricIconHtml("out_of_service")} Fora de servei</button>
+  <header class="site-header site-header--sticky">
+    <div class="site-header__inner">
+      <div class="site-header__row">
+        <div class="site-header__brand">
+          <p class="eyebrow">Dades obertes · Bicing Barcelona</p>
+          <h1>On són les bicis?</h1>
+        </div>
+        <div id="barri-filter-bar" class="barri-filter-bar hidden" hidden>
+          <span id="barri-filter-label"></span>
+          <button type="button" id="barri-filter-reset">Tornar a la ciutat</button>
+        </div>
+      </div>
+      <div class="mode-toggle" role="group" aria-label="Mètrica del mapa">
+        <button type="button" data-mode="total" class="active">${metricIconHtml("total")} Totals</button>
+        <button type="button" data-mode="mechanical">${metricIconHtml("mechanical")} Mecàniques</button>
+        <button type="button" data-mode="ebike">${metricIconHtml("ebike")} Elèctriques</button>
+        <button type="button" data-mode="docks">${metricIconHtml("docks")} Ancoratges</button>
+        <button type="button" data-mode="out_of_service">${metricIconHtml("out_of_service")} Fora de servei</button>
+      </div>
     </div>
   </header>
   <main>
-    <div id="barri-filter-bar" class="barri-filter-bar hidden" hidden>
-      <span id="barri-filter-label"></span>
-      <button type="button" id="barri-filter-reset">Tornar a la ciutat</button>
-    </div>
     <section id="timeline"></section>
     <section id="kpis"></section>
     <section class="map-section">
@@ -73,7 +76,7 @@ let displayStations: Station[] | null = null;
 function metricLabel(): string {
   switch (mode) {
     case "docks":
-      return "ancoratges lliures";
+      return "ancoratges";
     case "ebike":
       return "elèctriques";
     case "mechanical":

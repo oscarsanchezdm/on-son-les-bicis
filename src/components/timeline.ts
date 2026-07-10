@@ -26,10 +26,12 @@ export function renderTimeSelector(container: HTMLElement, opts: TimeSelectorOpt
 
   container.innerHTML = `
     <section class="timeline">
-      <h2>Franja horària</h2>
-      <p class="timeline-note">
-        Compara les dades actuals amb la mitjana històrica a la mateixa hora, filtrada per tipus de dia (fins a 30 dies enrere).
-      </p>
+      <div class="timeline-head">
+        <h2>Franja horària</h2>
+        <p class="timeline-status" id="timeline-status">
+          ${isLatest ? "Mostrant dades actuals (estacions + barris)." : renderHourSummary(bucket, selectedHour, selectedDayType)}
+        </p>
+      </div>
       <div class="time-controls">
         <button type="button" id="btn-latest" class="time-btn ${isLatest ? "active" : ""}">
           Dades actuals
@@ -46,9 +48,6 @@ export function renderTimeSelector(container: HTMLElement, opts: TimeSelectorOpt
           <strong id="hour-label">${formatHour(selectedHour)}</strong>
         </label>
       </div>
-      <p class="timeline-status" id="timeline-status">
-        ${isLatest ? "Mostrant dades actuals (estacions + barris)." : renderHourSummary(bucket, selectedHour, selectedDayType)}
-      </p>
     </section>
   `;
 
