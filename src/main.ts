@@ -2,14 +2,16 @@ import "./style.css";
 import { renderBarriTable } from "./components/barriTable";
 import { latestFromBarri, renderKpis } from "./components/kpi";
 import { createMap } from "./components/map";
-import { renderTimeSelector, setTimelineStatus, updateTimeSelectorStatus } from "./components/timeline";
+import { renderTimeSelector, setTimelineStatus, timeViewLabel, updateTimeSelector } from "./components/timeline";
 import type { Barri, MetricMode, Station } from "./lib/data";
 import { loadBarris, loadBarrisGeo, loadLatest } from "./lib/data";
 import {
   barrisToLatestData,
-  hourViewScopeLabel,
-  loadBarriHourlyAverage,
+  isHistoricalView,
+  loadBarriSnapshot,
+  loadHistoryIndex,
   loadSummary7d,
+  type HistoryIndex,
   type TimeView,
 } from "./lib/history";
 import { metricIconHtml } from "./lib/icons";
@@ -17,25 +19,28 @@ import { metricIconHtml } from "./lib/icons";
 const app = document.querySelector<HTMLDivElement>("#app")!;
 
 app.innerHTML = `
-  <header class="site-header">
-    <div>
-      <p class="eyebrow">Dades obertes · Bicing Barcelona</p>
-      <h1>On són les bicis?</h1>
-      <p class="lede">Mapa en temps quasi real de la disponibilitat de bicicletes mecàniques i elèctriques del Bicing, per estació i per barri.</p>
-    </div>
-    <div class="mode-toggle" role="group" aria-label="Mètrica del mapa">
-      <button type="button" data-mode="total" class="active">${metricIconHtml("total")} Totals</button>
-      <button type="button" data-mode="mechanical">${metricIconHtml("mechanical")} Mecàniques</button>
-      <button type="button" data-mode="ebike">${metricIconHtml("ebike")} Elèctriques</button>
-      <button type="button" data-mode="docks">${metricIconHtml("docks")} Ancoratges lliures</button>
-      <button type="button" data-mode="out_of_service">${metricIconHtml("out_of_service")} Fora de servei</button>
+  <header class="site-header site-header--sticky">
+    <div class="site-header__inner">
+      <div class="site-header__row">
+        <div class="site-header__brand">
+          <p class="eyebrow">Dades obertes · Bicing Barcelona</p>
+          <h1>On són les bicis?</h1>
+        </div>
+        <div id="barri-filter-bar" class="barri-filter-bar hidden" hidden>
+          <span id="barri-filter-label"></span>
+          <button type="button" id="barri-filter-reset">Tornar a la ciutat</button>
+        </div>
+      </div>
+      <div class="mode-toggle" role="group" aria-label="Mètrica del mapa">
+        <button type="button" data-mode="total" class="active">${metricIconHtml("total")} Totals</button>
+        <button type="button" data-mode="mechanical">${metricIconHtml("mechanical")} Mecàniques</button>
+        <button type="button" data-mode="ebike">${metricIconHtml("ebike")} Elèctriques</button>
+        <button type="button" data-mode="docks">${metricIconHtml("docks")} Ancoratges</button>
+        <button type="button" data-mode="out_of_service">${metricIconHtml("out_of_service")} Fora de servei</button>
+      </div>
     </div>
   </header>
   <main>
-    <div id="barri-filter-bar" class="barri-filter-bar hidden" hidden>
-      <span id="barri-filter-label"></span>
-      <button type="button" id="barri-filter-reset">Tornar a la ciutat</button>
-    </div>
     <section id="timeline"></section>
     <section id="kpis"></section>
     <section class="map-section">
@@ -66,6 +71,7 @@ let selectedBarri: Barri | null = null;
 let latestData: Awaited<ReturnType<typeof loadLatest>> | null = null;
 let barrisData: Awaited<ReturnType<typeof loadBarris>> | null = null;
 let summaryData: Awaited<ReturnType<typeof loadSummary7d>> | null = null;
+let historyIndex: HistoryIndex | null = null;
 let mapView: ReturnType<typeof createMap> | null = null;
 let displayBarris: Barri[] = [];
 let displayStations: Station[] | null = null;
@@ -73,7 +79,7 @@ let displayStations: Station[] | null = null;
 function metricLabel(): string {
   switch (mode) {
     case "docks":
-      return "ancoratges lliures";
+      return "ancoratges";
     case "ebike":
       return "elèctriques";
     case "mechanical":
@@ -90,8 +96,8 @@ function legendText(): string {
   if (selectedBarri) {
     return `Filtrat per ${selectedBarri.barri_nom}: ${metric} del barri.`;
   }
-  if (timeView.kind === "hour") {
-    return `Barris segons mitjana de ${metric} (${hourViewScopeLabel(timeView.hour, timeView.dayType)}).`;
+  if (isHistoricalView(timeView)) {
+    return `Barris segons mitjana de ${metric} (${timeViewLabel(timeView, historyIndex)}).`;
   }
   return `Calor i punts amb la mateixa escala; estacions grans pesen més al mapa de calor.`;
 }
@@ -100,8 +106,8 @@ function tableNote(): string {
   if (selectedBarri) {
     return `Filtrant per ${selectedBarri.barri_nom}. Clica «Tornar a la ciutat» o un altre barri.`;
   }
-  if (timeView.kind === "hour") {
-    return `Mitjana per barri (${hourViewScopeLabel(timeView.hour, timeView.dayType)}).`;
+  if (isHistoricalView(timeView)) {
+    return `Mitjana per barri (${timeViewLabel(timeView, historyIndex)}).`;
   }
   return "Dades actuals per barri. Clica una columna per ordenar o un barri per filtrar.";
 }
@@ -114,15 +120,15 @@ function mapStations(): Station[] | null {
 
 function kpiScopeLabel(): string {
   if (selectedBarri) return selectedBarri.barri_nom;
-  if (timeView.kind === "hour") {
-    return hourViewScopeLabel(timeView.hour, timeView.dayType);
+  if (isHistoricalView(timeView)) {
+    return timeViewLabel(timeView, historyIndex);
   }
   return "ciutat";
 }
 
 function buildKpiData() {
   if (!latestData) return null;
-  const isHistorical = timeView.kind === "hour";
+  const isHistorical = isHistoricalView(timeView);
 
   if (!isHistorical) {
     return selectedBarri
@@ -160,18 +166,16 @@ function updateTimelineStatus() {
     return;
   }
 
+  const label = timeViewLabel(timeView, historyIndex);
   if (!displayBarris.length) {
-    setTimelineStatus(
-      timelineEl,
-      `${hourViewScopeLabel(timeView.hour, timeView.dayType)}: encara no hi ha prou mostres històriques.`
-    );
+    setTimelineStatus(timelineEl, `${label}: encara no hi ha dades per aquesta franja.`);
     return;
   }
 
   const agg = barrisToLatestData(displayBarris, latestData!.last_updated).totals;
   setTimelineStatus(
     timelineEl,
-    `${hourViewScopeLabel(timeView.hour, timeView.dayType)}: ${agg.pct_bikes.toFixed(1)}% bicis · ${agg.pct_mechanical.toFixed(1)}% mecàniques · ${agg.pct_ebike.toFixed(1)}% elèctriques.`
+    `${label}: ${agg.pct_bikes.toFixed(1)}% bicis · ${agg.pct_mechanical.toFixed(1)}% mecàniques · ${agg.pct_ebike.toFixed(1)}% elèctriques.`
   );
 }
 
@@ -186,7 +190,7 @@ function refresh() {
     kpiData,
     summaryData,
     kpiScopeLabel(),
-    timeView.kind === "hour"
+    timeView.kind === "snapshot"
   );
   mapView.update(
     mode,
@@ -228,37 +232,41 @@ async function applyTimeView(view: TimeView) {
 
   const requestId = ++timeViewRequest;
   const timelineEl = document.getElementById("timeline")!;
-  updateTimeSelectorStatus(timelineEl, timeView, summaryData, latestData.last_updated);
 
   if (view.kind === "latest") {
     displayBarris = barrisData.barris;
     displayStations = latestData.stations;
   } else {
-    setTimelineStatus(
-      timelineEl,
-      `${hourViewScopeLabel(view.hour, view.dayType)}: carregant històric…`
-    );
-    displayBarris = await loadBarriHourlyAverage(view.hour, view.dayType);
+    setTimelineStatus(timelineEl, `${timeViewLabel(view, historyIndex)}: carregant…`);
+    displayBarris = await loadBarriSnapshot(view.date, view.hour);
     if (requestId !== timeViewRequest) return;
     displayStations = null;
     selectedBarri = null;
   }
 
-  updateTimeSelectorStatus(timelineEl, timeView, summaryData, latestData.last_updated);
+  updateTimeSelector(timelineEl, {
+    index: historyIndex,
+    timeView,
+    onChange: (v) => {
+      void applyTimeView(v);
+    },
+  });
   refresh();
 }
 
 async function init() {
   try {
-    const [latest, barris, geo, summary] = await Promise.all([
+    const [latest, barris, geo, summary, index] = await Promise.all([
       loadLatest(),
       loadBarris(),
       loadBarrisGeo(),
       loadSummary7d(),
+      loadHistoryIndex(),
     ]);
     latestData = latest;
     barrisData = barris;
     summaryData = summary;
+    historyIndex = index;
     displayBarris = barris.barris;
     displayStations = latest.stations;
 
@@ -266,8 +274,7 @@ async function init() {
     refresh();
 
     renderTimeSelector(document.getElementById("timeline")!, {
-      summary,
-      currentTs: latest.last_updated,
+      index,
       timeView,
       onChange: (view) => {
         void applyTimeView(view);

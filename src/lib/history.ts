@@ -28,9 +28,22 @@ export type Summary7d = {
 
 export type DayType = "weekday" | "friday" | "saturday" | "sunday";
 
+export type HistorySnapshot = {
+  key: string;
+  date: string;
+  hour: number;
+  dayType: DayType;
+  label: string;
+};
+
+export type HistoryIndex = {
+  generated_at: string;
+  snapshots: HistorySnapshot[];
+};
+
 export type TimeView =
   | { kind: "latest" }
-  | { kind: "hour"; hour: number; dayType: DayType };
+  | { kind: "snapshot"; key: string; date: string; hour: number; dayType: DayType };
 
 type HourlyBarriSnapshot = {
   barri_codi: string;
@@ -48,10 +61,14 @@ type HourlyBarriSnapshot = {
   stations_zero_mechanical?: number;
 };
 
-const HISTORY_DAYS = 30;
-
 export async function loadSummary7d(): Promise<Summary7d | null> {
   const res = await fetch(`${BASE}data/history/summary-7d.json`);
+  if (!res.ok) return null;
+  return res.json();
+}
+
+export async function loadHistoryIndex(): Promise<HistoryIndex | null> {
+  const res = await fetch(`${BASE}data/history/history-index.json`);
   if (!res.ok) return null;
   return res.json();
 }
@@ -64,41 +81,6 @@ async function loadHourlyGz(url: string): Promise<HourlyBarriSnapshot[]> {
   const text = await new Response(decompressed).text();
   const data = JSON.parse(text) as { barris?: HourlyBarriSnapshot[] };
   return data.barris ?? [];
-}
-
-/** Try exact hour, then nearest hours on the same UTC day. */
-async function loadHourlyForDay(
-  y: string,
-  m: string,
-  day: string,
-  hour: number
-): Promise<HourlyBarriSnapshot[]> {
-  const tried = new Set<number>();
-  const order: number[] = [];
-  for (let delta = 0; delta <= 3; delta++) {
-    if (delta === 0) {
-      order.push(hour);
-    } else {
-      order.push(hour - delta, hour + delta);
-    }
-  }
-  for (const h of order) {
-    if (h < 0 || h > 23 || tried.has(h)) continue;
-    tried.add(h);
-    const hh = String(h).padStart(2, "0");
-    const url = `${BASE}data/history/hourly/${y}-${m}-${day}-${hh}.json.gz`;
-    const barris = await loadHourlyGz(url);
-    if (barris.length) return barris;
-  }
-  return [];
-}
-
-function matchesDayType(date: Date, dayType: DayType): boolean {
-  const dow = date.getUTCDay();
-  if (dayType === "friday") return dow === 5;
-  if (dayType === "saturday") return dow === 6;
-  if (dayType === "sunday") return dow === 0;
-  return dow >= 1 && dow <= 4;
 }
 
 export function dayTypeLabel(dayType: DayType): string {
@@ -114,73 +96,50 @@ export function dayTypeLabel(dayType: DayType): string {
   }
 }
 
-function averageBarriSnapshots(samples: HourlyBarriSnapshot[]): Barri {
-  const n = samples.length;
-  const avg = (fn: (s: HourlyBarriSnapshot) => number) =>
-    samples.reduce((sum, s) => sum + fn(s), 0) / n;
-
-  const capacity = avg((s) => s.capacity_total);
-  const mechanical = avg((s) => s.bikes_mechanical);
-  const ebike = avg((s) => s.bikes_ebike);
-  const bikes = avg((s) => s.bikes_total);
-  const docks = avg((s) => s.docks_available_total);
-  const cap = Math.round(capacity);
-  const oos = bikesOutOfService(cap, Math.round(mechanical), Math.round(ebike), Math.round(docks));
+function snapshotToBarri(s: HourlyBarriSnapshot): Barri {
+  const cap = s.capacity_total;
+  const oos = bikesOutOfService(
+    cap,
+    s.bikes_mechanical,
+    s.bikes_ebike,
+    s.docks_available_total
+  );
 
   return {
-    barri_codi: samples[0]!.barri_codi,
-    barri_nom: samples[0]!.barri_nom,
-    stations_count: Math.round(avg((s) => s.stations_active ?? 0)),
-    stations_active: Math.round(avg((s) => s.stations_active ?? 0)),
+    barri_codi: s.barri_codi,
+    barri_nom: s.barri_nom,
+    stations_count: s.stations_active ?? 0,
+    stations_active: s.stations_active ?? 0,
     capacity_total: cap,
-    docks_available_total: Math.round(docks),
-    bikes_mechanical: Math.round(mechanical),
-    bikes_ebike: Math.round(ebike),
-    bikes_total: Math.round(bikes),
-    pct_bikes: cap > 0 ? Math.round((100 * bikes) / cap * 100) / 100 : 0,
-    pct_docks_free: cap > 0 ? Math.round((100 * docks) / cap * 100) / 100 : 0,
-    pct_mechanical: cap > 0 ? Math.round((100 * mechanical) / cap * 100) / 100 : 0,
-    pct_ebike: cap > 0 ? Math.round((100 * ebike) / cap * 100) / 100 : 0,
-    stations_zero_ebike: Math.round(avg((s) => s.stations_zero_ebike ?? 0)),
-    stations_zero_mechanical: Math.round(avg((s) => s.stations_zero_mechanical ?? 0)),
+    docks_available_total: s.docks_available_total,
+    bikes_mechanical: s.bikes_mechanical,
+    bikes_ebike: s.bikes_ebike,
+    bikes_total: s.bikes_total,
+    pct_bikes: s.pct_bikes,
+    pct_docks_free: s.pct_docks_free,
+    pct_mechanical: cap > 0 ? Math.round((100 * s.bikes_mechanical) / cap * 100) / 100 : 0,
+    pct_ebike: s.pct_ebike,
+    stations_zero_ebike: s.stations_zero_ebike ?? 0,
+    stations_zero_mechanical: s.stations_zero_mechanical ?? 0,
     stations_zero_any: 0,
     bikes_out_of_service: oos,
     pct_bikes_out_of_service: pctBikesOutOfService(
       cap,
-      Math.round(mechanical),
-      Math.round(ebike),
-      Math.round(docks)
+      s.bikes_mechanical,
+      s.bikes_ebike,
+      s.docks_available_total
     ),
     superficie_ha: null,
   };
 }
 
-/** Average barri metrics for hour-of-day and day-type across stored history (30 days). */
-export async function loadBarriHourlyAverage(
-  hour: number,
-  dayType: DayType
-): Promise<Barri[]> {
-  const byCode = new Map<string, HourlyBarriSnapshot[]>();
-  const now = new Date();
-
-  for (let d = 0; d < HISTORY_DAYS; d++) {
-    const date = new Date(now);
-    date.setUTCDate(date.getUTCDate() - d);
-    if (!matchesDayType(date, dayType)) continue;
-
-    const y = date.getUTCFullYear();
-    const m = String(date.getUTCMonth() + 1).padStart(2, "0");
-    const day = String(date.getUTCDate()).padStart(2, "0");
-    const barris = await loadHourlyForDay(y, m, day, hour);
-    for (const b of barris) {
-      const list = byCode.get(b.barri_codi) ?? [];
-      list.push(b);
-      byCode.set(b.barri_codi, list);
-    }
-  }
-
-  return [...byCode.values()]
-    .map(averageBarriSnapshots)
+/** Load barri metrics from one stored hourly snapshot file. */
+export async function loadBarriSnapshot(date: string, hour: number): Promise<Barri[]> {
+  const hh = String(hour).padStart(2, "0");
+  const url = `${BASE}data/history/hourly/${date}-${hh}.json.gz`;
+  const barris = await loadHourlyGz(url);
+  return barris
+    .map(snapshotToBarri)
     .sort((a, b) => a.barri_nom.localeCompare(b.barri_nom, "ca"));
 }
 
@@ -220,9 +179,9 @@ export function barrisToLatestData(barris: Barri[], lastUpdated: string): Latest
   };
 }
 
-export function hourViewScopeLabel(hour: number, dayType: DayType): string {
-  const hh = String(hour).padStart(2, "0");
-  return `mitjana ${dayTypeLabel(dayType)} a les ${hh}:00`;
+export function snapshotScopeLabel(view: Extract<TimeView, { kind: "snapshot" }>): string {
+  const hh = String(view.hour).padStart(2, "0");
+  return `mitjana ${dayTypeLabel(view.dayType)} a les ${hh}:00`;
 }
 
 export function sparklineValues(
@@ -244,4 +203,8 @@ export function hourlyAverage(
   if (key === "pct_bikes") return bucket.avg_pct_bikes;
   if (key === "pct_mechanical") return bucket.avg_pct_mechanical;
   return bucket.avg_pct_ebike;
+}
+
+export function isHistoricalView(view: TimeView): view is Extract<TimeView, { kind: "snapshot" }> {
+  return view.kind === "snapshot";
 }
