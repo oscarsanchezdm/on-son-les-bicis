@@ -35,8 +35,11 @@ def _bikes_out_of_service(
     ebike: int,
     docks_available: int,
     bikes_available: int | None = None,
+    bikes_disabled: int | None = None,
 ) -> int:
-    """Infer FS bikes; empty stations (0 available) must not count offline docks as FS."""
+    """FS bikes: GBFS num_vehicles_disabled when present, else residual inference."""
+    if bikes_disabled is not None:
+        return max(0, bikes_disabled)
     available = bikes_available if bikes_available is not None else mechanical + ebike
     if available <= 0:
         return 0
@@ -57,7 +60,7 @@ def _export_latest(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
         SELECT s.station_id, s.name, s.lat, s.lon, s.capacity, s.config,
                s.barri_codi, s.barri_nom, s.district, s.status,
                sn.mechanical, sn.ebike, sn.total, sn.docks_available,
-               sn.pct_bikes, sn.pct_docks_free
+               COALESCE(sn.bikes_disabled, 0), sn.pct_bikes, sn.pct_docks_free
         FROM stations s
         JOIN snapshots sn ON sn.station_id = s.station_id AND sn.ts = ?
         ORDER BY s.station_id
@@ -97,6 +100,7 @@ def _export_latest(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
             ebike,
             total,
             docks,
+            bikes_disabled,
             pct_bikes,
             pct_docks,
         ) = row
@@ -115,6 +119,7 @@ def _export_latest(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
             "ebike": ebike,
             "total": total,
             "docks_available": docks,
+            "bikes_disabled": bikes_disabled,
             "pct_bikes": pct_bikes,
             "pct_docks_free": pct_docks,
         }
@@ -127,7 +132,9 @@ def _export_latest(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
             }
         )
         if is_station_active(status):
-            station_oos = _bikes_out_of_service(capacity, mechanical, ebike, docks, total)
+            station_oos = _bikes_out_of_service(
+                capacity, mechanical, ebike, docks, total, bikes_disabled
+            )
             total_oos += station_oos
             if barri_codi:
                 barri_oos[barri_codi] += station_oos

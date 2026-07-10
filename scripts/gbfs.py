@@ -130,11 +130,13 @@ def load_gbfs_stations() -> tuple[dict[str, dict[str, Any]], list[dict[str, Any]
         mechanical = _count_by_type(available, mechanical_types)
         ebike = _count_by_type(available, ebike_types)
         total = int(station.get("num_vehicles_available") or mechanical + ebike)
+        bikes_disabled = int(station.get("num_vehicles_disabled") or 0)
         status_list.append(
             {
                 "station_id": sid,
                 "num_bikes_available": total,
                 "num_docks_available": int(station.get("num_docks_available") or 0),
+                "num_vehicles_disabled": bikes_disabled,
                 "num_bikes_available_types": {
                     "mechanical": mechanical,
                     "ebike": ebike,

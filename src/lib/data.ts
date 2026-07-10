@@ -13,6 +13,7 @@ export type Station = {
   ebike: number;
   total: number;
   docks_available: number;
+  bikes_disabled?: number;
   pct_bikes: number;
   pct_docks_free: number;
 };
@@ -165,8 +166,12 @@ export function bikesOutOfService(
   mechanical: number,
   ebike: number,
   docksAvailable: number,
-  bikesAvailable?: number
+  bikesAvailable?: number,
+  bikesDisabled?: number
 ): number {
+  if (typeof bikesDisabled === "number") {
+    return Math.max(0, bikesDisabled);
+  }
   const available = bikesAvailable ?? mechanical + ebike;
   if (available <= 0) return 0;
   return Math.max(0, capacity - mechanical - ebike - docksAvailable);
@@ -178,7 +183,8 @@ export function stationOosCount(station: Station): number {
     station.mechanical,
     station.ebike,
     station.docks_available,
-    station.total
+    station.total,
+    station.bikes_disabled
   );
 }
 

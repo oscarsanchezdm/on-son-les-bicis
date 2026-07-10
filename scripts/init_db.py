@@ -94,6 +94,12 @@ def init_db() -> None:
                 )
             except sqlite3.OperationalError:
                 pass
+        try:
+            conn.execute(
+                "ALTER TABLE snapshots ADD COLUMN bikes_disabled INTEGER NOT NULL DEFAULT 0"
+            )
+        except sqlite3.OperationalError:
+            pass
         conn.commit()
     print(f"Database initialized at {DB_PATH}")
 
