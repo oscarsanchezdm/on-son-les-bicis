@@ -104,13 +104,25 @@ export function renderKpis(
   const histEbike =
     !isHistorical && scopeLabel === "ciutat" ? histNote(summary, hour, "pct_ebike", pctEbike) : "";
 
+  const zeroMech = t.stations_zero_mechanical ?? 0;
+  const zeroEbike = t.stations_zero_ebike;
+  const zeroMechNote =
+    zeroMech > 0
+      ? `<small class="kpi-station-gap kpi-station-gap--warn">${zeroMech} est. sense mecàniques (${formatPct(pctZeroMech)})</small>`
+      : "";
+  const zeroEbikeNote =
+    zeroEbike > 0
+      ? `<small class="kpi-station-gap kpi-station-gap--warn">${zeroEbike} est. sense elèctriques (${formatPct(pctZeroEbike)})</small>`
+      : "";
+
   container.innerHTML = `
-    <div class="kpi-grid">
-      <article class="kpi-card kpi-card--meta">
+    <div class="kpi-panel">
+      <p class="kpi-update" title="${formatDateTime(data.last_updated)}">
         <span class="kpi-label">Darrera actualització</span>
         <strong>${formatRelativeTime(data.last_updated)}</strong>
-        <small>${formatDateTime(data.last_updated)}</small>
-      </article>
+        <span class="kpi-update-date">${formatDateTime(data.last_updated)}</span>
+      </p>
+      <div class="kpi-grid">
       <article class="kpi-card">
         <span class="kpi-label">Bicis disponibles (${scopeLabel})</span>
         <strong>${t.bikes_total.toLocaleString("ca-ES")}</strong>
@@ -122,6 +134,7 @@ export function renderKpis(
         <span class="kpi-label">Mecàniques</span>
         <strong>${t.bikes_mechanical.toLocaleString("ca-ES")}</strong>
         <small>${formatPct(pctMechOfBikes)} de les bicis disponibles</small>
+        ${zeroMechNote}
         ${sparkMech}
         ${histMech ? `<small class="kpi-hist">${histMech}</small>` : ""}
       </article>
@@ -129,13 +142,9 @@ export function renderKpis(
         <span class="kpi-label">Elèctriques</span>
         <strong>${t.bikes_ebike.toLocaleString("ca-ES")}</strong>
         <small>${formatPct(pctEbikeOfBikes)} de les bicis disponibles</small>
+        ${zeroEbikeNote}
         ${sparkEbike}
         ${histEbike ? `<small class="kpi-hist">${histEbike}</small>` : ""}
-      </article>
-      <article class="kpi-card">
-        <span class="kpi-label">Estacions sense un tipus de bici</span>
-        <strong>${formatPct(pctZeroEbike)} E · ${formatPct(pctZeroMech)} M</strong>
-        <small>${t.stations_zero_ebike} sense elèctriques · ${t.stations_zero_mechanical ?? 0} sense mecàniques · ${t.stations_active} actives</small>
       </article>
       <article class="kpi-card">
         <span class="kpi-label">${metricIconHtml("out_of_service", "kpi-icon")} Bicicletes fora de servei</span>
@@ -145,6 +154,7 @@ export function renderKpis(
           <span style="width:${Math.min(100, pctOutOfService)}%"></span>
         </div>
       </article>
+      </div>
     </div>
   `;
 }
