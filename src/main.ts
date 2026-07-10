@@ -20,6 +20,7 @@ import {
   type TimeView,
 } from "./lib/history";
 import { heatLegendGradient, type HeatScaleMode } from "./lib/colors";
+import { metricIconHtml } from "./lib/icons";
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 
