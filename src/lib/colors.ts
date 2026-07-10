@@ -11,7 +11,7 @@ export const METRIC_ABSOLUTE_COLORS: Record<MetricMode, string> = {
   out_of_service: "#f97316",
 };
 
-/** Option B difuminada: vermell <10%, verd ample (55–88%), blau saturació curt (88–100%). */
+/** Bicis disponibles: escassetat → normal → abundant → saturació (blau). */
 export const PCT_SCALE_STOPS: ReadonlyArray<{ pct: number; color: string }> = [
   { pct: 0, color: "#b91c1c" },
   { pct: 10, color: "#ea580c" },
@@ -22,9 +22,20 @@ export const PCT_SCALE_STOPS: ReadonlyArray<{ pct: number; color: string }> = [
   { pct: 100, color: "#4f46e5" },
 ];
 
+/** Fora de servei: verd (cap/poc) → vermell (molt); sense blau. */
+export const PCT_OOS_STOPS: ReadonlyArray<{ pct: number; color: string }> = [
+  { pct: 0, color: "#22c55e" },
+  { pct: 30, color: "#22c55e" },
+  { pct: 50, color: "#f59e0b" },
+  { pct: 75, color: "#ea580c" },
+  { pct: 100, color: "#b91c1c" },
+];
+
 export const PCT_LEGEND_LABELS = ["Escassetat", "Normal", "Abundant", "Saturat"] as const;
+export const PCT_OOS_LEGEND_LABELS = ["Cap", "Baix", "Alt", "Crític"] as const;
 
 type Rgb = [number, number, number];
+type ColorStop = { pct: number; color: string };
 
 function hexToRgb(hex: string): Rgb {
   const n = Number.parseInt(hex.slice(1), 16);
@@ -39,9 +50,8 @@ function lerp(a: number, b: number, t: number): number {
   return Math.round(a + (b - a) * t);
 }
 
-function interpolatePctRgb(pct: number): Rgb {
+function interpolateFromStops(pct: number, stops: ReadonlyArray<ColorStop>): Rgb {
   const v = Math.min(100, Math.max(0, pct));
-  const stops = PCT_SCALE_STOPS;
   if (v <= stops[0]!.pct) return hexToRgb(stops[0]!.color);
   const last = stops[stops.length - 1]!;
   if (v >= last.pct) return hexToRgb(last.color);
@@ -60,16 +70,25 @@ function interpolatePctRgb(pct: number): Rgb {
   return hexToRgb(last.color);
 }
 
+function stopsToGradientCss(stops: ReadonlyArray<ColorStop>): string {
+  return `linear-gradient(90deg, ${stops.map((s) => `${s.color} ${s.pct}%`).join(", ")})`;
+}
+
 export function pctColor(value: number, invert = false): string {
   const v = invert ? 100 - value : value;
   if (!Number.isFinite(v)) return "#cbd5e1";
-  return rgbToHex(interpolatePctRgb(v));
+  return rgbToHex(interpolateFromStops(v, PCT_SCALE_STOPS));
+}
+
+export function pctColorOos(value: number): string {
+  if (!Number.isFinite(value)) return "#cbd5e1";
+  return rgbToHex(interpolateFromStops(value, PCT_OOS_STOPS));
 }
 
 /** Map/barris/heat colors for the active metric. */
 export function metricPctColor(value: number, mode: MetricMode): string {
   if (!Number.isFinite(value)) return "#cbd5e1";
-  if (mode === "out_of_service") return pctColor(value, true);
+  if (mode === "out_of_service") return pctColorOos(value);
   return pctColor(value, false);
 }
 
@@ -96,12 +115,19 @@ export function absoluteStationRadius(
   return Math.min(14, base * scale);
 }
 
-export const PCT_LEGEND_GRADIENT_CSS = `linear-gradient(90deg, ${PCT_SCALE_STOPS.map(
-  (s) => `${s.color} ${s.pct}%`
-).join(", ")})`;
+export const PCT_LEGEND_GRADIENT_CSS = stopsToGradientCss(PCT_SCALE_STOPS);
+export const PCT_OOS_LEGEND_GRADIENT_CSS = stopsToGradientCss(PCT_OOS_STOPS);
+
+export function pctLegendLabels(mode: MetricMode, scale: HeatScaleMode): readonly string[] {
+  if (scale === "absolute") return ["Pocs", "Molts"];
+  if (mode === "out_of_service") return PCT_OOS_LEGEND_LABELS;
+  return PCT_LEGEND_LABELS;
+}
 
 export function heatLegendGradient(mode: MetricMode, scale: HeatScaleMode): string {
-  if (scale === "percent") return PCT_LEGEND_GRADIENT_CSS;
+  if (scale === "percent") {
+    return mode === "out_of_service" ? PCT_OOS_LEGEND_GRADIENT_CSS : PCT_LEGEND_GRADIENT_CSS;
+  }
   const color = METRIC_ABSOLUTE_COLORS[mode];
   return `linear-gradient(90deg, ${hexWithAlpha(color, 0.15)}, ${color})`;
 }

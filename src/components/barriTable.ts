@@ -1,7 +1,7 @@
 import type { Barri, MetricMode } from "../lib/data";
 import { barriMetric, barriMetricCount, barriOosFleetPct } from "../lib/data";
 import type { TimeView } from "../lib/history";
-import { metricAbsoluteColor, pctColor, type HeatScaleMode } from "../lib/colors";
+import { metricAbsoluteColor, metricPctColor, type HeatScaleMode } from "../lib/colors";
 import { formatPct } from "../lib/format";
 
 export type BarriSortKey =
@@ -67,8 +67,8 @@ function header(label: string, key: BarriSortKey): string {
   return `<th class="sortable" data-sort="${key}" scope="col">${label}${arrow}</th>`;
 }
 
-function pctCell(pct: number, invert = false): string {
-  const color = invert ? pctColor(100 - pct) : pctColor(pct);
+function pctCell(pct: number, metric: MetricMode): string {
+  const color = metricPctColor(pct, metric);
   const width = Math.min(100, Math.max(0, pct));
   return `<td class="pct-cell">
     <div class="pct-cell-meter" aria-hidden="true"><span style="width:${width}%;background:${color}"></span></div>
@@ -137,7 +137,7 @@ export function renderBarriTable(
                     return countCell(barriMetricCount(b, metric), maxByColumn[key], metric);
                   }
                   if (key === "pct_bikes_out_of_service") {
-                    return pctCell(barriOosFleetPct(b), true);
+                    return pctCell(barriOosFleetPct(b), "out_of_service");
                   }
                   const pct =
                     key === "pct_bikes"
@@ -147,7 +147,7 @@ export function renderBarriTable(
                         : key === "pct_ebike"
                           ? b.pct_ebike
                           : b.pct_docks_free;
-                  return pctCell(pct);
+                  return pctCell(pct, metric);
                 })
                 .join("");
               return `<tr data-codi="${b.barri_codi}" class="${b.barri_codi === selectedCodi ? "selected" : ""}">
