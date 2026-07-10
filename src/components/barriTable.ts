@@ -81,6 +81,14 @@ function pctCell(pct: number, invert = false): string {
   </td>`;
 }
 
+function oosPctCell(pct: number): string {
+  const width = Math.min(100, Math.max(0, pct));
+  return `<td class="pct-cell">
+    <div class="pct-cell-meter" aria-hidden="true"><span style="width:${width}%;background:#b91c1c"></span></div>
+    <span class="pct-cell-num">${formatPct(pct)}</span>
+  </td>`;
+}
+
 function mutedPctCell(pct: number, sublabel: string): string {
   return `<td class="pct-cell pct-cell--muted">
     <span class="pct-cell-num">${formatPct(pct)}</span>
@@ -93,9 +101,14 @@ export function renderBarriTable(
   barris: Barri[],
   _mode: MetricMode,
   timeView: TimeView = { kind: "latest" },
-  onSelect?: (barri: Barri) => void
+  options?: {
+    selectedCodi?: string | null;
+    onSelect?: (barri: Barri) => void;
+  }
 ): void {
   const isHistorical = timeView.kind === "hour";
+  const selectedCodi = options?.selectedCodi ?? null;
+  const onSelect = options?.onSelect;
   const sorted = sortedBarris(barris);
 
   container.innerHTML = `
@@ -130,13 +143,13 @@ export function renderBarriTable(
               const zeroMechCell = isHistorical
                 ? `<td class="pct-cell pct-cell--muted"><span class="pct-cell-num">—</span></td>`
                 : mutedPctCell(zeroMechPct, `${b.stations_zero_mechanical ?? 0}/${b.stations_active}`);
-              return `<tr data-codi="${b.barri_codi}">
+              return `<tr data-codi="${b.barri_codi}" class="${b.barri_codi === selectedCodi ? "selected" : ""}">
                 <td class="barri-name">${b.barri_nom}</td>
                 ${pctCell(b.pct_bikes)}
                 ${pctCell(b.pct_mechanical)}
                 ${pctCell(b.pct_ebike)}
                 ${pctCell(b.pct_docks_free)}
-                ${pctCell(oosPct, true)}
+                ${oosPctCell(oosPct)}
                 <td class="count-cell">${b.bikes_total}<span class="count-cap"> / ${b.capacity_total}</span></td>
                 ${zeroEbikeCell}
                 ${zeroMechCell}
@@ -156,7 +169,7 @@ export function renderBarriTable(
       } else {
         sortState = { key, asc: key === "barri_nom" };
       }
-      renderBarriTable(container, barris, _mode, timeView, onSelect);
+      renderBarriTable(container, barris, _mode, timeView, options);
     });
   });
 
