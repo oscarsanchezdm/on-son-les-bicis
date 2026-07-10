@@ -75,6 +75,7 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
   const stationLayer = L.layerGroup().addTo(map);
   let barriLayer: L.GeoJSON | null = null;
   let heatLayer: ColorHeatLayer | null = null;
+  let heatMode: MetricMode | null = null;
 
   function update(
     mode: MetricMode,
@@ -133,10 +134,10 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
         layer.bindPopup(
           `<strong>${barri.barri_nom}</strong>${suffix}<br/>
           ${barri.capacity_total.toLocaleString("ca-ES")} ancoratges totals<br/>
-          Bicis: ${formatPct(barri.pct_bikes)} (${barri.bikes_total}/${barri.capacity_total})<br/>
+          Bicicletes: ${formatPct(barri.pct_bikes)} (${barri.bikes_total}/${barri.capacity_total})<br/>
           Elèctriques: ${formatPct(barri.pct_ebike)} · Mecàniques: ${formatPct(barri.pct_mechanical)}<br/>
           Ancoratges lliures: ${formatPct(barri.pct_docks_free)}<br/>
-          Bicis fora de servei: ${formatPct(pctOos)}<br/>
+          Fora de servei: ${formatPct(pctOos)}<br/>
           Estacions sense elèctriques: ${formatPct(pctOfStations(barri.stations_zero_ebike, barri.stations_active))} · Sense mecàniques: ${formatPct(pctOfStations(barri.stations_zero_mechanical ?? 0, barri.stations_active))}`
         );
       },
@@ -166,6 +167,12 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
           .addTo(stationLayer);
       }
 
+      if (heatLayer && heatMode !== mode) {
+        map.removeLayer(heatLayer);
+        heatLayer = null;
+      }
+      heatMode = mode;
+
       if (!heatLayer) {
         heatLayer = createColorHeatLayer(activeStations, mode);
         heatLayer.addTo(map);
@@ -180,6 +187,7 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
         map.removeLayer(heatLayer);
         heatLayer = null;
       }
+      heatMode = null;
       if (map.hasLayer(stationLayer)) map.removeLayer(stationLayer);
     }
 

@@ -41,13 +41,13 @@ function defaultHour(index: HistoryIndex | null, dayType: DayType): number {
 
 function defaultStatus(view: TimeView, index: HistoryIndex | null): string {
   if (view.kind === "latest") {
-    return "Mostrant dades actuals (estacions + barris).";
+    return "Dades en temps real.";
   }
   const n = sampleCountForView(index, view);
   if (!n) {
-    return `${hourViewScopeLabel(view.hour, view.dayType)}: encara no hi ha prou mostres (30 dies).`;
+    return `Sense dades per a ${hourViewScopeLabel(view.hour, view.dayType)}.`;
   }
-  return `Mitjana de ${dayTypeLabel(view.dayType)} a les ${formatHour(view.hour)} (${n} mostra${n === 1 ? "" : "es"}, 30 dies).`;
+  return `${hourViewScopeLabel(view.hour, view.dayType)} · mitjana de ${n} mostra${n === 1 ? "" : "es"} (30 dies).`;
 }
 
 function hourOptions(index: HistoryIndex | null, dayType: DayType, selectedHour: number): string {

@@ -322,3 +322,44 @@ export async function loadBarriSparklineSeries(
   if (!pct_bikes.length) return null;
   return { pct_bikes, pct_mechanical, pct_ebike, pct_oos_fleet };
 }
+
+/** Recent hourly city totals (for KPI sparklines when no barri is selected). */
+export async function loadCitySparklineSeries(
+  index: HistoryIndex | null
+): Promise<BarriSparklineSeries | null> {
+  if (!index?.files?.length) return null;
+
+  const pct_bikes: number[] = [];
+  const pct_mechanical: number[] = [];
+  const pct_ebike: number[] = [];
+  const pct_oos_fleet: number[] = [];
+
+  for (const file of [...index.files].sort((a, b) => a.key.localeCompare(b.key))) {
+    const url = `${BASE}data/history/hourly/${file.key}.json.gz`;
+    const barris = await loadHourlyGz(url);
+    if (!barris.length) continue;
+
+    let capacity = 0;
+    let bikes = 0;
+    let mechanical = 0;
+    let ebike = 0;
+    let docks = 0;
+    for (const b of barris) {
+      capacity += b.capacity_total;
+      bikes += b.bikes_total;
+      mechanical += b.bikes_mechanical;
+      ebike += b.bikes_ebike;
+      docks += b.docks_available_total;
+    }
+    if (capacity <= 0) continue;
+
+    const oos = bikesOutOfService(capacity, mechanical, ebike, docks);
+    pct_bikes.push((100 * bikes) / capacity);
+    pct_mechanical.push((100 * mechanical) / capacity);
+    pct_ebike.push((100 * ebike) / capacity);
+    pct_oos_fleet.push(pctOosOfBikeFleet(bikes, oos));
+  }
+
+  if (!pct_bikes.length) return null;
+  return { pct_bikes, pct_mechanical, pct_ebike, pct_oos_fleet };
+}

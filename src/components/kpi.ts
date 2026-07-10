@@ -130,7 +130,7 @@ export function renderKpis(
       : "";
   const zeroAnyNote =
     t.stations_zero_any > 0
-      ? `<small class="kpi-station-gap kpi-station-gap--warn">${t.stations_zero_any} est. sense cap bici (${formatPct(pctZeroAny)})</small>`
+      ? `<small class="kpi-station-gap kpi-station-gap--warn">${t.stations_zero_any} est. sense bicicletes (${formatPct(pctZeroAny)})</small>`
       : "";
 
   container.innerHTML = `
@@ -142,7 +142,7 @@ export function renderKpis(
       </p>
       <div class="kpi-grid">
       <article class="kpi-card">
-        <span class="kpi-label">${kpiIconHtml("total")} Bicis disponibles (${scopeLabel})</span>
+        <span class="kpi-label">${kpiIconHtml("total")} Bicicletes disponibles (${scopeLabel})</span>
         <strong>${t.bikes_total.toLocaleString("ca-ES")}</strong>
         <small>${formatPct(t.pct_bikes)} de ${t.capacity.toLocaleString("ca-ES")} ancoratges</small>
         ${zeroAnyNote}
@@ -152,7 +152,7 @@ export function renderKpis(
       <article class="kpi-card">
         <span class="kpi-label">${kpiIconHtml("mechanical")} Mecàniques</span>
         <strong>${t.bikes_mechanical.toLocaleString("ca-ES")}</strong>
-        <small>${formatPct(pctMechOfBikes)} de les bicis disponibles</small>
+        <small>${formatPct(pctMechOfBikes)} de les bicicletes disponibles</small>
         ${zeroMechNote}
         ${sparkMech}
         ${histMech ? `<small class="kpi-hist">${histMech}</small>` : ""}
@@ -160,7 +160,7 @@ export function renderKpis(
       <article class="kpi-card">
         <span class="kpi-label">${kpiIconHtml("ebike")} Elèctriques</span>
         <strong>${t.bikes_ebike.toLocaleString("ca-ES")}</strong>
-        <small>${formatPct(pctEbikeOfBikes)} de les bicis disponibles</small>
+        <small>${formatPct(pctEbikeOfBikes)} de les bicicletes disponibles</small>
         ${zeroEbikeNote}
         ${sparkEbike}
         ${histEbike ? `<small class="kpi-hist">${histEbike}</small>` : ""}
@@ -168,7 +168,7 @@ export function renderKpis(
       <article class="kpi-card">
         <span class="kpi-label">${metricIconHtml("out_of_service", "kpi-icon")} Bicicletes fora de servei</span>
         <strong>${outOfService.toLocaleString("ca-ES")}</strong>
-        <small>${formatPct(pctOutOfService)} del parc de bicis (disponibles + FS)</small>
+        <small>${formatPct(pctOutOfService)} del parc de bicicletes (disponibles + fora de servei)</small>
         ${sparkOos}
       </article>
       </div>

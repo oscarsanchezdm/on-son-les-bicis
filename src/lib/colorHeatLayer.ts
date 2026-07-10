@@ -68,11 +68,12 @@ const ColorHeatLayerImpl = L.Renderer.extend({
   setStations(stations: Station[], mode: MetricMode) {
     this._stations = stations;
     this._mode = mode;
-    return this.redraw();
+    if (this._map) L.Renderer.prototype._update.call(this);
+    return this;
   },
 
   redraw() {
-    if (this._map) this._redraw();
+    if (this._map) L.Renderer.prototype._update.call(this);
     return this;
   },
 
