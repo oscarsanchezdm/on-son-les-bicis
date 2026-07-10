@@ -45,7 +45,11 @@ def _normalize_ts(ts: str | int | float) -> str:
 def _headers() -> dict[str, str]:
     if not BICING_TOKEN:
         raise RuntimeError("BICING_TOKEN is not set")
-    return {"Authorization": BICING_TOKEN}
+    return {
+        "Authorization": BICING_TOKEN,
+        "Accept": "application/json",
+        "User-Agent": "on-son-les-bicis/1.0 (github-actions)",
+    }
 
 
 def _fetch_json(url: str, retries: int = 3) -> dict:
@@ -62,7 +66,9 @@ def _fetch_json(url: str, retries: int = 3) -> dict:
             last_error = exc
             if attempt < retries:
                 time.sleep(2 * attempt)
-    raise RuntimeError(f"Failed to fetch {url} after {retries} attempts") from last_error
+    raise RuntimeError(
+        f"Failed to fetch {url} after {retries} attempts: {last_error}"
+    ) from last_error
 
 
 def _load_barris() -> None:

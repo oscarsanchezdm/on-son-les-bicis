@@ -32,4 +32,7 @@ BARRIS_SOURCE_URL = (
 )
 
 load_dotenv(ROOT / ".env")
-BICING_TOKEN = os.environ.get("BICING_TOKEN", "")
+_raw_token = os.environ.get("BICING_TOKEN", "").strip()
+if _raw_token.startswith("BICING_TOKEN="):
+    _raw_token = _raw_token.split("=", 1)[1].strip()
+BICING_TOKEN = _raw_token

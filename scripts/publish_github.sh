@@ -15,8 +15,7 @@ if ! command -v gh >/dev/null 2>&1; then
 fi
 
 gh repo create "$REPO" --public --source="$ROOT" --remote=origin --push
-gh secret set BICING_TOKEN --repo "$REPO" < "$ROOT/.env" 2>/dev/null || \
-  gh secret set BICING_TOKEN --repo "$REPO" --body "$(grep BICING_TOKEN "$ROOT/.env" | cut -d= -f2-)"
+gh secret set BICING_TOKEN --repo "$REPO" --body "$(grep '^BICING_TOKEN=' "$ROOT/.env" | cut -d= -f2-)"
 
 echo "Repo publicat: https://github.com/$REPO"
 echo "Activa GitHub Pages: Settings → Pages → Source: GitHub Actions"
