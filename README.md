@@ -19,7 +19,7 @@ Eina periodística per visualitzar la disponibilitat de bicicletes del Bicing a 
 ## Arquitectura
 
 1. **GitHub Actions** (`fetch-data.yml`): cada ~10 min consulta el feed GBFS del Bicing (sense token), exporta JSON i fa commit a `public/data/`
-2. **GitHub Pages** (`pages.yml`): frontend estàtic (Vite + Leaflet) que llegeix `public/data/*.json`
+2. **GitHub Pages** (`pages.yml`): frontend estàtic (Vite + Leaflet) que llegeix `public/data/*.json`. Es desplega en canvis de codi, **després de cada fetch** (`workflow_run`) i cada ~10 min (`schedule`), perquè els commits automàtics de dades no disparen altres workflows.
 
 El repo és **públic**, així que les Actions no consumeixen minuts de facturació.
 

@@ -3,7 +3,17 @@ name: Deploy GitHub Pages
 on:
   push:
     branches: [main]
+    # Els commits de dades fets per fetch-data (GITHUB_TOKEN) no disparen push;
+    # workflow_run + schedule cobreixen aquest cas.
+    paths-ignore:
+      - "public/data/**"
   workflow_dispatch:
+  workflow_run:
+    workflows: ["Fetch Bicing data"]
+    types: [completed]
+  schedule:
+    # Cada 10 min, uns minuts després del fetch, per si workflow_run falla.
+    - cron: "3,13,23,33,43,53 * * * *"
 
 permissions:
   contents: read
@@ -16,9 +26,12 @@ concurrency:
 
 jobs:
   build:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
 
       - uses: actions/setup-node@v4
         with:
@@ -33,6 +46,7 @@ jobs:
 
   deploy:
     needs: build
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
