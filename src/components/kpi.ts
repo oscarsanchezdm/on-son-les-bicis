@@ -1,10 +1,15 @@
 import type { Barri, LatestData } from "../lib/data";
-import { bikesOutOfService, pctBikesOutOfService, pctOfStations } from "../lib/data";
-import type { Summary7d } from "../lib/history";
-import { hourlyAverage, sparklineValues } from "../lib/history";
+import {
+  bikesOutOfService,
+  pctBikesOutOfService,
+  pctOfStations,
+  pctOosOfBikeFleet,
+} from "../lib/data";
+import type { BarriSparklineSeries, Summary7d } from "../lib/history";
+import { currentMadridHour, hourlyAverage, sparklineValues } from "../lib/history";
 import { formatDateTime, formatPct, formatRelativeTime } from "../lib/format";
 import { renderSparkline } from "../lib/sparkline";
-import { metricIconHtml } from "../lib/icons";
+import { kpiIconHtml, metricIconHtml } from "../lib/icons";
 
 /** Build KPI-shaped data for a single barri filter. */
 export function latestFromBarri(barri: Barri, lastUpdated: string): LatestData {
@@ -56,7 +61,7 @@ function histNote(
   currentPct: number
 ): string {
   const avg = hourlyAverage(summary, hour, key);
-  if (avg === null) return "Sense històric per aquesta hora";
+  if (avg === null) return "";
   const delta = currentPct - avg;
   const sign = delta >= 0 ? "+" : "";
   return `Mitjana 7 dies (${String(hour).padStart(2, "0")}:00): ${formatPct(avg)} (${sign}${delta.toFixed(1)} pp)`;
@@ -67,10 +72,11 @@ export function renderKpis(
   data: LatestData,
   summary: Summary7d | null,
   scopeLabel = "ciutat",
-  isHistorical = false
+  isHistorical = false,
+  barriSparklines: BarriSparklineSeries | null = null
 ): void {
   const t = data.totals;
-  const hour = new Date(data.last_updated).getHours();
+  const hour = currentMadridHour();
   const pctMechOfBikes = t.bikes_total ? (100 * t.bikes_mechanical) / t.bikes_total : 0;
   const pctEbikeOfBikes = t.bikes_total ? (100 * t.bikes_ebike) / t.bikes_total : 0;
   const pctMech =
@@ -79,30 +85,32 @@ export function renderKpis(
   const outOfService =
     t.bikes_out_of_service ??
     bikesOutOfService(t.capacity, t.bikes_mechanical, t.bikes_ebike, t.docks_available);
-  const pctOutOfService =
-    t.pct_bikes_out_of_service ??
-    pctBikesOutOfService(t.capacity, t.bikes_mechanical, t.bikes_ebike, t.docks_available);
+  const pctOutOfService = pctOosOfBikeFleet(t.bikes_total, outOfService);
   const pctZeroEbike = pctOfStations(t.stations_zero_ebike, t.stations_active);
   const pctZeroMech = pctOfStations(t.stations_zero_mechanical ?? 0, t.stations_active);
+  const pctZeroAny = pctOfStations(t.stations_zero_any, t.stations_active);
 
-  const sparkBikes =
-    !isHistorical && scopeLabel === "ciutat"
-      ? renderSparkline(sparklineValues(summary?.series ?? [], "pct_bikes"))
-      : "";
-  const sparkMech =
-    !isHistorical && scopeLabel === "ciutat"
-      ? renderSparkline(sparklineValues(summary?.series ?? [], "pct_mechanical"))
-      : "";
-  const sparkEbike =
-    !isHistorical && scopeLabel === "ciutat"
-      ? renderSparkline(sparklineValues(summary?.series ?? [], "pct_ebike"))
-      : "";
-  const histBikes =
-    !isHistorical && scopeLabel === "ciutat" ? histNote(summary, hour, "pct_bikes", t.pct_bikes) : "";
-  const histMech =
-    !isHistorical && scopeLabel === "ciutat" ? histNote(summary, hour, "pct_mechanical", pctMech) : "";
-  const histEbike =
-    !isHistorical && scopeLabel === "ciutat" ? histNote(summary, hour, "pct_ebike", pctEbike) : "";
+  const showSpark = !isHistorical;
+  const sparkBikes = showSpark
+    ? renderSparkline(
+        barriSparklines?.pct_bikes ?? sparklineValues(summary?.series ?? [], "pct_bikes")
+      )
+    : "";
+  const sparkMech = showSpark
+    ? renderSparkline(
+        barriSparklines?.pct_mechanical ??
+          sparklineValues(summary?.series ?? [], "pct_mechanical")
+      )
+    : "";
+  const sparkEbike = showSpark
+    ? renderSparkline(
+        barriSparklines?.pct_ebike ?? sparklineValues(summary?.series ?? [], "pct_ebike")
+      )
+    : "";
+  const showCityHist = !isHistorical && scopeLabel === "ciutat";
+  const histBikes = showCityHist ? histNote(summary, hour, "pct_bikes", t.pct_bikes) : "";
+  const histMech = showCityHist ? histNote(summary, hour, "pct_mechanical", pctMech) : "";
+  const histEbike = showCityHist ? histNote(summary, hour, "pct_ebike", pctEbike) : "";
 
   const zeroMech = t.stations_zero_mechanical ?? 0;
   const zeroEbike = t.stations_zero_ebike;
@@ -114,6 +122,10 @@ export function renderKpis(
     zeroEbike > 0
       ? `<small class="kpi-station-gap kpi-station-gap--warn">${zeroEbike} est. sense elèctriques (${formatPct(pctZeroEbike)})</small>`
       : "";
+  const zeroAnyNote =
+    t.stations_zero_any > 0
+      ? `<small class="kpi-station-gap kpi-station-gap--warn">${t.stations_zero_any} est. sense cap bici (${formatPct(pctZeroAny)})</small>`
+      : "";
 
   container.innerHTML = `
     <div class="kpi-panel">
@@ -124,14 +136,15 @@ export function renderKpis(
       </p>
       <div class="kpi-grid">
       <article class="kpi-card">
-        <span class="kpi-label">Bicis disponibles (${scopeLabel})</span>
+        <span class="kpi-label">${kpiIconHtml("total")} Bicis disponibles (${scopeLabel})</span>
         <strong>${t.bikes_total.toLocaleString("ca-ES")}</strong>
         <small>${formatPct(t.pct_bikes)} de ${t.capacity.toLocaleString("ca-ES")} ancoratges</small>
+        ${zeroAnyNote}
         ${sparkBikes}
         ${histBikes ? `<small class="kpi-hist">${histBikes}</small>` : ""}
       </article>
       <article class="kpi-card">
-        <span class="kpi-label">Mecàniques</span>
+        <span class="kpi-label">${kpiIconHtml("mechanical")} Mecàniques</span>
         <strong>${t.bikes_mechanical.toLocaleString("ca-ES")}</strong>
         <small>${formatPct(pctMechOfBikes)} de les bicis disponibles</small>
         ${zeroMechNote}
@@ -139,7 +152,7 @@ export function renderKpis(
         ${histMech ? `<small class="kpi-hist">${histMech}</small>` : ""}
       </article>
       <article class="kpi-card">
-        <span class="kpi-label">Elèctriques</span>
+        <span class="kpi-label">${kpiIconHtml("ebike")} Elèctriques</span>
         <strong>${t.bikes_ebike.toLocaleString("ca-ES")}</strong>
         <small>${formatPct(pctEbikeOfBikes)} de les bicis disponibles</small>
         ${zeroEbikeNote}
@@ -149,7 +162,7 @@ export function renderKpis(
       <article class="kpi-card">
         <span class="kpi-label">${metricIconHtml("out_of_service", "kpi-icon")} Bicicletes fora de servei</span>
         <strong>${outOfService.toLocaleString("ca-ES")}</strong>
-        <small>${formatPct(pctOutOfService)} de ${t.capacity.toLocaleString("ca-ES")} ancoratges</small>
+        <small>${formatPct(pctOutOfService)} del parc de bicis (disponibles + FS)</small>
         <div class="kpi-meter kpi-meter--neutral" aria-hidden="true">
           <span style="width:${Math.min(100, pctOutOfService)}%"></span>
         </div>

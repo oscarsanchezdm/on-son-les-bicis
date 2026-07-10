@@ -197,6 +197,13 @@ export function pctBikesOutOfService(
   return (100 * bikesOutOfService(capacity, mechanical, ebike, docksAvailable)) / capacity;
 }
 
+/** % de bicis FS sobre el parc de bicis (disponibles + fora de servei). */
+export function pctOosOfBikeFleet(bikesAvailable: number, bikesOos: number): number {
+  const fleet = bikesAvailable + bikesOos;
+  if (fleet <= 0) return 0;
+  return (100 * bikesOos) / fleet;
+}
+
 export function pctOfStations(count: number, stationsActive: number): number {
   if (stationsActive <= 0) return 0;
   return (100 * count) / stationsActive;

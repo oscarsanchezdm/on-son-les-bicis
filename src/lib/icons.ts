@@ -1,42 +1,40 @@
 import type { MetricMode } from "./data";
 
-const SVG_ATTRS =
-  'viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
+/** MDI paths (Pictogrammers / Material Design Icons). */
+const MDI_BIKE =
+  "M5,20.5A3.5,3.5 0 0,1 1.5,17A3.5,3.5 0 0,1 5,13.5A3.5,3.5 0 0,1 8.5,17A3.5,3.5 0 0,1 5,20.5M5,12A5,5 0 0,0 0,17A5,5 0 0,0 5,22A5,5 0 0,0 10,17A5,5 0 0,0 5,12M14.8,10H19V8.2H15.8L13.86,4.93C13.57,4.43 13,4.1 12.4,4.1C11.93,4.1 11.5,4.29 11.2,4.6L7.5,8.29C7.19,8.6 7,9 7,9.5C7,10.13 7.33,10.66 7.85,10.97L11.2,13V18H13V11.5L10.75,9.85L13.07,7.5M19,20.5A3.5,3.5 0 0,1 15.5,17A3.5,3.5 0 0,1 19,13.5A3.5,3.5 0 0,1 22.5,17A3.5,3.5 0 0,1 19,20.5M19,12A5,5 0 0,0 14,17A5,5 0 0,0 19,22A5,5 0 0,0 24,17A5,5 0 0,0 19,12M16,4.8C17,4.8 17.8,4 17.8,3C17.8,2 17,1.2 16,1.2C15,1.2 14.2,2 14.2,3C14.2,4 15,4.8 16,4.8Z";
 
-function wrap(size: number, paths: string): string {
-  return `<svg width="${size}" height="${size}" ${SVG_ATTRS}>${paths}</svg>`;
+const MDI_BIKE_FAST =
+  "M16 1.2C15 1.2 14.2 2 14.2 3S15 4.8 16 4.8 17.8 4 17.8 3 17 1.2 16 1.2M12.4 4.1C11.93 4.1 11.5 4.29 11.2 4.6L7.5 8.29C7.19 8.6 7 9 7 9.5C7 10.13 7.33 10.66 7.85 10.97L11.2 13V18H13V11.5L10.75 9.85L13.07 7.5L14.8 10H19V8.2H15.8L13.86 4.93C13.57 4.43 13 4.1 12.4 4.1M10 3H3C2.45 3 2 2.55 2 2S2.45 1 3 1H12.79C12.58 1.34 12.41 1.71 12.32 2.11C11.46 2.13 10.65 2.45 10 3M5 12C2.24 12 0 14.24 0 17S2.24 22 5 22 10 19.76 10 17 7.76 12 5 12M5 20.5C3.07 20.5 1.5 18.93 1.5 17S3.07 13.5 5 13.5 8.5 15.07 8.5 17 6.93 20.5 5 20.5M19 12C16.24 12 14 14.24 14 17S16.24 22 19 22 24 19.76 24 17 21.76 12 19 12M19 20.5C17.07 20.5 15.5 18.93 15.5 17S17.07 13.5 19 13.5 22.5 15.07 22.5 17 20.93 20.5 19 20.5M5.32 11H1C.448 11 0 10.55 0 10S.448 9 1 9H5.05C5.03 9.16 5 9.33 5 9.5C5 10.03 5.12 10.54 5.32 11M6 7H2C1.45 7 1 6.55 1 6S1.45 5 2 5H7.97L6.09 6.87C6.05 6.91 6 6.96 6 7Z";
+
+const MDI_DOCK =
+  "M12,22V8M5,12H2A10,10 0 0,0 22,12H19M12,5A3,3 0 0,0 15,8A3,3 0 0,0 12,11A3,3 0 0,0 9,8A3,3 0 0,0 12,5Z";
+
+const MDI_WRENCH =
+  "M22.7,19L13.6,9.9C14.5,7.6 14,4.9 12.1,3C10.1,1 7.1,0.6 4.7,1.7L9,6L6,9L1.6,4.7C0.4,7.1 0.9,10.1 2.9,12.1C4.8,14 7.5,14.5 9.8,13.6L18.9,22.7C19.3,23.1 19.9,23.1 20.3,22.7L22.6,20.4C23.1,20 23.1,19.3 22.7,19Z";
+
+function mdiIcon(path: string, size = 16): string {
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="${path}"/></svg>`;
 }
 
-/** Bicicleta mecànica / total. */
+/** Bicicleta mecànica (mdi-bike). */
 export function iconBike(size = 16): string {
-  return wrap(
-    size,
-    `<circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M9 17.5h6M5.5 14l3-7h4l2 4h3"/>`
-  );
+  return mdiIcon(MDI_BIKE, size);
 }
 
-/** Bicicleta elèctrica: bici esquematitzada + llamp destacat. */
+/** Bicicleta elèctrica (mdi-bike-fast). */
 export function iconEbike(size = 16): string {
-  return wrap(
-    size,
-    `<circle cx="5.5" cy="18" r="3"/><circle cx="18.5" cy="18" r="3"/><path d="M9 18h6M5.5 15l2.5-6h3l1.5 3h2" opacity="0.55"/><path d="M14 2.5 9 11h3.2l-2.2 8.5L18 10h-3.5l1.5-7.5z" fill="currentColor" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>`
-  );
+  return mdiIcon(MDI_BIKE_FAST, size);
 }
 
 /** Ancoratge lliure. */
 export function iconDock(size = 16): string {
-  return wrap(
-    size,
-    `<path d="M12 22V8"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/><circle cx="12" cy="5" r="3"/>`
-  );
+  return mdiIcon(MDI_DOCK, size);
 }
 
 /** Fora de servei / manteniment. */
 export function iconMaintenance(size = 16): string {
-  return wrap(
-    size,
-    `<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>`
-  );
+  return mdiIcon(MDI_WRENCH, size);
 }
 
 const METRIC_ICONS: Record<MetricMode, (size?: number) => string> = {
@@ -67,5 +65,11 @@ export function countIconHtml(
         : kind === "dock"
           ? iconDock(14)
           : iconMaintenance(14);
+  return `<span class="${className}">${icon}</span>`;
+}
+
+export function kpiIconHtml(kind: "total" | "mechanical" | "ebike", className = "kpi-icon"): string {
+  const icon =
+    kind === "ebike" ? iconEbike(16) : kind === "mechanical" ? iconBike(16) : iconBike(16);
   return `<span class="${className}">${icon}</span>`;
 }
