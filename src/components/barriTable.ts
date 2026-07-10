@@ -1,5 +1,6 @@
 import type { Barri, MetricMode } from "../lib/data";
 import { bikesOutOfService, pctBikesOutOfService, pctOfStations } from "../lib/data";
+import type { TimeView } from "../lib/history";
 import { pctColor } from "../lib/colors";
 import { formatPct } from "../lib/format";
 
@@ -91,8 +92,10 @@ export function renderBarriTable(
   container: HTMLElement,
   barris: Barri[],
   _mode: MetricMode,
+  timeView: TimeView = { kind: "latest" },
   onSelect?: (barri: Barri) => void
 ): void {
+  const isHistorical = timeView.kind === "hour";
   const sorted = sortedBarris(barris);
 
   container.innerHTML = `
@@ -115,11 +118,18 @@ export function renderBarriTable(
           ${sorted
             .map((b) => {
               const oosPct = barriOosPct(b);
-              const zeroEbikePct = pctOfStations(b.stations_zero_ebike, b.stations_active);
-              const zeroMechPct = pctOfStations(
-                b.stations_zero_mechanical ?? 0,
-                b.stations_active
-              );
+              const zeroEbikePct = b.stations_active
+                ? pctOfStations(b.stations_zero_ebike, b.stations_active)
+                : 0;
+              const zeroMechPct = b.stations_active
+                ? pctOfStations(b.stations_zero_mechanical ?? 0, b.stations_active)
+                : 0;
+              const zeroEbikeCell = isHistorical
+                ? `<td class="pct-cell pct-cell--muted"><span class="pct-cell-num">—</span></td>`
+                : mutedPctCell(zeroEbikePct, `${b.stations_zero_ebike}/${b.stations_active}`);
+              const zeroMechCell = isHistorical
+                ? `<td class="pct-cell pct-cell--muted"><span class="pct-cell-num">—</span></td>`
+                : mutedPctCell(zeroMechPct, `${b.stations_zero_mechanical ?? 0}/${b.stations_active}`);
               return `<tr data-codi="${b.barri_codi}">
                 <td class="barri-name">${b.barri_nom}</td>
                 ${pctCell(b.pct_bikes)}
@@ -128,8 +138,8 @@ export function renderBarriTable(
                 ${pctCell(b.pct_docks_free)}
                 ${pctCell(oosPct, true)}
                 <td class="count-cell">${b.bikes_total}<span class="count-cap"> / ${b.capacity_total}</span></td>
-                ${mutedPctCell(zeroEbikePct, `${b.stations_zero_ebike}/${b.stations_active}`)}
-                ${mutedPctCell(zeroMechPct, `${b.stations_zero_mechanical ?? 0}/${b.stations_active}`)}
+                ${zeroEbikeCell}
+                ${zeroMechCell}
               </tr>`;
             })
             .join("")}
@@ -146,7 +156,7 @@ export function renderBarriTable(
       } else {
         sortState = { key, asc: key === "barri_nom" };
       }
-      renderBarriTable(container, barris, _mode, onSelect);
+      renderBarriTable(container, barris, _mode, timeView, onSelect);
     });
   });
 

@@ -2,19 +2,20 @@ import L from "leaflet";
 import "leaflet.heat";
 import type { Barri, MetricMode, Station } from "../lib/data";
 import { barriMetric, bikesOutOfService, pctOfStations, stationMetric } from "../lib/data";
-import {
-  HEAT_LAYER_OPTIONS,
-  buildHeatContext,
-  buildStationHeatPoints,
-  stationMarkerRadius,
-} from "../lib/heatmap";
+import { HEAT_LAYER_OPTIONS, buildStationHeatPoints, stationMarkerRadius } from "../lib/heatmap";
+import type { TimeView } from "../lib/history";
 import { isStationActive } from "../lib/status";
 import { pctColor } from "../lib/colors";
 import { formatPct } from "../lib/format";
 
 export type MapView = {
   map: L.Map;
-  update: (mode: MetricMode, barris: Barri[], stations: Station[]) => void;
+  update: (
+    mode: MetricMode,
+    barris: Barri[],
+    stations: Station[] | null,
+    timeView: TimeView
+  ) => void;
 };
 
 export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection): MapView {
@@ -34,13 +35,24 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
 
   const stationLayer = L.layerGroup().addTo(map);
   let barriLayer: L.GeoJSON | null = null;
-  let heatLayer: L.Layer | null = null;
+  let heatLayer: (L.Layer & { setLatLngs?: (pts: [number, number, number][]) => void }) | null =
+    null;
 
-  function update(mode: MetricMode, barris: Barri[], stations: Station[]) {
+  function update(
+    mode: MetricMode,
+    barris: Barri[],
+    stations: Station[] | null,
+    timeView: TimeView
+  ) {
     const byCode = new Map(barris.map((b) => [b.barri_codi, b]));
     const invert = mode === "docks";
+    const showStations = timeView.kind === "latest" && stations !== null;
 
-    if (barriLayer) map.removeLayer(barriLayer);
+    if (barriLayer) {
+      map.removeLayer(barriLayer);
+      barriLayer = null;
+    }
+
     barriLayer = L.geoJSON(geo, {
       pane: "barriPane",
       style: (feature) => {
@@ -49,7 +61,7 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
         const value = barri ? barriMetric(barri, mode) : 0;
         return {
           fillColor: pctColor(value, invert),
-          fillOpacity: 0.32,
+          fillOpacity: showStations ? 0.32 : 0.45,
           color: "#64748b",
           weight: 1,
         };
@@ -66,8 +78,12 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
             barri.bikes_ebike,
             barri.docks_available_total
           );
+        const suffix =
+          timeView.kind === "hour"
+            ? "<br/><em>Mitjana 7 dies a aquesta hora</em>"
+            : "";
         layer.bindPopup(
-          `<strong>${barri.barri_nom}</strong><br/>
+          `<strong>${barri.barri_nom}</strong>${suffix}<br/>
           Bicis: ${formatPct(barri.pct_bikes)} (${barri.bikes_total}/${barri.capacity_total})<br/>
           Elèctriques: ${formatPct(barri.pct_ebike)} · Mecàniques: ${formatPct(barri.pct_mechanical)}<br/>
           Ancoratges lliures: ${formatPct(barri.pct_docks_free)}<br/>
@@ -81,61 +97,60 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
       },
     });
 
-    if (heatLayer) map.removeLayer(heatLayer);
+    if (heatLayer) {
+      map.removeLayer(heatLayer);
+      heatLayer = null;
+    }
     stationLayer.clearLayers();
 
-    const activeStations = stations.filter((s) => isStationActive(s.status));
-    const availabilityValues = activeStations.map((s) => stationMetric(s, mode));
-    const heatCtx = buildHeatContext(availabilityValues);
-    const heatPoints = buildStationHeatPoints(
-      activeStations.map((s) => ({
-        lat: s.lat,
-        lon: s.lon,
-        availability: stationMetric(s, mode),
-      })),
-      heatCtx
-    );
+    if (showStations && stations) {
+      const activeStations = stations.filter((s) => isStationActive(s.status));
+      const heatPoints = buildStationHeatPoints(activeStations, mode);
 
-    for (const s of activeStations) {
-      const value = stationMetric(s, mode);
-      const oos = bikesOutOfService(s.capacity, s.mechanical, s.ebike, s.docks_available);
+      for (const s of activeStations) {
+        const value = stationMetric(s, mode);
+        const oos = bikesOutOfService(s.capacity, s.mechanical, s.ebike, s.docks_available);
 
-      L.circleMarker([s.lat, s.lon], {
-        radius: stationMarkerRadius(s.capacity),
-        fillColor: pctColor(value, invert),
-        color: "#334155",
-        weight: 1,
-        fillOpacity: 0.92,
-      })
-        .bindPopup(
-          `<strong>${s.name}</strong><br/>
+        L.circleMarker([s.lat, s.lon], {
+          radius: stationMarkerRadius(s.capacity),
+          fillColor: pctColor(value, invert),
+          color: "#334155",
+          weight: 1,
+          fillOpacity: 0.92,
+        })
+          .bindPopup(
+            `<strong>${s.name}</strong><br/>
           Barri: ${s.barri_nom || "—"}<br/>
           Capacitat: ${s.capacity} ancoratges<br/>
           Mecàniques: ${s.mechanical} · Elèctriques: ${s.ebike}<br/>
           Bicis: ${formatPct(s.pct_bikes)} · Ancoratges lliures: ${formatPct(s.pct_docks_free)}<br/>
           <strong>Bicis fora de servei: ${oos}</strong>`
-        )
-        .bindTooltip(
-          `${s.name}: ${formatPct(value)} · ${s.capacity} ancor. · fora servei: ${oos}`,
-          { sticky: true }
-        )
-        .addTo(stationLayer);
+          )
+          .bindTooltip(
+            `${s.name}: ${formatPct(value)} · ${s.capacity} ancor. · fora servei: ${oos}`,
+            { sticky: true }
+          )
+          .addTo(stationLayer);
+      }
+
+      if (heatPoints.length) {
+        heatLayer = (
+          L as typeof L & {
+            heatLayer: (
+              points: [number, number, number][],
+              opts: Record<string, unknown>
+            ) => L.Layer;
+          }
+        ).heatLayer(heatPoints, { ...HEAT_LAYER_OPTIONS });
+        heatLayer.addTo(map);
+      }
+
+      if (!map.hasLayer(stationLayer)) stationLayer.addTo(map);
+    } else if (map.hasLayer(stationLayer)) {
+      map.removeLayer(stationLayer);
     }
 
     barriLayer.addTo(map);
-
-    if (heatPoints.length) {
-      heatLayer = (L as typeof L & {
-        heatLayer: (
-          points: [number, number, number][],
-          opts: Record<string, unknown>
-        ) => L.Layer;
-      }).heatLayer(heatPoints, { ...HEAT_LAYER_OPTIONS });
-      heatLayer.addTo(map);
-    }
-
-    if (map.hasLayer(stationLayer)) map.removeLayer(stationLayer);
-    stationLayer.addTo(map);
   }
 
   return { map, update };

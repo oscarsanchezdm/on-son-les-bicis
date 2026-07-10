@@ -2,10 +2,10 @@ import "./style.css";
 import { renderBarriTable } from "./components/barriTable";
 import { renderKpis } from "./components/kpi";
 import { createMap } from "./components/map";
-import { renderHourlyHistory } from "./components/timeline";
-import type { MetricMode } from "./lib/data";
+import { renderTimeSelector, updateTimeSelectorStatus } from "./components/timeline";
+import type { Barri, MetricMode, Station } from "./lib/data";
 import { loadBarris, loadBarrisGeo, loadLatest } from "./lib/data";
-import { loadSummary7d } from "./lib/history";
+import { loadBarriHourlyAverage, loadSummary7d, type TimeView } from "./lib/history";
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 
@@ -29,20 +29,17 @@ app.innerHTML = `
       <div id="map"></div>
       <aside class="legend">
         <h2>Llegenda</h2>
-        <p class="legend-heading">Punts i barris</p>
+        <p class="legend-heading">Punts, barris i calor</p>
         <div class="legend-bar"></div>
         <p><span>Escassetat</span><span>Abundància</span></p>
-        <p class="legend-heading">Mapa de calor</p>
-        <div class="legend-bar legend-bar--heat"></div>
-        <p><span>Normal</span><span>Pitjor que la mitjana</span></p>
         <p class="legend-note" id="legend-note">Mapa de calor + barris + estacions segons la mètrica seleccionada.</p>
-        <p class="legend-heat">El calor marca estacions per sota de la mitjana de la ciutat. La mida del punt reflecteix la capacitat de l'estació.</p>
+        <p class="legend-heat">El calor usa la mateixa escala de color que els punts. La intensitat creix amb el nombre de bicis (o ancoratges) de la mètrica. La mida del punt reflecteix la capacitat de l'estació.</p>
       </aside>
     </section>
     <section id="timeline"></section>
     <section>
       <h2>Barris</h2>
-      <p class="section-note">Clica una columna per ordenar.</p>
+      <p class="section-note" id="table-note">Clica una columna per ordenar.</p>
       <div id="barri-table"></div>
     </section>
   </main>
@@ -52,24 +49,66 @@ app.innerHTML = `
 `;
 
 let mode: MetricMode = "total";
+let timeView: TimeView = { kind: "latest" };
 let latestData: Awaited<ReturnType<typeof loadLatest>> | null = null;
 let barrisData: Awaited<ReturnType<typeof loadBarris>> | null = null;
 let summaryData: Awaited<ReturnType<typeof loadSummary7d>> | null = null;
 let mapView: ReturnType<typeof createMap> | null = null;
+let displayBarris: Barri[] = [];
+let displayStations: Station[] | null = null;
+
+function legendText(): string {
+  const metric =
+    mode === "docks"
+      ? "ancoratges lliures"
+      : mode === "ebike"
+        ? "elèctriques"
+        : mode === "mechanical"
+          ? "mecàniques"
+          : "bicis";
+  if (timeView.kind === "hour") {
+    return `Barris segons mitjana 7 dies de ${metric} a la franja seleccionada.`;
+  }
+  return `Calor i punts segons ${metric}; més unitats = més intensitat de color.`;
+}
+
+function tableNote(): string {
+  if (timeView.kind === "hour") {
+    return "Mitjana per barri dels darrers 7 dies a la franja horària seleccionada.";
+  }
+  return "Dades recents per barri. Clica una columna per ordenar.";
+}
 
 function refresh() {
-  if (!latestData || !barrisData || !mapView) return;
-  mapView.update(mode, barrisData.barris, latestData.stations);
-  renderBarriTable(document.getElementById("barri-table")!, barrisData.barris, mode);
+  if (!mapView) return;
+  mapView.update(mode, displayBarris, displayStations, timeView);
+  renderBarriTable(
+    document.getElementById("barri-table")!,
+    displayBarris,
+    mode,
+    timeView
+  );
   const note = document.getElementById("legend-note")!;
-  note.textContent =
-    mode === "docks"
-      ? "Calor = estacions amb menys ancoratges lliures que la mitjana. Punts = estacions."
-      : mode === "ebike"
-        ? "Calor = estacions amb menys elèctriques que la mitjana. Punts = estacions."
-        : mode === "mechanical"
-          ? "Calor = estacions amb menys mecàniques que la mitjana. Punts = estacions."
-          : "Calor = estacions amb menys bicis que la mitjana. Punts = estacions.";
+  note.textContent = legendText();
+  const tnote = document.getElementById("table-note")!;
+  tnote.textContent = tableNote();
+}
+
+async function applyTimeView(view: TimeView) {
+  timeView = view;
+  if (!barrisData || !latestData) return;
+
+  if (view.kind === "latest") {
+    displayBarris = barrisData.barris;
+    displayStations = latestData.stations;
+  } else {
+    displayBarris = await loadBarriHourlyAverage(view.hour);
+    displayStations = null;
+  }
+
+  const timelineEl = document.getElementById("timeline")!;
+  updateTimeSelectorStatus(timelineEl, timeView, summaryData);
+  refresh();
 }
 
 async function init() {
@@ -83,10 +122,21 @@ async function init() {
     latestData = latest;
     barrisData = barris;
     summaryData = summary;
+    displayBarris = barris.barris;
+    displayStations = latest.stations;
+
     renderKpis(document.getElementById("kpis")!, latest, summary);
     mapView = createMap(document.getElementById("map")!, geo);
     refresh();
-    renderHourlyHistory(document.getElementById("timeline")!, summary, latest.last_updated);
+
+    renderTimeSelector(document.getElementById("timeline")!, {
+      summary,
+      currentTs: latest.last_updated,
+      timeView,
+      onChange: (view) => {
+        void applyTimeView(view);
+      },
+    });
   } catch (err) {
     app.innerHTML = `<div class="error">Error carregant dades: ${(err as Error).message}</div>`;
   }

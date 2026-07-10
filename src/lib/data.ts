@@ -140,6 +140,19 @@ export function stationMetric(station: Station, mode: MetricMode): number {
   }
 }
 
+export function stationCount(station: Station, mode: MetricMode): number {
+  switch (mode) {
+    case "mechanical":
+      return station.mechanical;
+    case "ebike":
+      return station.ebike;
+    case "docks":
+      return station.docks_available;
+    default:
+      return station.total;
+  }
+}
+
 /** Bicis fora de servei = capacitat − mecàniques − elèctriques − ancoratges lliures. */
 export function bikesOutOfService(
   capacity: number,
