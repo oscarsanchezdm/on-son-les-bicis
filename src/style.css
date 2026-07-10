@@ -187,6 +187,10 @@ h1 {
   margin: 0.75rem 0;
 }
 
+.legend-bar--heat {
+  background: linear-gradient(90deg, rgba(148, 163, 184, 0.15), #b91c1c, #f59e0b);
+}
+
 .legend-heading {
   font-size: 0.72rem;
   text-transform: uppercase;

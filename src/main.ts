@@ -29,11 +29,14 @@ app.innerHTML = `
       <div id="map"></div>
       <aside class="legend">
         <h2>Llegenda</h2>
-        <p class="legend-heading">Punts, barris i calor</p>
+        <p class="legend-heading">Punts i barris</p>
         <div class="legend-bar"></div>
         <p><span>Escassetat</span><span>Abundància</span></p>
+        <p class="legend-heading">Mapa de calor</p>
+        <div class="legend-bar legend-bar--heat"></div>
+        <p><span>Normal</span><span>Pitjor que la mitjana</span></p>
         <p class="legend-note" id="legend-note">Mapa de calor + barris + estacions segons la mètrica seleccionada.</p>
-        <p class="legend-heat">El calor usa la mateixa escala de color que els punts. La intensitat creix amb el nombre de bicis (o ancoratges) de la mètrica. La mida del punt reflecteix la capacitat de l'estació.</p>
+        <p class="legend-heat">El calor marca estacions per sota de la mitjana de la ciutat; més unitats = més intensitat. Els punts segueixen l'escala vermell–verd.</p>
       </aside>
     </section>
     <section id="timeline"></section>
@@ -69,7 +72,7 @@ function legendText(): string {
   if (timeView.kind === "hour") {
     return `Barris segons mitjana 7 dies de ${metric} a la franja seleccionada.`;
   }
-  return `Calor i punts segons ${metric}; més unitats = més intensitat de color.`;
+  return `Calor = estacions amb menys ${metric} que la mitjana; més unitats = més intensitat.`;
 }
 
 function tableNote(): string {

@@ -8,13 +8,18 @@ import { isStationActive } from "../lib/status";
 import { pctColor } from "../lib/colors";
 import { formatPct } from "../lib/format";
 
-function stationCountsLine(s: Station): string {
+function stationCountsShort(s: Station): string {
   const fs = bikesOutOfService(s.capacity, s.mechanical, s.ebike, s.docks_available);
   return `${s.ebike} E, ${s.mechanical} M, ${s.docks_available} A, ${fs} FS`;
 }
 
 function stationPopupHtml(s: Station): string {
-  return `${s.name}<br/>${stationCountsLine(s)}`;
+  const fs = bikesOutOfService(s.capacity, s.mechanical, s.ebike, s.docks_available);
+  return `${s.name}<br/>
+${s.ebike} elèctriques<br/>
+${s.mechanical} mecàniques<br/>
+${s.docks_available} ancoratges lliures<br/>
+${fs} fora de servei`;
 }
 
 export type MapView = {
@@ -127,7 +132,7 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
           fillOpacity: 0.92,
         })
           .bindPopup(stationPopupHtml(s))
-          .bindTooltip(`${s.name}<br/>${stationCountsLine(s)}`, { sticky: true })
+          .bindTooltip(`${s.name}<br/>${stationCountsShort(s)}`, { sticky: true })
           .addTo(stationLayer);
       }
 
