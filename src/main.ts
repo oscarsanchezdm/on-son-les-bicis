@@ -108,7 +108,7 @@ function legendText(): string {
   const scalePart =
     heatScale === "absolute"
       ? "Mode quantitat: color del filtre, intensitat segons el nombre o el %."
-      : "Mode percentatge: vermell <10%, taronja/ambre = normal, verd = abundant, blau = saturació.";
+      : "Mode percentatge: escala difuminada (vermell <10%, verd abundant, blau = saturació).";
   if (selectedBarri) {
     return `${scalePart} Barri: ${selectedBarri.barri_nom}. Mètrica: ${metric}.`;
   }

@@ -11,29 +11,59 @@ export const METRIC_ABSOLUTE_COLORS: Record<MetricMode, string> = {
   out_of_service: "#f97316",
 };
 
-/** Option B: escassetat → normal → abundant → saturació. Vermell només <10%. */
-export const PCT_SCALE_BREAKS = {
-  red: 10,
-  orange: 30,
-  amber: 55,
-  green: 70,
-} as const;
+/** Option B difuminada: vermell <10%, verd ample (55–88%), blau saturació curt (88–100%). */
+export const PCT_SCALE_STOPS: ReadonlyArray<{ pct: number; color: string }> = [
+  { pct: 0, color: "#b91c1c" },
+  { pct: 10, color: "#ea580c" },
+  { pct: 30, color: "#ea580c" },
+  { pct: 55, color: "#f59e0b" },
+  { pct: 82, color: "#22c55e" },
+  { pct: 88, color: "#22c55e" },
+  { pct: 100, color: "#4f46e5" },
+];
 
-export const PCT_SCALE_COLORS = {
-  red: "#b91c1c",
-  orange: "#ea580c",
-  amber: "#f59e0b",
-  green: "#22c55e",
-  saturation: "#4f46e5",
-} as const;
+export const PCT_LEGEND_LABELS = ["Escassetat", "Normal", "Abundant", "Saturat"] as const;
+
+type Rgb = [number, number, number];
+
+function hexToRgb(hex: string): Rgb {
+  const n = Number.parseInt(hex.slice(1), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+function rgbToHex([r, g, b]: Rgb): string {
+  return `#${[r, g, b].map((c) => c.toString(16).padStart(2, "0")).join("")}`;
+}
+
+function lerp(a: number, b: number, t: number): number {
+  return Math.round(a + (b - a) * t);
+}
+
+function interpolatePctRgb(pct: number): Rgb {
+  const v = Math.min(100, Math.max(0, pct));
+  const stops = PCT_SCALE_STOPS;
+  if (v <= stops[0]!.pct) return hexToRgb(stops[0]!.color);
+  const last = stops[stops.length - 1]!;
+  if (v >= last.pct) return hexToRgb(last.color);
+
+  for (let i = 0; i < stops.length - 1; i++) {
+    const a = stops[i]!;
+    const b = stops[i + 1]!;
+    if (v >= a.pct && v <= b.pct) {
+      const span = b.pct - a.pct || 1;
+      const t = (v - a.pct) / span;
+      const rgbA = hexToRgb(a.color);
+      const rgbB = hexToRgb(b.color);
+      return [lerp(rgbA[0], rgbB[0], t), lerp(rgbA[1], rgbB[1], t), lerp(rgbA[2], rgbB[2], t)];
+    }
+  }
+  return hexToRgb(last.color);
+}
 
 export function pctColor(value: number, invert = false): string {
   const v = invert ? 100 - value : value;
-  if (v < PCT_SCALE_BREAKS.red) return PCT_SCALE_COLORS.red;
-  if (v < PCT_SCALE_BREAKS.orange) return PCT_SCALE_COLORS.orange;
-  if (v < PCT_SCALE_BREAKS.amber) return PCT_SCALE_COLORS.amber;
-  if (v < PCT_SCALE_BREAKS.green) return PCT_SCALE_COLORS.green;
-  return PCT_SCALE_COLORS.saturation;
+  if (!Number.isFinite(v)) return "#cbd5e1";
+  return rgbToHex(interpolatePctRgb(v));
 }
 
 /** Map/barris/heat colors for the active metric. */
@@ -66,22 +96,9 @@ export function absoluteStationRadius(
   return Math.min(14, base * scale);
 }
 
-const PCT_LEGEND_GRADIENT = [
-  `${PCT_SCALE_COLORS.red} 0%`,
-  `${PCT_SCALE_COLORS.red} ${PCT_SCALE_BREAKS.red}%`,
-  `${PCT_SCALE_COLORS.orange} ${PCT_SCALE_BREAKS.red}%`,
-  `${PCT_SCALE_COLORS.orange} ${PCT_SCALE_BREAKS.orange}%`,
-  `${PCT_SCALE_COLORS.amber} ${PCT_SCALE_BREAKS.orange}%`,
-  `${PCT_SCALE_COLORS.amber} ${PCT_SCALE_BREAKS.amber}%`,
-  `${PCT_SCALE_COLORS.green} ${PCT_SCALE_BREAKS.amber}%`,
-  `${PCT_SCALE_COLORS.green} ${PCT_SCALE_BREAKS.green}%`,
-  `${PCT_SCALE_COLORS.saturation} ${PCT_SCALE_BREAKS.green}%`,
-  `${PCT_SCALE_COLORS.saturation} 100%`,
-].join(", ");
-
-export const PCT_LEGEND_GRADIENT_CSS = `linear-gradient(90deg, ${PCT_LEGEND_GRADIENT})`;
-
-export const PCT_LEGEND_LABELS = ["Escassetat", "Normal", "Abundant", "Saturat"] as const;
+export const PCT_LEGEND_GRADIENT_CSS = `linear-gradient(90deg, ${PCT_SCALE_STOPS.map(
+  (s) => `${s.color} ${s.pct}%`
+).join(", ")})`;
 
 export function heatLegendGradient(mode: MetricMode, scale: HeatScaleMode): string {
   if (scale === "percent") return PCT_LEGEND_GRADIENT_CSS;
@@ -90,9 +107,6 @@ export function heatLegendGradient(mode: MetricMode, scale: HeatScaleMode): stri
 }
 
 function hexWithAlpha(hex: string, alpha: number): string {
-  const n = Number.parseInt(hex.slice(1), 16);
-  const r = (n >> 16) & 255;
-  const g = (n >> 8) & 255;
-  const b = n & 255;
+  const [r, g, b] = hexToRgb(hex);
   return `rgba(${r},${g},${b},${alpha})`;
 }
