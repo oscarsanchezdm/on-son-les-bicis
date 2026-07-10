@@ -2,14 +2,16 @@ import "./style.css";
 import { renderBarriTable } from "./components/barriTable";
 import { latestFromBarri, renderKpis } from "./components/kpi";
 import { createMap } from "./components/map";
-import { renderTimeSelector, updateTimeSelectorStatus } from "./components/timeline";
+import { renderTimeSelector, setTimelineStatus, timeViewLabel, updateTimeSelector } from "./components/timeline";
 import type { Barri, MetricMode, Station } from "./lib/data";
 import { loadBarris, loadBarrisGeo, loadLatest } from "./lib/data";
 import {
   barrisToLatestData,
-  hourViewScopeLabel,
-  loadBarriHourlyAverage,
+  isHistoricalView,
+  loadBarriSnapshot,
+  loadHistoryIndex,
   loadSummary7d,
+  type HistoryIndex,
   type TimeView,
 } from "./lib/history";
 import { metricIconHtml } from "./lib/icons";
@@ -69,6 +71,7 @@ let selectedBarri: Barri | null = null;
 let latestData: Awaited<ReturnType<typeof loadLatest>> | null = null;
 let barrisData: Awaited<ReturnType<typeof loadBarris>> | null = null;
 let summaryData: Awaited<ReturnType<typeof loadSummary7d>> | null = null;
+let historyIndex: HistoryIndex | null = null;
 let mapView: ReturnType<typeof createMap> | null = null;
 let displayBarris: Barri[] = [];
 let displayStations: Station[] | null = null;
@@ -93,8 +96,8 @@ function legendText(): string {
   if (selectedBarri) {
     return `Filtrat per ${selectedBarri.barri_nom}: ${metric} del barri.`;
   }
-  if (timeView.kind === "hour") {
-    return `Barris segons mitjana de ${metric} (${hourViewScopeLabel(timeView.hour, timeView.dayType)}).`;
+  if (isHistoricalView(timeView)) {
+    return `Barris segons mitjana de ${metric} (${timeViewLabel(timeView, historyIndex)}).`;
   }
   return `Calor i punts amb la mateixa escala; estacions grans pesen més al mapa de calor.`;
 }
@@ -103,8 +106,8 @@ function tableNote(): string {
   if (selectedBarri) {
     return `Filtrant per ${selectedBarri.barri_nom}. Clica «Tornar a la ciutat» o un altre barri.`;
   }
-  if (timeView.kind === "hour") {
-    return `Mitjana per barri (${hourViewScopeLabel(timeView.hour, timeView.dayType)}).`;
+  if (isHistoricalView(timeView)) {
+    return `Mitjana per barri (${timeViewLabel(timeView, historyIndex)}).`;
   }
   return "Dades actuals per barri. Clica una columna per ordenar o un barri per filtrar.";
 }
@@ -117,15 +120,15 @@ function mapStations(): Station[] | null {
 
 function kpiScopeLabel(): string {
   if (selectedBarri) return selectedBarri.barri_nom;
-  if (timeView.kind === "hour") {
-    return hourViewScopeLabel(timeView.hour, timeView.dayType);
+  if (isHistoricalView(timeView)) {
+    return timeViewLabel(timeView, historyIndex);
   }
   return "ciutat";
 }
 
 function buildKpiData() {
   if (!latestData) return null;
-  const isHistorical = timeView.kind === "hour";
+  const isHistorical = isHistoricalView(timeView);
 
   if (!isHistorical) {
     return selectedBarri
@@ -155,21 +158,25 @@ function updateBarriFilterBar() {
 }
 
 function updateTimelineStatus() {
-  const status = document.querySelector("#timeline-status");
-  if (!status) return;
+  const timelineEl = document.getElementById("timeline");
+  if (!timelineEl) return;
 
   if (timeView.kind === "latest") {
-    status.textContent = "Mostrant dades actuals (estacions + barris).";
+    setTimelineStatus(timelineEl, "Mostrant dades actuals (estacions + barris).");
     return;
   }
 
+  const label = timeViewLabel(timeView, historyIndex);
   if (!displayBarris.length) {
-    status.textContent = `${hourViewScopeLabel(timeView.hour, timeView.dayType)}: encara no hi ha prou mostres històriques.`;
+    setTimelineStatus(timelineEl, `${label}: encara no hi ha dades per aquesta franja.`);
     return;
   }
 
   const agg = barrisToLatestData(displayBarris, latestData!.last_updated).totals;
-  status.textContent = `${hourViewScopeLabel(timeView.hour, timeView.dayType)}: ${agg.pct_bikes.toFixed(1)}% bicis · ${agg.pct_mechanical.toFixed(1)}% mecàniques · ${agg.pct_ebike.toFixed(1)}% elèctriques.`;
+  setTimelineStatus(
+    timelineEl,
+    `${label}: ${agg.pct_bikes.toFixed(1)}% bicis · ${agg.pct_mechanical.toFixed(1)}% mecàniques · ${agg.pct_ebike.toFixed(1)}% elèctriques.`
+  );
 }
 
 function refresh() {
@@ -183,7 +190,7 @@ function refresh() {
     kpiData,
     summaryData,
     kpiScopeLabel(),
-    timeView.kind === "hour"
+    timeView.kind === "snapshot"
   );
   mapView.update(
     mode,
@@ -217,35 +224,49 @@ function resetBarriFilter() {
   mapView?.focusBarri(null, null);
 }
 
+let timeViewRequest = 0;
+
 async function applyTimeView(view: TimeView) {
   timeView = view;
   if (!barrisData || !latestData) return;
+
+  const requestId = ++timeViewRequest;
+  const timelineEl = document.getElementById("timeline")!;
 
   if (view.kind === "latest") {
     displayBarris = barrisData.barris;
     displayStations = latestData.stations;
   } else {
-    displayBarris = await loadBarriHourlyAverage(view.hour, view.dayType);
+    setTimelineStatus(timelineEl, `${timeViewLabel(view, historyIndex)}: carregant…`);
+    displayBarris = await loadBarriSnapshot(view.date, view.hour);
+    if (requestId !== timeViewRequest) return;
     displayStations = null;
     selectedBarri = null;
   }
 
-  const timelineEl = document.getElementById("timeline")!;
-  updateTimeSelectorStatus(timelineEl, timeView, summaryData);
+  updateTimeSelector(timelineEl, {
+    index: historyIndex,
+    timeView,
+    onChange: (v) => {
+      void applyTimeView(v);
+    },
+  });
   refresh();
 }
 
 async function init() {
   try {
-    const [latest, barris, geo, summary] = await Promise.all([
+    const [latest, barris, geo, summary, index] = await Promise.all([
       loadLatest(),
       loadBarris(),
       loadBarrisGeo(),
       loadSummary7d(),
+      loadHistoryIndex(),
     ]);
     latestData = latest;
     barrisData = barris;
     summaryData = summary;
+    historyIndex = index;
     displayBarris = barris.barris;
     displayStations = latest.stations;
 
@@ -253,8 +274,7 @@ async function init() {
     refresh();
 
     renderTimeSelector(document.getElementById("timeline")!, {
-      summary,
-      currentTs: latest.last_updated,
+      index,
       timeView,
       onChange: (view) => {
         void applyTimeView(view);

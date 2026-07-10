@@ -492,14 +492,32 @@ h1 {
   margin: 0;
 }
 
-.time-btn {
-  padding: 0.35rem 0.7rem;
+.time-select-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+  flex: 1;
+  min-width: 14rem;
+}
+
+.time-select {
+  flex: 1;
+  min-width: 12rem;
+  max-width: 28rem;
+  padding: 0.35rem 0.55rem;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: white;
-  font-weight: 600;
-  font-size: 0.82rem;
-  cursor: pointer;
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.time-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .time-btn.active {
