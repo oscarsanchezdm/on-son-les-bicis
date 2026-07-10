@@ -1,4 +1,5 @@
 import L from "leaflet";
+import "leaflet-rotate";
 import type { Barri, MetricMode, Station } from "../lib/data";
 import { barriMetric, bikesOutOfService, pctOfStations, stationMetric } from "../lib/data";
 import {
@@ -44,15 +45,23 @@ export type MapView = {
 
 const CITY_CENTER: L.LatLngExpression = [41.387, 2.17];
 const CITY_ZOOM = 12;
+/** Inclinació horària (sentit horari) per alinear la Gran Via. */
+const MAP_BEARING = 45;
 
 export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection): MapView {
-  const map = L.map(container, { scrollWheelZoom: true }).setView([41.387, 2.17], 12);
+  const map = L.map(container, {
+    scrollWheelZoom: true,
+    rotate: true,
+    bearing: MAP_BEARING,
+    rotateControl: false,
+  }).setView(CITY_CENTER, CITY_ZOOM);
 
-  const barriPane = map.createPane("barriPane");
+  const rotatePane = map.getPane("overlayPane") ?? map.getPane("mapPane")!;
+  const barriPane = map.createPane("barriPane", rotatePane);
   barriPane.style.zIndex = "410";
-  const heatPane = map.createPane("heatPane");
+  const heatPane = map.createPane("heatPane", rotatePane);
   heatPane.style.zIndex = "420";
-  const stationPane = map.createPane("stationPane");
+  const stationPane = map.createPane("stationPane", rotatePane);
   stationPane.style.zIndex = "450";
 
   L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {

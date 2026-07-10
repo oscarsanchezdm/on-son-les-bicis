@@ -14,8 +14,9 @@
     "typescript": "^5.7.2",
     "vite": "^6.0.3"
   },
-    "dependencies": {
+  "dependencies": {
     "leaflet": "^1.9.4",
+    "leaflet-rotate": "^0.2.8",
     "leaflet.heat": "^0.2.0"
   }
 }
