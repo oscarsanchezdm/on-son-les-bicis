@@ -38,6 +38,7 @@ jobs:
             echo "::warning::BICING_TOKEN secret includes the 'BICING_TOKEN=' prefix; stripping it in code."
           fi
 
+      - name: Fetch static data if missing
         if: hashFiles('public/data/static/barris.geojson') == ''
         env:
           BICING_TOKEN: ${{ secrets.BICING_TOKEN }}
