@@ -5,7 +5,13 @@ import { createMap } from "./components/map";
 import { renderTimeSelector, updateTimeSelectorStatus } from "./components/timeline";
 import type { Barri, MetricMode, Station } from "./lib/data";
 import { loadBarris, loadBarrisGeo, loadLatest } from "./lib/data";
-import { loadBarriHourlyAverage, loadSummary7d, type TimeView } from "./lib/history";
+import {
+  barrisToLatestData,
+  hourViewScopeLabel,
+  loadBarriHourlyAverage,
+  loadSummary7d,
+  type TimeView,
+} from "./lib/history";
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 
@@ -29,6 +35,7 @@ app.innerHTML = `
       <span id="barri-filter-label"></span>
       <button type="button" id="barri-filter-reset">Tornar a la ciutat</button>
     </div>
+    <section id="timeline"></section>
     <section id="kpis"></section>
     <section class="map-section">
       <div id="map"></div>
@@ -41,7 +48,6 @@ app.innerHTML = `
         <p class="legend-heat">El calor pinta el color real de cada estació (com les boletes); les grans tenen més pes. En agrupar-se, els colors es barregen sense tornar-se verds artificialment.</p>
       </aside>
     </section>
-    <section id="timeline"></section>
     <section>
       <h2>Barris</h2>
       <p class="section-note" id="table-note">Clica una columna per ordenar. Clica un barri per filtrar el mapa i els KPIs.</p>
@@ -84,7 +90,7 @@ function legendText(): string {
     return `Filtrat per ${selectedBarri.barri_nom}: ${metric} del barri.`;
   }
   if (timeView.kind === "hour") {
-    return `Barris segons mitjana 7 dies de ${metric} a la franja seleccionada.`;
+    return `Barris segons mitjana de ${metric} (${hourViewScopeLabel(timeView.hour, timeView.dayType)}).`;
   }
   return `Calor i punts amb la mateixa escala; estacions grans pesen més al mapa de calor.`;
 }
@@ -94,15 +100,41 @@ function tableNote(): string {
     return `Filtrant per ${selectedBarri.barri_nom}. Clica «Tornar a la ciutat» o un altre barri.`;
   }
   if (timeView.kind === "hour") {
-    return "Mitjana per barri dels darrers 7 dies a la franja horària seleccionada.";
+    return `Mitjana per barri (${hourViewScopeLabel(timeView.hour, timeView.dayType)}).`;
   }
-  return "Dades recents per barri. Clica una columna per ordenar o un barri per filtrar.";
+  return "Dades actuals per barri. Clica una columna per ordenar o un barri per filtrar.";
 }
 
 function mapStations(): Station[] | null {
   if (!displayStations) return null;
   if (!selectedBarri) return displayStations;
   return displayStations.filter((s) => s.barri_codi === selectedBarri!.barri_codi);
+}
+
+function kpiScopeLabel(): string {
+  if (selectedBarri) return selectedBarri.barri_nom;
+  if (timeView.kind === "hour") {
+    return hourViewScopeLabel(timeView.hour, timeView.dayType);
+  }
+  return "ciutat";
+}
+
+function buildKpiData() {
+  if (!latestData) return null;
+  const isHistorical = timeView.kind === "hour";
+
+  if (!isHistorical) {
+    return selectedBarri
+      ? latestFromBarri(selectedBarri, latestData.last_updated)
+      : latestData;
+  }
+
+  if (selectedBarri) {
+    const barri = displayBarris.find((b) => b.barri_codi === selectedBarri!.barri_codi);
+    if (barri) return latestFromBarri(barri, latestData.last_updated);
+  }
+
+  return barrisToLatestData(displayBarris, latestData.last_updated);
 }
 
 function updateBarriFilterBar() {
@@ -118,15 +150,37 @@ function updateBarriFilterBar() {
   label.textContent = `Mostrant només: ${selectedBarri.barri_nom}`;
 }
 
+function updateTimelineStatus() {
+  const status = document.querySelector("#timeline-status");
+  if (!status) return;
+
+  if (timeView.kind === "latest") {
+    status.textContent = "Mostrant dades actuals (estacions + barris).";
+    return;
+  }
+
+  if (!displayBarris.length) {
+    status.textContent = `${hourViewScopeLabel(timeView.hour, timeView.dayType)}: encara no hi ha prou mostres històriques.`;
+    return;
+  }
+
+  const agg = barrisToLatestData(displayBarris, latestData!.last_updated).totals;
+  status.textContent = `${hourViewScopeLabel(timeView.hour, timeView.dayType)}: ${agg.pct_bikes.toFixed(1)}% bicis · ${agg.pct_mechanical.toFixed(1)}% mecàniques · ${agg.pct_ebike.toFixed(1)}% elèctriques.`;
+}
+
 function refresh() {
   if (!mapView || !latestData) return;
 
-  const kpiData = selectedBarri
-    ? latestFromBarri(selectedBarri, latestData.last_updated)
-    : latestData;
-  const scopeLabel = selectedBarri ? selectedBarri.barri_nom : "ciutat";
+  const kpiData = buildKpiData();
+  if (!kpiData) return;
 
-  renderKpis(document.getElementById("kpis")!, kpiData, summaryData, scopeLabel);
+  renderKpis(
+    document.getElementById("kpis")!,
+    kpiData,
+    summaryData,
+    kpiScopeLabel(),
+    timeView.kind === "hour"
+  );
   mapView.update(
     mode,
     displayBarris,
@@ -144,6 +198,7 @@ function refresh() {
   note.textContent = legendText();
   const tnote = document.getElementById("table-note")!;
   tnote.textContent = tableNote();
+  updateTimelineStatus();
 }
 
 function selectBarri(barri: Barri) {
@@ -166,7 +221,7 @@ async function applyTimeView(view: TimeView) {
     displayBarris = barrisData.barris;
     displayStations = latestData.stations;
   } else {
-    displayBarris = await loadBarriHourlyAverage(view.hour);
+    displayBarris = await loadBarriHourlyAverage(view.hour, view.dayType);
     displayStations = null;
     selectedBarri = null;
   }

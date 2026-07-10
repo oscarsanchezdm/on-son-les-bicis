@@ -117,19 +117,16 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
           );
         const suffix =
           timeView.kind === "hour"
-            ? "<br/><em>Mitjana 7 dies a aquesta hora</em>"
+            ? "<br/><em>Mitjana històrica a aquesta franja</em>"
             : "";
         layer.bindPopup(
           `<strong>${barri.barri_nom}</strong>${suffix}<br/>
+          ${barri.capacity_total.toLocaleString("ca-ES")} ancoratges totals<br/>
           Bicis: ${formatPct(barri.pct_bikes)} (${barri.bikes_total}/${barri.capacity_total})<br/>
           Elèctriques: ${formatPct(barri.pct_ebike)} · Mecàniques: ${formatPct(barri.pct_mechanical)}<br/>
           Ancoratges lliures: ${formatPct(barri.pct_docks_free)}<br/>
-          Bicis fora de servei: <strong>${oos}</strong><br/>
+          Bicis fora de servei: ${oos}<br/>
           Sense elèctriques: ${formatPct(pctOfStations(barri.stations_zero_ebike, barri.stations_active))} · Sense mecàniques: ${formatPct(pctOfStations(barri.stations_zero_mechanical ?? 0, barri.stations_active))}`
-        );
-        layer.bindTooltip(
-          `${barri.barri_nom}: ${formatPct(barriMetric(barri, mode))} · fora servei: ${oos}`,
-          { sticky: true }
         );
       },
     });

@@ -267,7 +267,7 @@ def _export_history(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
         """
         SELECT barri_codi, barri_nom, bikes_total, bikes_mechanical, bikes_ebike,
                capacity_total, docks_available_total, pct_bikes, pct_docks_free,
-               pct_ebike, stations_zero_ebike
+               pct_ebike, stations_active, stations_zero_ebike, stations_zero_mechanical
         FROM barri_snapshots WHERE ts = ?
         """,
         (ts,),
@@ -287,7 +287,9 @@ def _export_history(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
                 "pct_bikes": r[7],
                 "pct_docks_free": r[8],
                 "pct_ebike": r[9],
-                "stations_zero_ebike": r[10],
+                "stations_active": r[10],
+                "stations_zero_ebike": r[11],
+                "stations_zero_mechanical": r[12],
             }
             for r in barri_rows
         ],
@@ -334,6 +336,14 @@ def _export_history(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
     for path in hourly_dir.glob("*.json.gz"):
         try:
             file_dt = datetime.strptime(path.stem, "%Y-%m-%d-%H")
+            if file_dt.timestamp() < cutoff:
+                path.unlink()
+        except ValueError:
+            continue
+
+    for path in daily_dir.glob("*.json.gz"):
+        try:
+            file_dt = datetime.strptime(path.stem, "%Y-%m-%d")
             if file_dt.timestamp() < cutoff:
                 path.unlink()
         except ValueError:
