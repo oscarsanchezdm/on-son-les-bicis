@@ -21,11 +21,11 @@ function stationCountsShort(s: Station): string {
 function stationPopupHtml(s: Station): string {
   const fs = bikesOutOfService(s.capacity, s.mechanical, s.ebike, s.docks_available);
   return `<strong>${s.name}</strong><br/>
+${countIconHtml("dock")} ${s.capacity} ancoratges totals<br/>
 ${countIconHtml("ebike")} ${s.ebike} elèctriques<br/>
 ${countIconHtml("mechanical")} ${s.mechanical} mecàniques<br/>
 ${countIconHtml("dock")} ${s.docks_available} ancoratges lliures<br/>
-${countIconHtml("maintenance")} ${fs} fora de servei<br/>
-${countIconHtml("dock")} ${s.capacity} ancoratges totals`;
+${countIconHtml("maintenance")} ${fs} fora de servei`;
 }
 
 function stationTooltipHtml(s: Station): string {
@@ -149,7 +149,7 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
       for (const s of activeStations) {
         const value = stationMetric(s, mode);
 
-        L.circleMarker([s.lat, s.lon], {
+        const marker = L.circleMarker([s.lat, s.lon], {
           pane: "stationPane",
           radius: stationMarkerRadius(s.capacity),
           fillColor: metricPctColor(value, mode),
@@ -159,6 +159,9 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
         })
           .bindPopup(stationPopupHtml(s))
           .bindTooltip(stationTooltipHtml(s), { sticky: true, className: "station-tooltip" })
+          .on("popupopen", () => {
+            marker.closeTooltip();
+          })
           .addTo(stationLayer);
       }
 

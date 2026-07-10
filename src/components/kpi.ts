@@ -71,6 +71,8 @@ export function renderKpis(
 ): void {
   const t = data.totals;
   const hour = new Date(data.last_updated).getHours();
+  const pctMechOfBikes = t.bikes_total ? (100 * t.bikes_mechanical) / t.bikes_total : 0;
+  const pctEbikeOfBikes = t.bikes_total ? (100 * t.bikes_ebike) / t.bikes_total : 0;
   const pctMech =
     t.pct_mechanical ?? (t.capacity ? (100 * t.bikes_mechanical) / t.capacity : 0);
   const pctEbike = t.pct_ebike ?? (t.capacity ? (100 * t.bikes_ebike) / t.capacity : 0);
@@ -118,15 +120,15 @@ export function renderKpis(
       </article>
       <article class="kpi-card">
         <span class="kpi-label">Mecàniques</span>
-        <strong>${formatPct(pctMech)}</strong>
-        <small>${t.bikes_mechanical.toLocaleString("ca-ES")} bicis</small>
+        <strong>${t.bikes_mechanical.toLocaleString("ca-ES")}</strong>
+        <small>${formatPct(pctMechOfBikes)} de les bicis disponibles</small>
         ${sparkMech}
         ${histMech ? `<small class="kpi-hist">${histMech}</small>` : ""}
       </article>
       <article class="kpi-card">
         <span class="kpi-label">Elèctriques</span>
         <strong>${t.bikes_ebike.toLocaleString("ca-ES")}</strong>
-        <small>${formatPct(pctEbike)} del total d'ancoratges</small>
+        <small>${formatPct(pctEbikeOfBikes)} de les bicis disponibles</small>
         ${sparkEbike}
         ${histEbike ? `<small class="kpi-hist">${histEbike}</small>` : ""}
       </article>
