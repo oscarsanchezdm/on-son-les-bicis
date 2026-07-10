@@ -1,8 +1,6 @@
 import type { MetricMode } from "./data";
 
-/** Red = scarce, green = abundant (for bikes). Inverted for docks if needed. */
-export const OOS_RED_AT_PCT = 40;
-
+/** Red = scarce, green = abundant (for bikes). Inverted for docks / fora de servei. */
 export function pctColor(value: number, invert = false): string {
   const v = invert ? 100 - value : value;
   if (v <= 10) return "#b91c1c";
@@ -12,11 +10,8 @@ export function pctColor(value: number, invert = false): string {
   return "#15803d";
 }
 
-/** Map/barris/heat colors for the active metric (OOS compressed so 40% = max red). */
+/** Map/barris/heat colors for the active metric. */
 export function metricPctColor(value: number, mode: MetricMode): string {
-  if (mode === "out_of_service") {
-    const scaled = Math.min(100, (value / OOS_RED_AT_PCT) * 100);
-    return pctColor(scaled, true);
-  }
+  if (mode === "out_of_service") return pctColor(value, true);
   return pctColor(value, mode === "docks");
 }
