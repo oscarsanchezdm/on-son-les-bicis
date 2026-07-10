@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-10T14:00:00+00:00",
+  "generated_at": "2026-07-10T14:04:17+00:00",
   "snapshots": [
     {
       "key": "2026-07-10-08",
@@ -28,6 +28,13 @@
       "hour": 13,
       "dayType": "friday",
       "label": "Divendres 10 jul, 13:00"
+    },
+    {
+      "key": "2026-07-10-14",
+      "date": "2026-07-10",
+      "hour": 14,
+      "dayType": "friday",
+      "label": "Divendres 10 jul, 14:00"
     }
   ]
 }
