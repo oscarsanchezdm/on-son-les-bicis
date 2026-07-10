@@ -113,10 +113,6 @@ export async function loadDailyHistory(day: string): Promise<Array<Record<string
   return JSON.parse(text);
 }
 
-export function metricColorInvert(mode: MetricMode): boolean {
-  return mode === "docks" || mode === "out_of_service";
-}
-
 export function barriMetric(barri: Barri, mode: MetricMode): number {
   switch (mode) {
     case "mechanical":

@@ -1,6 +1,6 @@
 import L from "leaflet";
 import type { Barri, MetricMode, Station } from "../lib/data";
-import { barriMetric, bikesOutOfService, metricColorInvert, pctOfStations, stationMetric } from "../lib/data";
+import { barriMetric, bikesOutOfService, pctOfStations, stationMetric } from "../lib/data";
 import {
   createColorHeatLayer,
   stationMarkerRadius,
@@ -8,7 +8,7 @@ import {
 } from "../lib/colorHeatLayer";
 import type { TimeView } from "../lib/history";
 import { isStationActive } from "../lib/status";
-import { pctColor } from "../lib/colors";
+import { metricPctColor } from "../lib/colors";
 import { formatPct } from "../lib/format";
 
 function stationCountsShort(s: Station): string {
@@ -74,7 +74,6 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
     selectedBarriCodi: string | null = null
   ) {
     const byCode = new Map(barris.map((b) => [b.barri_codi, b]));
-    const invert = metricColorInvert(mode);
     const showStations = timeView.kind === "latest" && stations !== null;
 
     if (barriLayer) {
@@ -98,7 +97,7 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
         }
         const value = barriMetric(barri, mode);
         return {
-          fillColor: pctColor(value, invert),
+          fillColor: metricPctColor(value, mode),
           fillOpacity: showStations ? 0.32 : 0.45,
           color: selectedBarriCodi === codi ? "#0f766e" : "#64748b",
           weight: selectedBarriCodi === codi ? 2 : 1,
@@ -146,7 +145,7 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
         L.circleMarker([s.lat, s.lon], {
           pane: "stationPane",
           radius: stationMarkerRadius(s.capacity),
-          fillColor: pctColor(value, invert),
+          fillColor: metricPctColor(value, mode),
           color: "#334155",
           weight: 1,
           fillOpacity: 0.92,
