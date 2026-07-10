@@ -2,8 +2,8 @@ name: Fetch Bicing data
 
 on:
   schedule:
-    # Cada 10 min (UTC). GitHub pot endarrerir jobs programats uns minuts.
-    - cron: "*/10 * * * *"
+    # Cada 30 min (UTC). GitHub pot endarrerir jobs programats uns minuts.
+    - cron: "0,30 * * * *"
   workflow_dispatch:
   push:
     branches: [main]

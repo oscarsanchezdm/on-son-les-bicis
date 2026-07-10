@@ -18,23 +18,16 @@ Eina periodística per visualitzar la disponibilitat de bicicletes del Bicing a 
 
 ## Arquitectura
 
-1. **GitHub Actions** (`fetch-data.yml`): cada ~10 min consulta el feed GBFS del Bicing (sense token), exporta JSON i fa commit a `public/data/`
-2. **GitHub Pages** (`pages.yml`): frontend estàtic (Vite + Leaflet) que llegeix `public/data/*.json`. Es desplega en canvis de codi, **després de cada fetch** (`workflow_run`) i cada ~10 min (`schedule`), perquè els commits automàtics de dades no disparen altres workflows.
+1. **GitHub Actions** (`fetch-data.yml`): cada **30 min** consulta el feed GBFS del Bicing (sense token), exporta JSON i fa commit a `public/data/`
+2. **GitHub Pages** (`pages.yml`): frontend estàtic (Vite + Leaflet) que llegeix `public/data/*.json`. Es desplega en canvis de codi, **després de cada fetch** (`workflow_run`) i cada 30 min (`schedule`), perquè els commits automàtics de dades no disparen altres workflows.
 
 El repo és **públic**, així que les Actions no consumeixen minuts de facturació.
 
-## Desenvolupament local
+### Històric (30 dies)
 
-```bash
-cp .env.example .env   # opcional: BICING_TOKEN només per fallback Open Data
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-python scripts/fetch_static_data.py
-python scripts/init_db.py
-python scripts/ingest.py
-python scripts/export.py
-npm install && npm run dev
-```
+- Fitxers `history/hourly/YYYY-MM-DD-HH.json.gz`: agregats per **barri** i tuples compactes per **estació** (`v`: `[mecànica, elèctrica, total, ancoratges, FS]`)
+- `station-ids.json`: ordre estable dels IDs (índex de `v`)
+- El client carrega un sol fitxer horari sota demanda (selector de franja) i reconstrueix barris + estacions sense descarregar tot l’històric
 
 ## Publicar a GitHub
 
@@ -49,6 +42,26 @@ chmod +x scripts/publish_github.sh
 # - git push -u origin main
 # - Settings → Secrets → BICING_TOKEN
 # - Settings → Pages → Build: GitHub Actions
+```
+
+<!--
+=============================================================================
+DESACTIVAT (juliol 2026): desenvolupament local i servidor propi.
+El pipeline actiu és 100% GitHub Actions + GitHub Pages.
+Es conserva per futures consultes / reactivació.
+=============================================================================
+
+## Desenvolupament local
+
+```bash
+cp .env.example .env   # opcional: BICING_TOKEN només per fallback Open Data
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+python scripts/fetch_static_data.py
+python scripts/init_db.py
+python scripts/ingest.py
+python scripts/export.py
+npm install && npm run dev
 ```
 
 ## Desplegament al servidor (`10.10.100.104`)
@@ -69,7 +82,7 @@ mkdir -p db deploy/ssh
 cp deploy/ssh/id_ed25519 deploy/ssh/
 docker compose up -d --build
 ```
-
+-->
 
 ## Llicència
 

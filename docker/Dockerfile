@@ -1,5 +1,7 @@
 FROM python:3.12-slim
 
+# DESACTIVAT (juliol 2026): imatge per ingestió local. Pipeline actiu: GitHub Actions.
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git cron ca-certificates \
     && rm -rf /var/lib/apt/lists/*

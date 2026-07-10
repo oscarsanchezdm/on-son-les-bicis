@@ -246,6 +246,15 @@ def _export_latest(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
         json.dumps({"type": "FeatureCollection", "features": features}, ensure_ascii=False),
         encoding="utf-8",
     )
+    station_ids = [row[0] for row in conn.execute("SELECT station_id FROM stations ORDER BY station_id").fetchall()]
+    (DATA_DIR / "station-ids.json").write_text(
+        json.dumps(
+            {"generated_at": ts_iso, "ids": station_ids},
+            ensure_ascii=False,
+            separators=(",", ":"),
+        ),
+        encoding="utf-8",
+    )
     (DATA_DIR / "meta.json").write_text(
         json.dumps(
             {
@@ -284,6 +293,23 @@ def _export_history(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
         (ts,),
     ).fetchall()
 
+    station_ids = [row[0] for row in conn.execute("SELECT station_id FROM stations ORDER BY station_id").fetchall()]
+    snapshot_by_id = {
+        row[0]: row[1:]
+        for row in conn.execute(
+            """
+            SELECT station_id, mechanical, ebike, total, docks_available,
+                   COALESCE(bikes_disabled, 0)
+            FROM snapshots WHERE ts = ?
+            """,
+            (ts,),
+        ).fetchall()
+    }
+    station_values = [
+        list(snapshot_by_id.get(sid, (0, 0, 0, 0, 0)))
+        for sid in station_ids
+    ]
+
     hourly_payload = {
         "ts": ts_iso,
         "barris": [
@@ -304,6 +330,7 @@ def _export_history(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
             }
             for r in barri_rows
         ],
+        "v": station_values,
     }
 
     hourly_path = hourly_dir / f"{hour_key}.json.gz"
