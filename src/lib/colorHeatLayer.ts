@@ -12,6 +12,18 @@ export function stationMarkerRadius(capacity: number): number {
   return Math.min(8, Math.max(4, 3.2 + capacity * 0.07));
 }
 
+/** ~44px touch target on coarse pointers; unchanged on mouse/trackpad. */
+export function stationHitRadius(visualRadius: number): number {
+  if (typeof window === "undefined" || !window.matchMedia("(pointer: coarse)").matches) {
+    return visualRadius;
+  }
+  return Math.max(visualRadius + 12, 22);
+}
+
+export function stationNeedsExpandedHitTarget(): boolean {
+  return typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
+}
+
 function hexToRgb(hex: string): [number, number, number] {
   const n = Number.parseInt(hex.slice(1), 16);
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];

@@ -4,7 +4,9 @@ import type { Barri, MetricMode, Station } from "../lib/data";
 import { barriMetric, bikesOutOfService, pctOfStations, pctOosOfBikeFleet, stationMetric } from "../lib/data";
 import {
   createColorHeatLayer,
+  stationHitRadius,
   stationMarkerRadius,
+  stationNeedsExpandedHitTarget,
   type ColorHeatLayer,
 } from "../lib/colorHeatLayer";
 import type { TimeView } from "../lib/history";
@@ -148,23 +150,58 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
     if (showStations && stations) {
       const activeStations = stations.filter((s) => isStationActive(s.status));
 
+      const expandedHit = stationNeedsExpandedHitTarget();
+
       for (const s of activeStations) {
         const value = stationMetric(s, mode);
+        const visualRadius = stationMarkerRadius(s.capacity);
+        const popup = stationPopupHtml(s);
+        const tooltip = stationTooltipHtml(s);
 
-        const marker = L.circleMarker([s.lat, s.lon], {
-          pane: "stationPane",
-          radius: stationMarkerRadius(s.capacity),
-          fillColor: metricPctColor(value, mode),
-          color: "#334155",
-          weight: 1,
-          fillOpacity: 0.92,
-        })
-          .bindPopup(stationPopupHtml(s))
-          .bindTooltip(stationTooltipHtml(s), { sticky: true, className: "station-tooltip" })
-          .on("popupopen", () => {
-            marker.closeTooltip();
-          })
-          .addTo(stationLayer);
+        const bindStationUi = (layer: L.CircleMarker) =>
+          layer
+            .bindPopup(popup)
+            .bindTooltip(tooltip, { sticky: true, className: "station-tooltip" })
+            .on("popupopen", () => {
+              layer.closeTooltip();
+            });
+
+        if (expandedHit) {
+          const hitMarker = bindStationUi(
+            L.circleMarker([s.lat, s.lon], {
+              pane: "stationPane",
+              radius: stationHitRadius(visualRadius),
+              fillColor: "#000",
+              fillOpacity: 0,
+              color: "transparent",
+              weight: 0,
+              className: "station-hit",
+            })
+          );
+          hitMarker.addTo(stationLayer);
+
+          L.circleMarker([s.lat, s.lon], {
+            pane: "stationPane",
+            radius: visualRadius,
+            fillColor: metricPctColor(value, mode),
+            color: "#334155",
+            weight: 1,
+            fillOpacity: 0.92,
+            interactive: false,
+            className: "station-dot",
+          }).addTo(stationLayer);
+        } else {
+          bindStationUi(
+            L.circleMarker([s.lat, s.lon], {
+              pane: "stationPane",
+              radius: visualRadius,
+              fillColor: metricPctColor(value, mode),
+              color: "#334155",
+              weight: 1,
+              fillOpacity: 0.92,
+            })
+          ).addTo(stationLayer);
+        }
       }
 
       if (heatLayer && heatMode !== mode) {
