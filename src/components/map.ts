@@ -18,11 +18,16 @@ function stationCountsShort(s: Station): string {
 
 function stationPopupHtml(s: Station): string {
   const fs = bikesOutOfService(s.capacity, s.mechanical, s.ebike, s.docks_available);
-  return `${s.name}<br/>
+  return `<strong>${s.name}</strong><br/>
 ${s.ebike} elèctriques<br/>
 ${s.mechanical} mecàniques<br/>
 ${s.docks_available} ancoratges lliures<br/>
-${fs} fora de servei`;
+${fs} fora de servei<br/>
+${s.capacity} ancoratges totals`;
+}
+
+function stationTooltipHtml(s: Station): string {
+  return `<strong>${s.name}</strong><br/>${stationCountsShort(s)}`;
 }
 
 export type MapView = {
@@ -31,7 +36,8 @@ export type MapView = {
     mode: MetricMode,
     barris: Barri[],
     stations: Station[] | null,
-    timeView: TimeView
+    timeView: TimeView,
+    selectedBarriCodi?: string | null
   ) => void;
 };
 
@@ -60,7 +66,8 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
     mode: MetricMode,
     barris: Barri[],
     stations: Station[] | null,
-    timeView: TimeView
+    timeView: TimeView,
+    selectedBarriCodi: string | null = null
   ) {
     const byCode = new Map(barris.map((b) => [b.barri_codi, b]));
     const invert = mode === "docks";
@@ -76,12 +83,21 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
       style: (feature) => {
         const codi = String(feature?.properties?.codi_barri ?? "");
         const barri = byCode.get(codi);
-        const value = barri ? barriMetric(barri, mode) : 0;
+        const dimmed = selectedBarriCodi && codi !== selectedBarriCodi;
+        if (!barri || dimmed) {
+          return {
+            fillColor: "#e2e8f0",
+            fillOpacity: dimmed ? 0.2 : 0.08,
+            color: "#cbd5e1",
+            weight: 1,
+          };
+        }
+        const value = barriMetric(barri, mode);
         return {
           fillColor: pctColor(value, invert),
           fillOpacity: showStations ? 0.32 : 0.45,
-          color: "#64748b",
-          weight: 1,
+          color: selectedBarriCodi === codi ? "#0f766e" : "#64748b",
+          weight: selectedBarriCodi === codi ? 2 : 1,
         };
       },
       onEachFeature: (feature, layer) => {
@@ -132,7 +148,7 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
           fillOpacity: 0.92,
         })
           .bindPopup(stationPopupHtml(s))
-          .bindTooltip(`${s.name}<br/>${stationCountsShort(s)}`, { sticky: true })
+          .bindTooltip(stationTooltipHtml(s), { sticky: true, className: "station-tooltip" })
           .addTo(stationLayer);
       }
 

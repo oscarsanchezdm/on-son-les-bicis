@@ -1,9 +1,52 @@
-import type { LatestData } from "../lib/data";
+import type { Barri, LatestData } from "../lib/data";
 import { bikesOutOfService, pctBikesOutOfService, pctOfStations } from "../lib/data";
 import type { Summary7d } from "../lib/history";
 import { hourlyAverage, sparklineValues } from "../lib/history";
 import { formatDateTime, formatPct, formatRelativeTime } from "../lib/format";
 import { renderSparkline } from "../lib/sparkline";
+
+/** Build KPI-shaped data for a single barri filter. */
+export function latestFromBarri(barri: Barri, lastUpdated: string): LatestData {
+  const oos =
+    barri.bikes_out_of_service ??
+    bikesOutOfService(
+      barri.capacity_total,
+      barri.bikes_mechanical,
+      barri.bikes_ebike,
+      barri.docks_available_total
+    );
+  const pctOos =
+    barri.pct_bikes_out_of_service ??
+    pctBikesOutOfService(
+      barri.capacity_total,
+      barri.bikes_mechanical,
+      barri.bikes_ebike,
+      barri.docks_available_total
+    );
+
+  return {
+    last_updated: lastUpdated,
+    totals: {
+      capacity: barri.capacity_total,
+      bikes_total: barri.bikes_total,
+      bikes_mechanical: barri.bikes_mechanical,
+      bikes_ebike: barri.bikes_ebike,
+      docks_available: barri.docks_available_total,
+      stations_active: barri.stations_active,
+      stations_zero_ebike: barri.stations_zero_ebike,
+      stations_zero_mechanical: barri.stations_zero_mechanical,
+      stations_zero_any: barri.stations_zero_any,
+      pct_bikes: barri.pct_bikes,
+      pct_docks_free: barri.pct_docks_free,
+      pct_mechanical: barri.pct_mechanical,
+      pct_ebike: barri.pct_ebike,
+      bikes_out_of_service: oos,
+      pct_bikes_out_of_service: pctOos,
+      worst_barri: null,
+    },
+    stations: [],
+  };
+}
 
 function histNote(
   summary: Summary7d | null,
@@ -21,7 +64,8 @@ function histNote(
 export function renderKpis(
   container: HTMLElement,
   data: LatestData,
-  summary: Summary7d | null
+  summary: Summary7d | null,
+  scopeLabel = "ciutat"
 ): void {
   const t = data.totals;
   const worst = t.worst_barri;
@@ -39,9 +83,32 @@ export function renderKpis(
   const pctZeroEbike = pctOfStations(t.stations_zero_ebike, t.stations_active);
   const pctZeroMech = pctOfStations(t.stations_zero_mechanical ?? 0, t.stations_active);
 
-  const sparkBikes = renderSparkline(sparklineValues(summary?.series ?? [], "pct_bikes"));
-  const sparkMech = renderSparkline(sparklineValues(summary?.series ?? [], "pct_mechanical"));
-  const sparkEbike = renderSparkline(sparklineValues(summary?.series ?? [], "pct_ebike"));
+  const sparkBikes =
+    scopeLabel === "ciutat"
+      ? renderSparkline(sparklineValues(summary?.series ?? [], "pct_bikes"))
+      : "";
+  const sparkMech =
+    scopeLabel === "ciutat"
+      ? renderSparkline(sparklineValues(summary?.series ?? [], "pct_mechanical"))
+      : "";
+  const sparkEbike =
+    scopeLabel === "ciutat"
+      ? renderSparkline(sparklineValues(summary?.series ?? [], "pct_ebike"))
+      : "";
+  const histBikes =
+    scopeLabel === "ciutat" ? histNote(summary, hour, "pct_bikes", t.pct_bikes) : "";
+  const histMech =
+    scopeLabel === "ciutat" ? histNote(summary, hour, "pct_mechanical", pctMech) : "";
+  const histEbike =
+    scopeLabel === "ciutat" ? histNote(summary, hour, "pct_ebike", pctEbike) : "";
+  const worstCard =
+    scopeLabel === "ciutat"
+      ? `<article class="kpi-card kpi-card--alert">
+        <span class="kpi-label">Pitjor barri (bicis)</span>
+        <strong>${worst?.barri_nom ?? "—"}</strong>
+        <small>${worst ? formatPct(worst.pct_bikes) : ""}</small>
+      </article>`
+      : "";
 
   container.innerHTML = `
     <div class="kpi-grid">
@@ -51,25 +118,25 @@ export function renderKpis(
         <small>${formatDateTime(data.last_updated)}</small>
       </article>
       <article class="kpi-card">
-        <span class="kpi-label">Bicis disponibles (ciutat)</span>
+        <span class="kpi-label">Bicis disponibles (${scopeLabel})</span>
         <strong>${t.bikes_total.toLocaleString("ca-ES")}</strong>
         <small>${formatPct(t.pct_bikes)} de ${t.capacity.toLocaleString("ca-ES")} ancoratges</small>
         ${sparkBikes}
-        <small class="kpi-hist">${histNote(summary, hour, "pct_bikes", t.pct_bikes)}</small>
+        ${histBikes ? `<small class="kpi-hist">${histBikes}</small>` : ""}
       </article>
       <article class="kpi-card">
         <span class="kpi-label">Mecàniques</span>
         <strong>${formatPct(pctMech)}</strong>
         <small>${t.bikes_mechanical.toLocaleString("ca-ES")} bicis · ${formatPct(pctMechOfFleet)} del parc disponible</small>
         ${sparkMech}
-        <small class="kpi-hist">${histNote(summary, hour, "pct_mechanical", pctMech)}</small>
+        ${histMech ? `<small class="kpi-hist">${histMech}</small>` : ""}
       </article>
       <article class="kpi-card">
         <span class="kpi-label">Elèctriques</span>
         <strong>${t.bikes_ebike.toLocaleString("ca-ES")}</strong>
         <small>${formatPct(pctEbike)} del total d'ancoratges</small>
         ${sparkEbike}
-        <small class="kpi-hist">${histNote(summary, hour, "pct_ebike", pctEbike)}</small>
+        ${histEbike ? `<small class="kpi-hist">${histEbike}</small>` : ""}
       </article>
       <article class="kpi-card">
         <span class="kpi-label">Estacions sense elèctriques</span>
@@ -89,11 +156,7 @@ export function renderKpis(
           <span style="width:${Math.min(100, pctOutOfService)}%"></span>
         </div>
       </article>
-      <article class="kpi-card kpi-card--alert">
-        <span class="kpi-label">Pitjor barri (bicis)</span>
-        <strong>${worst?.barri_nom ?? "—"}</strong>
-        <small>${worst ? formatPct(worst.pct_bikes) : ""}</small>
-      </article>
+      ${worstCard}
     </div>
   `;
 }

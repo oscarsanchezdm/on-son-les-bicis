@@ -248,6 +248,47 @@ h1 {
   cursor: pointer;
 }
 
+.barri-table tbody tr.selected {
+  background: #ecfdf5;
+  outline: 2px solid #0f766e;
+  outline-offset: -2px;
+}
+
+.barri-filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0 0 1rem;
+  padding: 0.65rem 1rem;
+  background: #ecfdf5;
+  border: 1px solid #99f6e4;
+  border-radius: 10px;
+  font-size: 0.95rem;
+}
+
+.barri-filter-bar.hidden {
+  display: none;
+}
+
+.barri-filter-bar button {
+  padding: 0.4rem 0.85rem;
+  border: 1px solid #0f766e;
+  border-radius: 8px;
+  background: white;
+  color: #0f766e;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.station-tooltip strong {
+  font-weight: 700;
+}
+
+.leaflet-popup-content strong {
+  font-weight: 700;
+}
+
 .barri-name {
   font-weight: 500;
   min-width: 10rem;
