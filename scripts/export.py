@@ -335,7 +335,7 @@ def _export_history(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
     cutoff = dt.timestamp() - 30 * 86400
     for path in hourly_dir.glob("*.json.gz"):
         try:
-            file_dt = datetime.strptime(path.stem, "%Y-%m-%d-%H")
+            file_dt = datetime.strptime(_hourly_file_key(path), "%Y-%m-%d-%H")
             if file_dt.timestamp() < cutoff:
                 path.unlink()
         except ValueError:
@@ -348,6 +348,70 @@ def _export_history(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
                 path.unlink()
         except ValueError:
             continue
+
+    _export_history_index(hourly_dir, ts_iso)
+
+
+_DAY_TYPE_UI = {
+    "weekday": "Feiner",
+    "friday": "Divendres",
+    "saturday": "Dissabte",
+    "sunday": "Diumenge",
+}
+
+_MONTHS_CA = ("gen", "feb", "mar", "abr", "mai", "jun", "jul", "ago", "set", "oct", "nov", "des")
+
+
+def _day_type_from_dt(dt: datetime) -> str:
+    dow = dt.weekday()  # Monday=0 … Sunday=6
+    if dow == 4:
+        return "friday"
+    if dow == 5:
+        return "saturday"
+    if dow == 6:
+        return "sunday"
+    return "weekday"
+
+
+def _hourly_file_key(path: Path) -> str:
+    name = path.name
+    if name.endswith(".json.gz"):
+        return name[: -len(".json.gz")]
+    return path.stem
+
+
+def _export_history_index(hourly_dir: Path, ts_iso: str) -> None:
+    snapshots: list[dict] = []
+    for path in sorted(hourly_dir.glob("*.json.gz")):
+        key = _hourly_file_key(path)
+        try:
+            dt = datetime.strptime(key, "%Y-%m-%d-%H")
+        except ValueError:
+            continue
+        day_type = _day_type_from_dt(dt)
+        label = (
+            f"{_DAY_TYPE_UI[day_type]} {dt.day} {_MONTHS_CA[dt.month - 1]}, {dt.hour:02d}:00"
+        )
+        snapshots.append(
+            {
+                "key": key,
+                "date": dt.strftime("%Y-%m-%d"),
+                "hour": dt.hour,
+                "dayType": day_type,
+                "label": label,
+            }
+        )
+
+    history_dir = DATA_DIR / "history"
+    history_dir.mkdir(parents=True, exist_ok=True)
+    (history_dir / "history-index.json").write_text(
+        json.dumps(
+            {"generated_at": ts_iso, "snapshots": snapshots},
+            ensure_ascii=False,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
 
 
 def _load_existing_summary_series() -> list[dict]:

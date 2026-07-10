@@ -1,113 +1,148 @@
-import { dayTypeLabel, type DayType, type Summary7d, type TimeView } from "../lib/history";
-import { formatHour } from "../lib/format";
+import {
+  snapshotScopeLabel,
+  type HistoryIndex,
+  type TimeView,
+} from "../lib/history";
 
 export type TimeSelectorOptions = {
-  summary: Summary7d | null;
-  currentTs: string;
+  index: HistoryIndex | null;
   timeView: TimeView;
   onChange: (view: TimeView) => void;
 };
 
-const DAY_TYPES: { id: DayType; label: string }[] = [
-  { id: "weekday", label: "Feiner" },
-  { id: "friday", label: "Divendres" },
-  { id: "saturday", label: "Dissabte" },
-  { id: "sunday", label: "Diumenge" },
-];
+type TimelineState = {
+  index: HistoryIndex | null;
+  view: TimeView;
+  onChange: (view: TimeView) => void;
+};
 
-export function renderTimeSelector(container: HTMLElement, opts: TimeSelectorOptions): void {
-  const { summary, currentTs, timeView, onChange } = opts;
-  const currentHour = new Date(currentTs).getHours();
-  const selectedHour = timeView.kind === "hour" ? timeView.hour : currentHour;
-  const selectedDayType = timeView.kind === "hour" ? timeView.dayType : "weekday";
-  const isLatest = timeView.kind === "latest";
+let timelineState: TimelineState | null = null;
 
-  const bucket = summary?.hourly.find((h) => h.hour === selectedHour);
+function selectedKey(view: TimeView): string {
+  if (view.kind === "latest") return "latest";
+  return view.key;
+}
+
+function defaultStatus(view: TimeView, index: HistoryIndex | null): string {
+  if (view.kind === "latest") {
+    return "Mostrant dades actuals (estacions + barris).";
+  }
+  const snap = index?.snapshots.find((s) => s.key === view.key);
+  if (!snap) return "Snapshot històric no trobat.";
+  return `Mostrant mitjana de barris: ${snap.label}.`;
+}
+
+function paintTimeline(container: HTMLElement, opts: TimeSelectorOptions) {
+  const { index, timeView } = opts;
+  const snapshots = index?.snapshots ?? [];
+  const currentKey = selectedKey(timeView);
 
   container.innerHTML = `
     <section class="timeline">
       <div class="timeline-head">
         <h2>Franja horària</h2>
-        <p class="timeline-status" id="timeline-status">
-          ${isLatest ? "Mostrant dades actuals (estacions + barris)." : renderHourSummary(bucket, selectedHour, selectedDayType)}
-        </p>
+        <p class="timeline-status" id="timeline-status">${defaultStatus(timeView, index)}</p>
       </div>
       <div class="time-controls">
-        <button type="button" id="btn-latest" class="time-btn ${isLatest ? "active" : ""}">
-          Dades actuals
-        </button>
-        <div class="day-type-toggle" role="group" aria-label="Tipus de dia">
-          ${DAY_TYPES.map(
-            (d) =>
-              `<button type="button" class="day-type-btn ${!isLatest && selectedDayType === d.id ? "active" : ""}" data-day-type="${d.id}">${d.label}</button>`
-          ).join("")}
-        </div>
-        <label class="hour-picker">
-          Mitjana a les
-          <input type="range" id="hour-range" min="0" max="23" value="${selectedHour}" ${isLatest ? "disabled" : ""} />
-          <strong id="hour-label">${formatHour(selectedHour)}</strong>
+        <label class="time-select-label">
+          Visualització
+          <select id="time-view-select" class="time-select" ${snapshots.length === 0 ? "disabled" : ""}>
+            <option value="latest" ${currentKey === "latest" ? "selected" : ""}>Dades actuals</option>
+            ${
+              snapshots.length
+                ? snapshots
+                    .map(
+                      (s) =>
+                        `<option value="${s.key}" ${currentKey === s.key ? "selected" : ""}>${s.label}</option>`
+                    )
+                    .join("")
+                : `<option value="" disabled selected>Encara no hi ha històric</option>`
+            }
+          </select>
         </label>
       </div>
     </section>
   `;
+}
 
-  container.querySelector("#btn-latest")?.addEventListener("click", () => {
-    onChange({ kind: "latest" });
-  });
+function bindTimelineEvents(container: HTMLElement) {
+  if (container.dataset.bound === "1") return;
+  container.dataset.bound = "1";
 
-  container.querySelectorAll<HTMLButtonElement>(".day-type-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const dayType = btn.dataset.dayType as DayType;
-      onChange({ kind: "hour", hour: selectedHour, dayType });
+  container.addEventListener("change", (e) => {
+    if (!timelineState) return;
+    const select = (e.target as HTMLElement).closest<HTMLSelectElement>("#time-view-select");
+    if (!select) return;
+
+    const value = select.value;
+    if (value === "latest") {
+      timelineState.onChange({ kind: "latest" });
+      return;
+    }
+
+    const snap = timelineState.index?.snapshots.find((s) => s.key === value);
+    if (!snap) return;
+    timelineState.onChange({
+      kind: "snapshot",
+      key: snap.key,
+      date: snap.date,
+      hour: snap.hour,
+      dayType: snap.dayType,
     });
   });
-
-  const range = container.querySelector<HTMLInputElement>("#hour-range");
-  range?.addEventListener("input", () => {
-    const hour = Number(range.value);
-    container.querySelector("#hour-label")!.textContent = formatHour(hour);
-    onChange({ kind: "hour", hour, dayType: selectedDayType });
-  });
 }
 
-function renderHourSummary(
-  bucket: { avg_pct_bikes: number; avg_pct_mechanical: number; avg_pct_ebike: number; samples: unknown[] } | undefined,
-  hour: number,
-  dayType: DayType
-): string {
-  const day = dayTypeLabel(dayType);
-  if (!bucket || !bucket.samples.length) {
-    return `Mitjana de ${day} a les ${formatHour(hour)}: encara no hi ha prou mostres (es necessiten ~30 dies d'històric).`;
+export function renderTimeSelector(container: HTMLElement, opts: TimeSelectorOptions): void {
+  timelineState = {
+    index: opts.index,
+    view: opts.timeView,
+    onChange: opts.onChange,
+  };
+  bindTimelineEvents(container);
+  paintTimeline(container, opts);
+}
+
+export function updateTimeSelector(container: HTMLElement, opts: TimeSelectorOptions): void {
+  if (timelineState) {
+    timelineState.index = opts.index;
+    timelineState.view = opts.timeView;
+    timelineState.onChange = opts.onChange;
   }
-  return `Mitjana de ${day} a les ${formatHour(hour)}: ${bucket.avg_pct_bikes.toFixed(1)}% bicis · ${bucket.avg_pct_mechanical.toFixed(1)}% mecàniques · ${bucket.avg_pct_ebike.toFixed(1)}% elèctriques (${bucket.samples.length} mostres, 7 dies).`;
-}
 
-export function updateTimeSelectorStatus(
-  container: HTMLElement,
-  timeView: TimeView,
-  summary: Summary7d | null
-): void {
-  const status = container.querySelector("#timeline-status");
-  const btn = container.querySelector("#btn-latest");
-  const range = container.querySelector<HTMLInputElement>("#hour-range");
-  if (!status || !btn || !range) return;
-
-  const isLatest = timeView.kind === "latest";
-  btn.classList.toggle("active", isLatest);
-  range.disabled = isLatest;
-
-  container.querySelectorAll<HTMLButtonElement>(".day-type-btn").forEach((b) => {
-    const active = !isLatest && timeView.kind === "hour" && b.dataset.dayType === timeView.dayType;
-    b.classList.toggle("active", active);
-  });
-
-  if (isLatest) {
+  const select = container.querySelector<HTMLSelectElement>("#time-view-select");
+  if (!select) {
+    paintTimeline(container, opts);
     return;
   }
 
-  const bucket = summary?.hourly.find((h) => h.hour === timeView.hour);
-  void bucket;
-  range.value = String(timeView.hour);
-  const label = container.querySelector("#hour-label");
-  if (label) label.textContent = formatHour(timeView.hour);
+  const snapshots = opts.index?.snapshots ?? [];
+  const currentKey = selectedKey(opts.timeView);
+  select.disabled = snapshots.length === 0;
+  select.innerHTML = `
+    <option value="latest" ${currentKey === "latest" ? "selected" : ""}>Dades actuals</option>
+    ${
+      snapshots.length
+        ? snapshots
+            .map(
+              (s) =>
+                `<option value="${s.key}" ${currentKey === s.key ? "selected" : ""}>${s.label}</option>`
+            )
+            .join("")
+        : `<option value="" disabled>Encara no hi ha històric</option>`
+    }
+  `;
+
+  const status = container.querySelector("#timeline-status");
+  if (status) status.textContent = defaultStatus(opts.timeView, opts.index);
+}
+
+export function setTimelineStatus(container: HTMLElement, text: string): void {
+  const status = container.querySelector("#timeline-status");
+  if (status) status.textContent = text;
+}
+
+export function timeViewLabel(view: TimeView, index: HistoryIndex | null): string {
+  if (view.kind === "latest") return "ciutat";
+  const snap = index?.snapshots.find((s) => s.key === view.key);
+  return snap?.label ?? snapshotScopeLabel(view);
 }

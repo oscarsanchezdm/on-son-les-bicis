@@ -1,0 +1,33 @@
+{
+  "generated_at": "2026-07-10T14:00:00+00:00",
+  "snapshots": [
+    {
+      "key": "2026-07-10-08",
+      "date": "2026-07-10",
+      "hour": 8,
+      "dayType": "friday",
+      "label": "Divendres 10 jul, 08:00"
+    },
+    {
+      "key": "2026-07-10-11",
+      "date": "2026-07-10",
+      "hour": 11,
+      "dayType": "friday",
+      "label": "Divendres 10 jul, 11:00"
+    },
+    {
+      "key": "2026-07-10-12",
+      "date": "2026-07-10",
+      "hour": 12,
+      "dayType": "friday",
+      "label": "Divendres 10 jul, 12:00"
+    },
+    {
+      "key": "2026-07-10-13",
+      "date": "2026-07-10",
+      "hour": 13,
+      "dayType": "friday",
+      "label": "Divendres 10 jul, 13:00"
+    }
+  ]
+}
