@@ -454,7 +454,8 @@ body.kpi-chart-open {
 }
 
 .table-wrap {
-  overflow-x: auto;
+  overflow: auto;
+  max-height: min(28rem, 55vh);
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -464,6 +465,14 @@ body.kpi-chart-open {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.92rem;
+}
+
+.barri-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--card);
+  box-shadow: 0 1px 0 var(--border);
 }
 
 .barri-table th,
@@ -791,6 +800,10 @@ body.kpi-chart-open {
   .kpi-update-date {
     width: 100%;
     font-size: 0.72rem;
+  }
+
+  .table-wrap {
+    max-height: min(22rem, 45vh);
   }
 }
 

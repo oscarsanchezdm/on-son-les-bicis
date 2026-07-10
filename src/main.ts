@@ -57,7 +57,7 @@ app.innerHTML = `
         <p class="legend-note" id="legend-note">Escala compartida entre calor, barris i estacions.</p>
       </aside>
     </section>
-    <section>
+    <section class="barri-section">
       <h2>Barris</h2>
       <p class="section-note" id="table-note">Ordeneu per columna o seleccioneu un barri per filtrar.</p>
       <div id="barri-table"></div>
