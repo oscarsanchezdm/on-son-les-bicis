@@ -53,17 +53,13 @@ app.innerHTML = `
       <div id="map"></div>
       <aside class="legend">
         <h2>Llegenda</h2>
-        <p class="legend-heading">Mapa de calor</p>
-        <div class="heat-scale-toggle" role="group" aria-label="Tipus de mapa de calor">
+        <div class="heat-scale-toggle" role="group" aria-label="Tipus d'escala">
           <button type="button" data-heat-scale="percent" class="active">Percentatge</button>
           <button type="button" data-heat-scale="absolute">Quantitat</button>
         </div>
-        <div class="legend-bar" id="legend-heat-bar"></div>
-        <p class="legend-scale-labels" id="legend-heat-labels"><span>Escassetat</span><span>Abundància</span></p>
-        <p class="legend-heading">Barris i estacions</p>
-        <div class="legend-bar legend-bar--metric" id="legend-metric-bar"></div>
-        <p class="legend-scale-labels" id="legend-metric-labels"><span>Escassetat</span><span>Abundància</span></p>
-        <p class="legend-note" id="legend-note">Escala de percentatge compartida entre barris i punts.</p>
+        <div class="legend-bar" id="legend-bar"></div>
+        <p class="legend-scale-labels" id="legend-labels"><span>Escassetat</span><span>Abundància</span></p>
+        <p class="legend-note" id="legend-note">Escala compartida entre mapa, barris, estacions i taula.</p>
       </aside>
     </section>
     <section class="barri-section">
@@ -107,44 +103,30 @@ function metricLabel(): string {
 
 function legendText(): string {
   const metric = metricLabel();
-  const heatPart =
+  const scalePart =
     heatScale === "absolute"
-      ? "Mapa de calor, barris i estacions en mode quantitat: color del filtre, intensitat i mida segons el nombre o el %."
-      : "El mapa de calor mostra el percentatge de disponibilitat.";
+      ? "Mode quantitat: color del filtre, intensitat segons el nombre o el %."
+      : "Mode percentatge: escala d'escassetat a abundància.";
   if (selectedBarri) {
-    return `${heatPart} Barri: ${selectedBarri.barri_nom}. Mètrica: ${metric}.`;
+    return `${scalePart} Barri: ${selectedBarri.barri_nom}. Mètrica: ${metric}.`;
   }
   if (isHistoricalView(timeView)) {
-    return `${heatPart} Mitjana històrica de ${metric} (${timeViewLabel(timeView, historyIndex)}).`;
+    return `${scalePart} Mitjana històrica de ${metric} (${timeViewLabel(timeView, historyIndex)}).`;
   }
   return heatScale === "absolute"
-    ? `${heatPart} Estacions sense ${metric} s'oculten.`
-    : `${heatPart} Barris i estacions: escala de ${metric} en percentatge.`;
+    ? `${scalePart} Estacions sense ${metric} s'oculten.`
+    : `${scalePart} Mapa, barris, estacions i taula.`;
 }
 
 function updateLegend(): void {
-  const heatBar = document.getElementById("legend-heat-bar");
-  const heatLabels = document.getElementById("legend-heat-labels");
-  const metricBar = document.getElementById("legend-metric-bar");
-  const metricLabels = document.getElementById("legend-metric-labels");
-  const pctGradient = "linear-gradient(90deg, #b91c1c, #f59e0b, #84cc16, #15803d)";
+  const bar = document.getElementById("legend-bar");
+  const labels = document.getElementById("legend-labels");
 
-  if (heatBar) heatBar.style.background = heatLegendGradient(mode, heatScale);
-  if (heatLabels) {
-    heatLabels.innerHTML =
+  if (bar) bar.style.background = heatLegendGradient(mode, heatScale);
+  if (labels) {
+    labels.innerHTML =
       heatScale === "absolute"
         ? "<span>Pocs</span><span>Molts</span>"
-        : "<span>Escassetat</span><span>Abundància</span>";
-  }
-
-  if (metricBar) {
-    metricBar.style.background =
-      heatScale === "absolute" ? heatLegendGradient(mode, "absolute") : pctGradient;
-  }
-  if (metricLabels) {
-    metricLabels.innerHTML =
-      heatScale === "absolute"
-        ? "<span>Baixa intensitat</span><span>Alta intensitat</span>"
         : "<span>Escassetat</span><span>Abundància</span>";
   }
   document.querySelectorAll<HTMLButtonElement>(".heat-scale-toggle button").forEach((btn) => {
@@ -157,9 +139,11 @@ function tableNote(): string {
     return `Filtrat per ${selectedBarri.barri_nom}.`;
   }
   if (isHistoricalView(timeView)) {
-    return `Mitjana per barri · ${timeViewLabel(timeView, historyIndex)}.`;
+    return `Mitjana per barri · ${timeViewLabel(timeView, historyIndex)}${heatScale === "absolute" ? " · valors en nombre" : ""}.`;
   }
-  return "Ordeneu per columna o seleccioneu un barri per filtrar.";
+  return heatScale === "absolute"
+    ? "Ordeneu per columna o seleccioneu un barri. Valors en nombre de bicis/ancoratges."
+    : "Ordeneu per columna o seleccioneu un barri per filtrar.";
 }
 
 function mapStations(): Station[] | null {
@@ -270,6 +254,7 @@ async function refresh() {
   renderBarriTable(document.getElementById("barri-table")!, displayBarris, mode, timeView, {
     selectedCodi: selectedBarri?.barri_codi ?? null,
     onSelect: selectBarri,
+    heatScale,
   });
 
   updateBarriFilterBar();

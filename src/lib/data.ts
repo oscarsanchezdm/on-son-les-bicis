@@ -129,6 +129,30 @@ export function barriMetric(barri: Barri, mode: MetricMode): number {
   }
 }
 
+export function barriMetricCount(barri: Barri, mode: MetricMode): number {
+  switch (mode) {
+    case "mechanical":
+      return barri.bikes_mechanical;
+    case "ebike":
+      return barri.bikes_ebike;
+    case "docks":
+      return barri.docks_available_total;
+    case "out_of_service":
+      return (
+        barri.bikes_out_of_service ??
+        bikesOutOfService(
+          barri.capacity_total,
+          barri.bikes_mechanical,
+          barri.bikes_ebike,
+          barri.docks_available_total,
+          barri.bikes_total
+        )
+      );
+    default:
+      return barri.bikes_total;
+  }
+}
+
 export function stationMetric(station: Station, mode: MetricMode): number {
   if (station.capacity <= 0) return 0;
   switch (mode) {
