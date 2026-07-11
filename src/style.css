@@ -641,6 +641,8 @@ body.kpi-chart-open {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 12px;
+  --usage-chart-stroke: #475569;
+  --usage-chart-stroke-muted: #94a3b8;
 }
 
 .usage-section--loading,
@@ -681,8 +683,9 @@ body.kpi-chart-open {
 }
 
 .usage-headline strong {
-  font-size: 1.6rem;
-  color: var(--teal);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text);
   line-height: 1.1;
 }
 
@@ -720,11 +723,20 @@ body.kpi-chart-open {
   width: 1.25rem;
   height: 3px;
   border-radius: 2px;
-  background: var(--teal);
+  background: var(--usage-chart-stroke);
 }
 
 .usage-legend-item--avg .usage-legend-swatch {
-  opacity: 0.4;
+  background: var(--usage-chart-stroke-muted);
+}
+
+.usage-section .kpi-chart-line {
+  stroke: var(--usage-chart-stroke);
+}
+
+.usage-section .kpi-chart-line--muted {
+  stroke: var(--usage-chart-stroke-muted);
+  opacity: 0.85;
 }
 
 .kpi-chart-line--muted {

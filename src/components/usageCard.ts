@@ -1,12 +1,14 @@
 import {
   computeUsageHourlyLatest,
   computeUsageMetrics,
-  usageFromLiveTotals,
+  mergeLiveSnapshot,
+  MIN_IN_USE_AT_PEAK,
+  usageFromLive,
   usageFromSummarySeries,
   type HourlyUsagePoint,
   type UsageMetrics,
 } from "../lib/bikeUsage";
-import { bikesOutOfService, type LatestData } from "../lib/data";
+import type { LatestData } from "../lib/data";
 import {
   dayTypeLabel,
   isHistoricalView,
@@ -29,25 +31,15 @@ export type UsageCardOptions = {
 let loadRequest = 0;
 
 function scopeNote(timeView: TimeView): string {
-  if (timeView.kind === "latest") return "Ciutat · avui vs mitjana del mateix tipus de dia";
-  return `Mitjana ${dayTypeLabel(timeView.dayType)} · 30 dies · ciutat`;
+  if (timeView.kind === "latest") return "Avui comparat amb la mitjana del mateix tipus de dia";
+  return `Mitjana ${dayTypeLabel(timeView.dayType)} · 30 dies`;
 }
 
 function liveHeadline(
   liveData: LatestData,
   snapshots: Awaited<ReturnType<typeof loadCityUsageSnapshots>>
 ): number {
-  const t = liveData.totals;
-  const oos =
-    t.bikes_out_of_service ??
-    bikesOutOfService(
-      t.capacity,
-      t.bikes_mechanical,
-      t.bikes_ebike,
-      t.docks_available,
-      t.bikes_total
-    );
-  return usageFromLiveTotals(t.bikes_total, oos, snapshots);
+  return usageFromLive(liveData, snapshots);
 }
 
 function toChartPoints(points: HourlyUsagePoint[]) {
@@ -78,16 +70,17 @@ function renderHourChart(metrics: UsageMetrics, isLatest: boolean): string {
 
 function renderContent(metrics: UsageMetrics, scope: string, isLatest: boolean): string {
   const hourNote = isLatest
-    ? "Ús estimat en cada moment (no global del dia)"
+    ? "Estimació horària puntual"
     : "Mitjana d'ús estimat per hora";
 
   return `
     <section class="usage-section">
       <div class="usage-head">
         <div>
-          <h2>Bicicletes en ús (aprox.)</h2>
+          <h2>Estimació d'ús de bicicletes</h2>
           <p class="section-note usage-note">
-            Ciutat · màxim aparcades del dia − bicis a estacions. Dia en curs: màxim entre avui i el dia anterior.
+            Estimació a escala de ciutat: màxim de bicicletes aparcades observat menys les presents a les estacions en cada moment.
+            En el moment de màxima ocupació s'assumeixen ${MIN_IN_USE_AT_PEAK} bicis en circulació. No és un recompte real de viatges.
           </p>
         </div>
         <div class="usage-headline">
@@ -117,7 +110,7 @@ export async function renderUsageCard(
   const isLatest = timeView.kind === "latest";
 
   container.hidden = false;
-  container.innerHTML = `<section class="usage-section usage-section--loading"><p>Calculant ús estimat…</p></section>`;
+  container.innerHTML = `<section class="usage-section usage-section--loading"><p>Calculant estimació d'ús…</p></section>`;
 
   try {
     let metrics: UsageMetrics | null = null;
@@ -140,19 +133,21 @@ export async function renderUsageCard(
       });
       if (requestId !== loadRequest) return;
 
-      metrics = fleetScope.length
-        ? computeUsageMetrics(fleetScope, {})
+      const scopedFleet = mergeLiveSnapshot(fleetScope, isLatest ? liveData : null);
+
+      metrics = scopedFleet.length
+        ? computeUsageMetrics(scopedFleet, {})
         : summary?.series?.length
           ? usageFromSummarySeries(summary.series)
           : null;
 
       if (metrics && isLatest) {
-        metrics.hourlyDual = computeUsageHourlyLatest(fleetScope, sameDayHist) ?? undefined;
+        metrics.hourlyDual = computeUsageHourlyLatest(scopedFleet, sameDayHist) ?? undefined;
       }
 
-      if (metrics && liveData) {
+      if (metrics && liveData && isLatest) {
         metrics.headline = liveHeadline(liveData, fleetScope);
-        metrics.headlineLabel = "Ara (aprox.)";
+        metrics.headlineLabel = "Ara";
       }
     }
 
@@ -164,14 +159,14 @@ export async function renderUsageCard(
       (metrics?.hourlyDual?.avgByHour.length ?? 0) > 0;
 
     if (!metrics || !hasHourData) {
-      container.innerHTML = `<section class="usage-section usage-section--empty"><h2>Bicicletes en ús (aprox.)</h2><p class="section-note">Encara no hi ha prou històric per estimar l'ús.</p></section>`;
+      container.innerHTML = `<section class="usage-section usage-section--empty"><h2>Estimació d'ús de bicicletes</h2><p class="section-note">Encara no hi ha prou històric per estimar l'ús.</p></section>`;
       return;
     }
 
     container.innerHTML = renderContent(metrics, scope, isLatest);
   } catch {
     if (requestId !== loadRequest) return;
-    container.innerHTML = `<section class="usage-section usage-section--empty"><h2>Bicicletes en ús (aprox.)</h2><p class="section-note">No s'ha pogut calcular l'ús estimat.</p></section>`;
+    container.innerHTML = `<section class="usage-section usage-section--empty"><h2>Estimació d'ús de bicicletes</h2><p class="section-note">No s'ha pogut calcular l'estimació d'ús.</p></section>`;
   }
 }
 
