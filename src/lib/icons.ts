@@ -20,12 +20,20 @@ const BICING_DOCK_BASE =
 const BICING_DOCK_PILLAR =
   "M82.6,37.7c0-1-0.9-1.8-1.9-1.8H65.5c-1,0-1.9,0.8-1.9,1.8l-3.2,64.8h25.1L82.6,37.7z M76,94.6c0,1.6-1.3,3-3,3s-3-1.3-3-3V45.7c0-1.6,1.3-3,3-3s3,1.3,3,3V94.6z";
 
+const MDI_ARROW_LEFT =
+  "M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z";
+
 function mdiIcon(path: string, size = 16): string {
   return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="${path}"/></svg>`;
 }
 
 function bicingDockIcon(size = 16): string {
   return `<svg width="${size}" height="${size}" viewBox="44 36 58 76" aria-hidden="true"><g fill="currentColor"><path d="${BICING_DOCK_BASE}"/><path fill-rule="evenodd" d="${BICING_DOCK_PILLAR}"/></g></svg>`;
+}
+
+/** Fletxa enrere (mdi-arrow-left). */
+export function iconBack(size = 16): string {
+  return mdiIcon(MDI_ARROW_LEFT, size);
 }
 
 /** Bicicleta mecànica (mdi-bike). */

@@ -59,10 +59,6 @@ app.innerHTML = `
             <span id="data-mode-badge" class="data-mode-badge data-mode-badge--hist" hidden></span>
           </div>
         </div>
-        <div id="barri-filter-bar" class="barri-filter-bar hidden" hidden>
-          <span id="barri-filter-label"></span>
-          <button type="button" id="barri-filter-reset">Tornar a la ciutat</button>
-        </div>
       </div>
       <div class="mode-toggle" role="group" aria-label="Mètrica del mapa">
         <button type="button" data-mode="total" class="active">${metricIconHtml("total")} Bicicletes</button>
@@ -303,6 +299,22 @@ function toggleReplaySpeed(): void {
   void refresh();
 }
 
+function compositionBackLabel(): string | undefined {
+  if (selectedStation && selectedBarri) return selectedBarri.barri_nom;
+  if (selectedBarri) return "Barcelona";
+  return undefined;
+}
+
+function compositionBack(): void {
+  if (selectedStation) {
+    clearStationSelection();
+    return;
+  }
+  if (selectedBarri) {
+    resetBarriFilter();
+  }
+}
+
 function compositionScopeLabel(): string {
   if (selectedStation) return selectedStation.name;
   if (selectedBarri) return selectedBarri.barri_nom;
@@ -462,19 +474,6 @@ function buildKpiData() {
   return barrisToLatestData(displayBarris, latestData.last_updated);
 }
 
-function updateBarriFilterBar() {
-  const bar = document.getElementById("barri-filter-bar")!;
-  const label = document.getElementById("barri-filter-label")!;
-  if (!selectedBarri) {
-    bar.hidden = true;
-    bar.classList.add("hidden");
-    return;
-  }
-  bar.hidden = false;
-  bar.classList.remove("hidden");
-  label.textContent = `Filtrat: ${selectedBarri.barri_nom}`;
-}
-
 function updateDataModeBadge(): void {
   const badge = document.getElementById("data-mode-badge");
   if (!badge) return;
@@ -603,8 +602,8 @@ async function refresh() {
   renderCompositionCard(document.getElementById("composition")!, {
     breakdown: buildCompositionBreakdown(),
     scopeLabel: compositionScopeLabel(),
-    showClearStation: Boolean(selectedStation && selectedBarri),
-    onClearStation: clearStationSelection,
+    backLabel: compositionBackLabel(),
+    onBack: compositionBackLabel() ? compositionBack : undefined,
   });
   mapView.update(
     mode,
@@ -616,7 +615,6 @@ async function refresh() {
   );
   renderTableSection();
 
-  updateBarriFilterBar();
   updateDataModeBadge();
   updateLegend();
   const note = document.getElementById("legend-note")!;
@@ -780,8 +778,6 @@ async function init() {
     void refresh();
 
     renderTimeSelector(document.getElementById("timeline")!, timelineOptions());
-
-    document.getElementById("barri-filter-reset")!.addEventListener("click", resetBarriFilter);
 
     scheduleHistoryLoad();
   } catch (err) {
