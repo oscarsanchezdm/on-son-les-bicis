@@ -258,13 +258,10 @@ export function renderStationPopupContent(
   b: StationBreakdown,
   _options: StationPopupContext = {}
 ): string {
-  const canSparkline = !b.historical && (b.station_id || b.barri_codi);
-  const sparkSlot = canSparkline
-    ? `<div class="station-popup__spark" data-sparkline-slot hidden></div>`
-    : "";
+  const canExpand = !b.historical && (b.station_id || b.barri_codi);
   const payload = encodeBreakdown(b);
-  const hint = canSparkline
-    ? `<span class="station-donut-trigger__hint"><span class="station-donut-trigger__chevron" aria-hidden="true">›</span> Gràfic 24 h</span>`
+  const hint = canExpand
+    ? `<span class="station-donut-trigger__hint"><span class="station-donut-trigger__chevron" aria-hidden="true">›</span> Prem per més info</span>`
     : "";
   return `<div class="station-popup">
     <p class="station-popup__title"><strong>${b.name}</strong></p>
@@ -272,15 +269,14 @@ export function renderStationPopupContent(
     ${historicalNote(b)}
     <div class="station-popup__chart">
       <div class="station-donut-col">
-        <button type="button" class="station-donut-trigger" data-station-breakdown="${payload}" data-sparkline-toggle${canSparkline ? "" : " disabled"} aria-expanded="false" aria-label="Mostra el gràfic de les últimes 24 hores">
+        <button type="button" class="station-donut-trigger" data-station-breakdown="${payload}" aria-label="Prem per més info: distribució i gràfic de 24 hores">
           ${renderDonutSvg(b, 76, "station-donut", false)}
+          <span class="station-donut-caption">${b.capacity.toLocaleString("ca-ES")} ancoratges</span>
+          ${hint}
         </button>
-        <p class="station-donut-caption">${b.capacity.toLocaleString("ca-ES")} ancoratges</p>
-        ${hint}
       </div>
       ${renderLegend(b, true)}
     </div>
-    ${sparkSlot}
   </div>`;
 }
 
@@ -378,48 +374,16 @@ export function closeStationDonutModal(): void {
 
 export function bindStationDonutInPopup(popupEl: HTMLElement | null | undefined): void {
   if (!popupEl) return;
-  popupEl.querySelectorAll<HTMLButtonElement>("[data-sparkline-toggle]").forEach((btn) => {
+  popupEl.querySelectorAll<HTMLButtonElement>("[data-station-breakdown]").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
-      void togglePopupSparkline(popupEl, btn);
+      const raw = btn.getAttribute("data-station-breakdown");
+      if (!raw) return;
+      try {
+        openStationDonutModal(JSON.parse(decodeURIComponent(raw)) as StationBreakdown);
+      } catch {
+        /* ignore malformed payload */
+      }
     });
   });
-}
-
-async function togglePopupSparkline(
-  popupEl: HTMLElement,
-  btn: HTMLButtonElement
-): Promise<void> {
-  const raw = btn.getAttribute("data-station-breakdown");
-  if (!raw) return;
-
-  let breakdown: StationBreakdown;
-  try {
-    breakdown = JSON.parse(decodeURIComponent(raw)) as StationBreakdown;
-  } catch {
-    return;
-  }
-
-  if (breakdown.historical || (!breakdown.station_id && !breakdown.barri_codi)) return;
-
-  const slot = popupEl.querySelector<HTMLElement>("[data-sparkline-slot]");
-  if (!slot) return;
-
-  const isOpen = !slot.hidden;
-  if (isOpen) {
-    slot.hidden = true;
-    btn.setAttribute("aria-expanded", "false");
-    return;
-  }
-
-  if (!slot.dataset.loaded) {
-    if (!sparklineLoader) return;
-    const values = await sparklineLoader(breakdown);
-    if (!popupEl.isConnected) return;
-    slot.innerHTML = renderSparklineBlock(breakdown, values, true);
-    slot.dataset.loaded = "1";
-  }
-
-  slot.hidden = false;
-  btn.setAttribute("aria-expanded", "true");
 }

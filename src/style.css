@@ -723,7 +723,6 @@ body.kpi-chart-open {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.15rem;
   min-width: 4.75rem;
 }
 
@@ -745,18 +744,21 @@ body.kpi-chart-open {
 }
 
 .station-donut-trigger {
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
   padding: 0;
   border: 0;
   background: transparent;
   cursor: pointer;
-  border-radius: 50%;
+  border-radius: 10px;
   touch-action: manipulation;
 }
 
-.station-donut-trigger:disabled {
-  cursor: default;
+.station-donut-trigger:hover .station-donut-trigger__hint,
+.station-donut-trigger:focus-visible .station-donut-trigger__hint {
+  text-decoration: underline;
 }
 
 .station-donut-trigger:focus-visible {
