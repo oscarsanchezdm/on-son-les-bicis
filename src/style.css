@@ -1007,6 +1007,14 @@ body.station-donut-modal-open {
   margin-right: 0.35rem;
 }
 
+.barri-name__badges {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+  vertical-align: middle;
+}
+
 .barri-stations-badge {
   display: inline-flex;
   align-items: center;
@@ -1026,6 +1034,16 @@ body.station-donut-modal-open {
   display: inline-flex;
   line-height: 0;
   color: var(--teal);
+}
+
+.barri-stations-badge .count-icon svg {
+  width: 0.95em;
+  height: 0.95em;
+}
+
+.barri-docks-badge .count-icon svg {
+  width: 0.72em;
+  height: 1em;
 }
 
 .barri-stations-badge__count {

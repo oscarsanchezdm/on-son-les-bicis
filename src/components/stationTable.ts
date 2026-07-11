@@ -4,6 +4,7 @@ import type { TimeView } from "../lib/history";
 import { metricSortAscending, metricToBarriSortKey } from "../lib/metricSort";
 import { metricAbsoluteColor, metricPctColor, type HeatScaleMode } from "../lib/colors";
 import { formatPct } from "../lib/format";
+import { countIconHtml } from "../lib/icons";
 
 type StationSortKey =
   | "name"
@@ -91,6 +92,12 @@ function columnMax(stations: Station[], key: Exclude<StationSortKey, "name">): n
   return Math.max(1, ...stations.map((s) => stationCount(s, metric)));
 }
 
+function stationNameCell(s: Station, offline: boolean): string {
+  const dockBadge = `<span class="barri-stations-badge barri-docks-badge" title="${s.capacity} ancoratges">${countIconHtml("dock")}<span class="barri-stations-badge__count">${s.capacity}</span></span>`;
+  const offlineBadge = offline ? ' <span class="station-offline-badge">fora de servei</span>' : "";
+  return `<td class="barri-name"><span class="barri-name__text">${s.name}</span><span class="barri-name__badges">${dockBadge}</span>${offlineBadge}</td>`;
+}
+
 function activeColumnKey(): StationSortKey {
   return metricToBarriSortKey(activeMetricMode) as StationSortKey;
 }
@@ -154,7 +161,7 @@ export function renderStationTable(
                 })
                 .join("");
               return `<tr data-station-id="${s.station_id}" class="${s.station_id === selectedId ? "selected" : ""}${offline ? " station-row--offline" : ""}">
-                <td class="barri-name">${s.name}${offline ? ' <span class="station-offline-badge">fora de servei</span>' : ""}</td>
+                ${stationNameCell(s, offline)}
                 ${cells}
               </tr>`;
             })
