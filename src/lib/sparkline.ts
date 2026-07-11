@@ -1,3 +1,5 @@
+import { formatPct } from "./format";
+
 export const SPARKLINE_WIDTH = 240;
 export const SPARKLINE_HEIGHT = 48;
 
@@ -19,4 +21,65 @@ export function renderSparkline(
     })
     .join(" ");
   return `<svg class="kpi-sparkline" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="currentColor" stroke-width="2" points="${points}" /></svg>`;
+}
+
+const CHART_MARGIN = { top: 8, right: 10, bottom: 6, left: 40 };
+
+function yBounds(values: number[]): { min: number; max: number } {
+  if (!values.length) return { min: 0, max: 100 };
+  const minV = Math.min(...values);
+  const maxV = Math.max(...values);
+  const pad = Math.max((maxV - minV) * 0.12, 2);
+  return {
+    min: Math.max(0, Math.floor((minV - pad) / 5) * 5),
+    max: Math.min(100, Math.ceil((maxV + pad) / 5) * 5) || 100,
+  };
+}
+
+function yTickValues(min: number, max: number): number[] {
+  const span = max - min;
+  const step = span <= 10 ? 2 : span <= 25 ? 5 : 10;
+  const ticks: number[] = [];
+  for (let v = min; v <= max + 0.001; v += step) ticks.push(Math.round(v * 10) / 10);
+  return ticks;
+}
+
+/** Sparkline amb eix vertical (%), per al modal d'estació. */
+export function renderSparklineChart(
+  values: number[],
+  width = 280,
+  height = 80
+): string {
+  if (!values.length) return "";
+
+  const { min, max } = yBounds(values);
+  const range = max - min || 1;
+  const plotW = width - CHART_MARGIN.left - CHART_MARGIN.right;
+  const plotH = height - CHART_MARGIN.top - CHART_MARGIN.bottom;
+  const stepX = plotW / Math.max(values.length - 1, 1);
+  const ticks = yTickValues(min, max);
+
+  const yAt = (value: number) =>
+    CHART_MARGIN.top + plotH - ((value - min) / range) * plotH;
+
+  const grid = ticks
+    .map((tick) => {
+      const py = yAt(tick);
+      return `<line class="sparkline-chart__grid" x1="${CHART_MARGIN.left}" y1="${py}" x2="${width - CHART_MARGIN.right}" y2="${py}" />
+        <text class="sparkline-chart__axis" x="${CHART_MARGIN.left - 6}" y="${py + 3}" text-anchor="end">${formatPct(tick)}</text>`;
+    })
+    .join("");
+
+  const points = values
+    .map((v, i) => {
+      const x = CHART_MARGIN.left + i * stepX;
+      const y = yAt(v);
+      return `${x},${y}`;
+    })
+    .join(" ");
+
+  return `<svg class="sparkline-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="Gràfic de bicicletes disponibles, últimes 24 hores">
+    ${grid}
+    <polyline class="sparkline-chart__line" fill="none" points="${points}" />
+  </svg>`;
 }
