@@ -1,4 +1,4 @@
-import type { Barri, LatestData, Station } from "./data";
+import type { Barri, LatestData, MetricMode, Station } from "./data";
 import { bikesOutOfService, pctBikesOutOfService, pctOosOfAnchors, pctOosOfBikeFleet } from "./data";
 import { formatDateTime, formatHour, historyFileLocalLabel } from "./format";
 
@@ -660,12 +660,63 @@ export async function barriHistAveragesAtHour(
   };
 }
 
+function barriSparklinePct(b: HourlyBarriSnapshot, mode: MetricMode): number {
+  const cap = b.capacity_total;
+  if (cap <= 0) return 0;
+  const oos = bikesOutOfService(
+    cap,
+    b.bikes_mechanical,
+    b.bikes_ebike,
+    b.docks_available_total,
+    b.bikes_total
+  );
+  switch (mode) {
+    case "mechanical":
+      return Math.round((100 * b.bikes_mechanical) / cap * 100) / 100;
+    case "ebike":
+      return b.pct_ebike;
+    case "docks":
+      return b.pct_docks_free;
+    case "out_of_service":
+      return Math.round(pctOosOfAnchors(cap, oos) * 100) / 100;
+    default:
+      return b.pct_bikes;
+  }
+}
+
+function stationSparklinePct(tuple: StationTuple, capacity: number, mode: MetricMode): number {
+  if (capacity <= 0) return 0;
+  const [mechanical, ebike, total, docks, bikes_disabled, docks_disabled] = tuple;
+  const oos = bikesOutOfService(
+    capacity,
+    mechanical,
+    ebike,
+    docks,
+    total,
+    bikes_disabled,
+    docks_disabled
+  );
+  switch (mode) {
+    case "mechanical":
+      return Math.round((100 * mechanical) / capacity * 100) / 100;
+    case "ebike":
+      return Math.round((100 * ebike) / capacity * 100) / 100;
+    case "docks":
+      return Math.round((100 * docks) / capacity * 100) / 100;
+    case "out_of_service":
+      return Math.round(pctOosOfAnchors(capacity, oos) * 100) / 100;
+    default:
+      return Math.round((100 * total) / capacity * 100) / 100;
+  }
+}
+
 /** Recent % bikes for one station (modal sparkline, last 24 h). */
 export async function loadStationSparklinePct(
   index: HistoryIndex | null,
   stationId: string,
   capacity: number,
   stationIdOrder: string[] | null,
+  mode: MetricMode = "total",
   hours = CHART_DETAIL_HOURS
 ): Promise<number[]> {
   if (!index?.files?.length || !stationIdOrder?.length || capacity <= 0) return [];
@@ -680,17 +731,17 @@ export async function loadStationSparklinePct(
     const snapshot = await loadHourlySnapshot(file.key);
     const tuple = snapshot?.v?.[idx];
     if (!tuple) continue;
-    const total = tuple[2] ?? 0;
-    values.push(Math.round((100 * total) / capacity * 100) / 100);
+    values.push(stationSparklinePct(tuple, capacity, mode));
   }
 
   return values;
 }
 
-/** Recent % bikes for one barri (popup/modal sparkline, last 24 h). */
+/** Recent metric % for one barri (popup/modal sparkline, last 24 h). */
 export async function loadBarriSparklinePct(
   index: HistoryIndex | null,
   barriCodi: string,
+  mode: MetricMode = "total",
   hours = CHART_DETAIL_HOURS
 ): Promise<number[]> {
   if (!index?.files?.length) return [];
@@ -703,7 +754,7 @@ export async function loadBarriSparklinePct(
     const snapshot = await loadHourlySnapshot(file.key);
     const b = snapshot?.barris?.find((x) => x.barri_codi === barriCodi);
     if (!b || b.capacity_total <= 0) continue;
-    values.push(b.pct_bikes);
+    values.push(barriSparklinePct(b, mode));
   }
 
   return values;

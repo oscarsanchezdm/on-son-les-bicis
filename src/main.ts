@@ -34,7 +34,7 @@ import {
 import { heatLegendGradient, pctLegendLabels, type HeatScaleMode } from "./lib/colors";
 import { formatRelativeTime } from "./lib/format";
 import { metricIconHtml } from "./lib/icons";
-import { setStationDonutSparklineLoader } from "./lib/stationDonut";
+import { setStationDonutSparklineLoader, setStationDonutMetricMode } from "./lib/stationDonut";
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 
@@ -276,8 +276,24 @@ function renderTableSection() {
   });
 }
 
+function setupSparklineLoader() {
+  setStationDonutMetricMode(mode);
+  setStationDonutSparklineLoader(async (b) => {
+    if (!historyIndex || b.historical) return [];
+    if (b.station_id) {
+      return loadStationSparklinePct(historyIndex, b.station_id, b.capacity, stationIdOrder, mode);
+    }
+    if (b.barri_codi) {
+      return loadBarriSparklinePct(historyIndex, b.barri_codi, mode);
+    }
+    return [];
+  });
+}
+
 async function refresh() {
   if (!mapView || !latestData) return;
+
+  setupSparklineLoader();
 
   const kpiData = buildKpiData();
   if (!kpiData) return;
@@ -410,17 +426,6 @@ async function init() {
       const footer = document.getElementById("footer-meta")!;
       footer.innerHTML = `Font: <a href="https://opendata-ajuntament.barcelona.cat/" target="_blank" rel="noopener">Open Data BCN</a> · ${meta.source}<br/><small>${meta.disclaimer} · ${meta.station_count} estacions · ${meta.barri_count} barris · ${formatRelativeTime(meta.last_updated)}</small>`;
     }
-
-    setStationDonutSparklineLoader(async (b) => {
-      if (!historyIndex || b.historical) return [];
-      if (b.station_id) {
-        return loadStationSparklinePct(historyIndex, b.station_id, b.capacity, stationIdOrder);
-      }
-      if (b.barri_codi) {
-        return loadBarriSparklinePct(historyIndex, b.barri_codi);
-      }
-      return [];
-    });
 
     mapView = createMap(document.getElementById("map")!, geo);
     void refresh();
