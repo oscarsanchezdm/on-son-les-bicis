@@ -76,9 +76,11 @@ function histNote(
     barriAvg?.[key] ??
     (key === "pct_oos_anchors" ? null : hourlyAverage(summary, hour, key));
   if (avg === null || avg === undefined) return "";
-  const delta = currentPct - avg;
+  const avgShown = Math.round(avg * 10) / 10;
+  const currentShown = Math.round(currentPct * 10) / 10;
+  const delta = currentShown - avgShown;
   const sign = delta >= 0 ? "+" : "";
-  return `Mitjana 7 dies (${String(hour).padStart(2, "0")}:00): ${formatPct(avg)} (${sign}${delta.toFixed(1)} pp)`;
+  return `Mitjana 7 dies (${String(hour).padStart(2, "0")}:00): ${formatPct(avgShown)} (${sign}${delta.toFixed(1)} pp)`;
 }
 
 function chartPoints(
@@ -122,9 +124,8 @@ export function renderKpis(
   const hour = currentMadridHour();
   const pctMechOfBikes = t.bikes_total ? (100 * t.bikes_mechanical) / t.bikes_total : 0;
   const pctEbikeOfBikes = t.bikes_total ? (100 * t.bikes_ebike) / t.bikes_total : 0;
-  const pctMech =
-    t.pct_mechanical ?? (t.capacity ? (100 * t.bikes_mechanical) / t.capacity : 0);
-  const pctEbike = t.pct_ebike ?? (t.capacity ? (100 * t.bikes_ebike) / t.capacity : 0);
+  const pctMech = t.capacity ? (100 * t.bikes_mechanical) / t.capacity : 0;
+  const pctEbike = t.capacity ? (100 * t.bikes_ebike) / t.capacity : 0;
   const outOfService =
     t.bikes_out_of_service ??
     bikesOutOfService(t.capacity, t.bikes_mechanical, t.bikes_ebike, t.docks_available, t.bikes_total);
@@ -206,6 +207,10 @@ export function renderKpis(
     : "";
 
   const bikesLabelScope = scopeLabel === "ciutat" ? "" : ` (${scopeLabel})`;
+  const fleetMixNote =
+    t.bikes_total > 0
+      ? `<small class="kpi-fleet-mix">Parc: ${formatPct(pctMechOfBikes)} mecàniques · ${formatPct(pctEbikeOfBikes)} elèctriques</small>`
+      : "";
 
   container.innerHTML = `
     <div class="kpi-panel">
@@ -217,6 +222,7 @@ export function renderKpis(
         <span class="kpi-label">${kpiIconHtml("total")} Bicicletes disponibles${bikesLabelScope}</span>
         <strong>${t.bikes_total.toLocaleString("ca-ES")}</strong>
         <small>${formatPct(t.pct_bikes)} de ${t.capacity.toLocaleString("ca-ES")} ancoratges</small>
+        ${fleetMixNote}
         ${zeroAnyNote}
         ${bikesValues.length ? renderSparkline(bikesValues) : ""}
         ${bikesPoints.length > 1 ? sparkHint : ""}
@@ -230,7 +236,7 @@ export function renderKpis(
         `
         <span class="kpi-label">${kpiIconHtml("mechanical")} Mecàniques</span>
         <strong>${t.bikes_mechanical.toLocaleString("ca-ES")}</strong>
-        <small>${formatPct(pctMechOfBikes)} de les bicicletes disponibles</small>
+        <small>${formatPct(pctMech)} dels ancoratges</small>
         ${zeroMechNote}
         ${mechValues.length ? renderSparkline(mechValues) : ""}
         ${mechPoints.length > 1 ? sparkHint : ""}
@@ -243,7 +249,7 @@ export function renderKpis(
         `
         <span class="kpi-label">${kpiIconHtml("ebike")} Elèctriques</span>
         <strong>${t.bikes_ebike.toLocaleString("ca-ES")}</strong>
-        <small>${formatPct(pctEbikeOfBikes)} de les bicicletes disponibles</small>
+        <small>${formatPct(pctEbike)} dels ancoratges</small>
         ${zeroEbikeNote}
         ${ebikeValues.length ? renderSparkline(ebikeValues) : ""}
         ${ebikePoints.length > 1 ? sparkHint : ""}

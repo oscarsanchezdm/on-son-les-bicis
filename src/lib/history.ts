@@ -556,7 +556,7 @@ export async function loadBarriSparklineSeries(
     keys.push(file.key);
     pct_bikes.push(b.pct_bikes);
     pct_mechanical.push((100 * b.bikes_mechanical) / b.capacity_total);
-    pct_ebike.push(b.pct_ebike);
+    pct_ebike.push((100 * b.bikes_ebike) / b.capacity_total);
     pct_oos_anchors.push(pctOosOfAnchors(b.capacity_total, oos));
     pct_oos_fleet.push(pctOosOfBikeFleet(b.bikes_total, oos));
   }
@@ -651,7 +651,7 @@ export async function barriHistAveragesAtHour(
     );
     pct_bikes.push(b.pct_bikes);
     pct_mechanical.push((100 * b.bikes_mechanical) / b.capacity_total);
-    pct_ebike.push(b.pct_ebike);
+    pct_ebike.push((100 * b.bikes_ebike) / b.capacity_total);
     pct_oos_anchors.push(pctOosOfAnchors(b.capacity_total, oos));
     pct_oos_fleet.push(pctOosOfBikeFleet(b.bikes_total, oos));
   }
