@@ -73,6 +73,41 @@ main,
   flex-wrap: wrap;
 }
 
+.header-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+  max-width: min(12rem, 42vw);
+  padding: 0.2rem 0.5rem 0.2rem 0.35rem;
+  border: 1px solid #99f6e4;
+  border-radius: 999px;
+  background: #f0fdfa;
+  color: var(--teal);
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.header-back:hover,
+.header-back:focus-visible {
+  border-color: var(--teal);
+  background: #ecfdf5;
+}
+
+.header-back__icon {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.header-back__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .data-mode-badge {
   display: inline-flex;
   align-items: center;
@@ -281,41 +316,6 @@ h1 {
 .composition-card__scope {
   flex: 1;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.composition-card__back {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  flex-shrink: 0;
-  max-width: 48%;
-  padding: 0.18rem 0.45rem 0.18rem 0.35rem;
-  border: 1px solid #99f6e4;
-  border-radius: 999px;
-  background: #f0fdfa;
-  color: var(--teal);
-  font: inherit;
-  font-size: 0.72rem;
-  font-weight: 600;
-  line-height: 1.2;
-  cursor: pointer;
-}
-
-.composition-card__back:hover,
-.composition-card__back:focus-visible {
-  border-color: var(--teal);
-  background: #ecfdf5;
-}
-
-.composition-card__back-icon {
-  display: inline-flex;
-  flex-shrink: 0;
-}
-
-.composition-card__back-label {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
