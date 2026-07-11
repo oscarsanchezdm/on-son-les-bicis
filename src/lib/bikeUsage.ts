@@ -14,6 +14,10 @@ function parked(s: CityUsageSnapshot): number {
   return s.bikes + s.oos;
 }
 
+export function madridTodayKey(): string {
+  return madridDateFromTs(new Date().toISOString());
+}
+
 function madridDateFromTs(ts: string): string {
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Europe/Madrid",
@@ -30,6 +34,48 @@ function madridDateFromTs(ts: string): string {
 function dateLabel(localDate: string): string {
   const [, month, day] = localDate.split("-");
   return `${day}/${month}`;
+}
+
+/** Màxim aparcades observat per dia (disponibles + FS). */
+function parkedMaxByDay(snapshots: CityUsageSnapshot[]): Map<string, number> {
+  const byDay = new Map<string, number>();
+  for (const s of snapshots) {
+    const p = parked(s);
+    byDay.set(s.localDate, Math.max(byDay.get(s.localDate) ?? 0, p));
+  }
+  return byDay;
+}
+
+/**
+ * Referència de flota per calcular l'ús.
+ * Dies passats: màxim del propi dia. Dia actual (incomplet): màxim del dia anterior.
+ */
+function fleetMaxRefByDay(
+  parkedMax: Map<string, number>,
+  today: string
+): Map<string, number> {
+  const ref = new Map<string, number>();
+  const dates = [...parkedMax.keys()].sort();
+  let lastCompleteMax = 0;
+
+  for (const date of dates) {
+    const raw = parkedMax.get(date) ?? 0;
+    if (date < today) {
+      ref.set(date, raw);
+      lastCompleteMax = raw;
+    } else if (date === today) {
+      ref.set(date, lastCompleteMax > 0 ? lastCompleteMax : raw);
+    } else {
+      ref.set(date, raw);
+    }
+  }
+  return ref;
+}
+
+function previousDayParkedMax(snapshots: CityUsageSnapshot[], today: string): number {
+  const parkedMax = parkedMaxByDay(snapshots);
+  const prevDate = [...parkedMax.keys()].filter((d) => d < today).sort().at(-1);
+  return prevDate ? (parkedMax.get(prevDate) ?? 0) : 0;
 }
 
 export function usageFromSummarySeries(series: HistoryPoint[]): UsageMetrics | null {
@@ -49,28 +95,19 @@ export function usageFromSummarySeries(series: HistoryPoint[]): UsageMetrics | n
 
 export function computeUsageMetrics(
   snapshots: CityUsageSnapshot[],
-  options: { highlightHour?: number }
+  options: { highlightHour?: number; today?: string }
 ): UsageMetrics | null {
   if (!snapshots.length) return null;
 
-  const byDay = new Map<string, CityUsageSnapshot[]>();
-  for (const s of snapshots) {
-    const list = byDay.get(s.localDate) ?? [];
-    list.push(s);
-    byDay.set(s.localDate, list);
-  }
-
-  const dayFleetMax = new Map<string, number>();
-  for (const [date, snaps] of byDay) {
-    dayFleetMax.set(date, Math.max(...snaps.map(parked)));
-  }
+  const today = options.today ?? madridTodayKey();
+  const fleetMax = fleetMaxRefByDay(parkedMaxByDay(snapshots), today);
 
   const withUsage = snapshots.map((s) => {
-    const fleetMax = dayFleetMax.get(s.localDate) ?? parked(s);
+    const fleetRef = fleetMax.get(s.localDate) ?? parked(s);
     const parkedNow = parked(s);
     return {
       ...s,
-      inUse: Math.max(0, fleetMax - parkedNow),
+      inUse: Math.max(0, fleetRef - parkedNow),
     };
   });
 
@@ -121,12 +158,11 @@ export function computeUsageMetrics(
 export function usageFromLiveTotals(
   bikes: number,
   oos: number,
-  daySnapshots: CityUsageSnapshot[]
+  snapshots: CityUsageSnapshot[]
 ): number {
   const parkedNow = bikes + oos;
-  const today = madridDateFromTs(new Date().toISOString());
-  const todaySnaps = daySnapshots.filter((s) => s.localDate === today);
-  const source = todaySnaps.length ? todaySnaps : daySnapshots;
-  const dayMax = Math.max(parkedNow, ...source.map(parked));
-  return Math.max(0, dayMax - parkedNow);
+  const today = madridTodayKey();
+  const prevMax = previousDayParkedMax(snapshots, today);
+  const fleetRef = prevMax > 0 ? prevMax : Math.max(parkedNow, ...snapshots.map(parked));
+  return Math.max(0, fleetRef - parkedNow);
 }

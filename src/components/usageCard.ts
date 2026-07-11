@@ -79,7 +79,7 @@ function renderContent(metrics: UsageMetrics, scope: string): string {
         <div>
           <h2>Bicicletes en ús (aprox.)</h2>
           <p class="section-note usage-note">
-            Ciutat · màxim aparcades del dia − bicis a estacions (disponibles + fora de servei)
+            Ciutat · màxim aparcades del dia − bicis a estacions. Dia en curs: referència del dia anterior.
           </p>
         </div>
         <div class="usage-headline">
@@ -115,19 +115,14 @@ export async function renderUsageCard(
       });
       if (requestId !== loadRequest) return;
       metrics = computeUsageMetrics(snapshots, { highlightHour: timeView.hour });
-    } else if (summary?.series?.length) {
-      metrics = usageFromSummarySeries(summary.series);
-      if (requestId !== loadRequest) return;
-      if (metrics && liveData) {
-        const snapshots = await loadCityUsageSnapshots(historyIndex, { days: 7 });
-        if (requestId !== loadRequest) return;
-        metrics.headline = liveHeadline(liveData, snapshots);
-        metrics.headlineLabel = "Ara (aprox.)";
-      }
     } else {
       const snapshots = await loadCityUsageSnapshots(historyIndex, { days: 7 });
       if (requestId !== loadRequest) return;
-      metrics = computeUsageMetrics(snapshots, {});
+      metrics = snapshots.length
+        ? computeUsageMetrics(snapshots, {})
+        : summary?.series?.length
+          ? usageFromSummarySeries(summary.series)
+          : null;
       if (metrics && liveData) {
         metrics.headline = liveHeadline(liveData, snapshots);
         metrics.headlineLabel = "Ara (aprox.)";
