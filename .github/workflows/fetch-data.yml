@@ -12,7 +12,7 @@ on:
 
 concurrency:
   group: bicing-fetch
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 permissions:
   contents: write
@@ -45,10 +45,28 @@ jobs:
           python scripts/export.py
 
       - name: Commit changes
-        uses: EndBug/add-and-commit@v9
-        with:
-          add: "public/data"
-          message: "Actualitza dades Bicing"
-          commit_user_name: github-actions[bot]
-          commit_user_email: 41898282+github-actions[bot]@users.noreply.github.com
-          pull: "--rebase --autostash origin main"
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data
+          if git diff --staged --quiet; then
+            echo "No data changes to commit."
+            exit 0
+          fi
+          for attempt in 1 2 3 4; do
+            if git pull --rebase origin main; then
+              break
+            fi
+            git rebase --abort 2>/dev/null || true
+            if [ "$attempt" -eq 4 ]; then
+              echo "Failed to rebase onto main after ${attempt} attempts."
+              exit 1
+            fi
+            sleep $((attempt * 4))
+          done
+          if git diff --staged --quiet; then
+            echo "No data changes after rebase."
+            exit 0
+          fi
+          git commit -m "Actualitza dades Bicing"
+          git push origin main
