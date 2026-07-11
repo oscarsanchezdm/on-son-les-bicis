@@ -3,7 +3,7 @@ import type { BarriSortKey } from "../components/barriTable";
 
 export function metricToBarriSortKey(
   mode: MetricMode
-): Exclude<BarriSortKey, "barri_nom" | "stations_active" | "stations_zero_any"> {
+): Exclude<BarriSortKey, "barri_nom"> {
   switch (mode) {
     case "mechanical":
       return "pct_mechanical";

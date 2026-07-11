@@ -4,6 +4,7 @@ import type { TimeView } from "../lib/history";
 import { metricSortAscending, metricToBarriSortKey } from "../lib/metricSort";
 import { metricAbsoluteColor, metricPctColor, type HeatScaleMode } from "../lib/colors";
 import { formatPct } from "../lib/format";
+import { countIconHtml } from "../lib/icons";
 
 export type BarriSortKey =
   | "barri_nom"
@@ -11,11 +12,9 @@ export type BarriSortKey =
   | "pct_mechanical"
   | "pct_ebike"
   | "pct_docks_free"
-  | "pct_bikes_out_of_service"
-  | "stations_active"
-  | "stations_zero_any";
+  | "pct_bikes_out_of_service";
 
-const COLUMN_METRIC: Partial<Record<BarriSortKey, MetricMode>> = {
+const COLUMN_METRIC: Record<Exclude<BarriSortKey, "barri_nom">, MetricMode> = {
   pct_bikes: "total",
   pct_mechanical: "mechanical",
   pct_ebike: "ebike",
@@ -29,8 +28,6 @@ const COLUMN_LABEL: Record<Exclude<BarriSortKey, "barri_nom">, { percent: string
   pct_ebike: { percent: "% elèctriques", absolute: "Elèctriques" },
   pct_docks_free: { percent: "% ancoratges lliures", absolute: "Ancoratges lliures" },
   pct_bikes_out_of_service: { percent: "% fora de servei", absolute: "Fora de servei" },
-  stations_active: { percent: "Estacions", absolute: "Estacions" },
-  stations_zero_any: { percent: "Sense bicis", absolute: "Sense bicis" },
 };
 
 type SortState = { key: BarriSortKey; asc: boolean };
@@ -52,9 +49,7 @@ function activeColumnKey(): BarriSortKey {
 
 function sortValue(barri: Barri, key: BarriSortKey, heatScale: HeatScaleMode): string | number {
   if (key === "barri_nom") return barri.barri_nom.toLowerCase();
-  if (key === "stations_active") return barri.stations_active;
-  if (key === "stations_zero_any") return barri.stations_zero_any;
-  const metric = COLUMN_METRIC[key]!;
+  const metric = COLUMN_METRIC[key];
   if (heatScale === "absolute") return barriMetricCount(barri, metric);
   switch (key) {
     case "pct_bikes":
@@ -109,28 +104,18 @@ function countCell(count: number, max: number, metric: MetricMode, active = fals
   </td>`;
 }
 
-function plainCountCell(count: number, max: number, active = false): string {
-  const width = max > 0 ? Math.min(100, (100 * count) / max) : 0;
-  const cls = active ? "pct-cell col-active" : "pct-cell";
-  return `<td class="${cls}">
-    <div class="pct-cell-meter" aria-hidden="true"><span style="width:${width}%;background:#94a3b8"></span></div>
-    <span class="pct-cell-num">${count.toLocaleString("ca-ES")}</span>
-  </td>`;
-}
-
 function columnMax(barris: Barri[], key: Exclude<BarriSortKey, "barri_nom">): number {
-  if (key === "stations_active") {
-    return Math.max(1, ...barris.map((b) => b.stations_active));
-  }
-  if (key === "stations_zero_any") {
-    return Math.max(1, ...barris.map((b) => b.stations_zero_any));
-  }
-  const metric = COLUMN_METRIC[key]!;
+  const metric = COLUMN_METRIC[key];
   return Math.max(1, ...barris.map((b) => barriMetricCount(b, metric)));
 }
 
-const METRIC_KEYS = Object.keys(COLUMN_METRIC) as Exclude<BarriSortKey, "barri_nom" | "stations_active" | "stations_zero_any">[];
-const EXTRA_KEYS: BarriSortKey[] = ["stations_active", "stations_zero_any"];
+function barriNameCell(barri: Barri): string {
+  const n = barri.stations_active;
+  const badge = `<span class="barri-stations-badge" title="${n} estacions">${countIconHtml("dock")}<span class="barri-stations-badge__count">${n}</span></span>`;
+  return `<td class="barri-name"><span class="barri-name__text">${barri.barri_nom}</span>${badge}</td>`;
+}
+
+const METRIC_KEYS = Object.keys(COLUMN_METRIC) as Exclude<BarriSortKey, "barri_nom">[];
 
 export function renderBarriTable(
   container: HTMLElement,
@@ -154,14 +139,13 @@ export function renderBarriTable(
   const scrollTop = prevWrap?.scrollTop ?? 0;
   const focusKey = activeColumnKey();
 
-  const allKeys = [...METRIC_KEYS, ...EXTRA_KEYS] as BarriSortKey[];
   const maxByColumn = Object.fromEntries(
-    allKeys.map((key) => [key, columnMax(barris, key as Exclude<BarriSortKey, "barri_nom">)])
-  ) as Record<BarriSortKey, number>;
+    METRIC_KEYS.map((key) => [key, columnMax(barris, key)])
+  ) as Record<Exclude<BarriSortKey, "barri_nom">, number>;
 
-  const colHeaders = allKeys
-    .map((key) => header(COLUMN_LABEL[key as Exclude<BarriSortKey, "barri_nom">][heatScale], key, key === focusKey))
-    .join("");
+  const colHeaders = METRIC_KEYS.map((key) =>
+    header(COLUMN_LABEL[key][heatScale], key, key === focusKey)
+  ).join("");
 
   container.innerHTML = `
     <div class="table-wrap">
@@ -175,35 +159,27 @@ export function renderBarriTable(
         <tbody>
           ${sorted
             .map((b) => {
-              const cells = allKeys
-                .map((key) => {
-                  const active = key === focusKey;
-                  if (key === "stations_active") {
-                    return plainCountCell(b.stations_active, maxByColumn[key], active);
-                  }
-                  if (key === "stations_zero_any") {
-                    return plainCountCell(b.stations_zero_any, maxByColumn[key], active);
-                  }
-                  const metric = COLUMN_METRIC[key]!;
-                  if (heatScale === "absolute") {
-                    return countCell(barriMetricCount(b, metric), maxByColumn[key], metric, active);
-                  }
-                  if (key === "pct_bikes_out_of_service") {
-                    return pctCell(barriOosAnchorPct(b), "out_of_service", active);
-                  }
-                  const pct =
-                    key === "pct_bikes"
-                      ? b.pct_bikes
-                      : key === "pct_mechanical"
-                        ? b.pct_mechanical
-                        : key === "pct_ebike"
-                          ? b.pct_ebike
-                          : b.pct_docks_free;
-                  return pctCell(pct, metric, active);
-                })
-                .join("");
+              const cells = METRIC_KEYS.map((key) => {
+                const metric = COLUMN_METRIC[key];
+                const active = key === focusKey;
+                if (heatScale === "absolute") {
+                  return countCell(barriMetricCount(b, metric), maxByColumn[key], metric, active);
+                }
+                if (key === "pct_bikes_out_of_service") {
+                  return pctCell(barriOosAnchorPct(b), "out_of_service", active);
+                }
+                const pct =
+                  key === "pct_bikes"
+                    ? b.pct_bikes
+                    : key === "pct_mechanical"
+                      ? b.pct_mechanical
+                      : key === "pct_ebike"
+                        ? b.pct_ebike
+                        : b.pct_docks_free;
+                return pctCell(pct, metric, active);
+              }).join("");
               return `<tr data-codi="${b.barri_codi}" class="${b.barri_codi === selectedCodi ? "selected" : ""}">
-                <td class="barri-name">${b.barri_nom}</td>
+                ${barriNameCell(b)}
                 ${cells}
               </tr>`;
             })
