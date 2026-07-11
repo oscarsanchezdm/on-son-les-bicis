@@ -19,6 +19,7 @@ import {
   isHistoricalView,
   loadBarriSparklinePct,
   loadBarriSparklineSeries,
+  loadCitySparklineSeriesRecent,
   loadHistoryIndex,
   loadHourlyViewData,
   loadStationIds,
@@ -100,6 +101,8 @@ let historyLoading = false;
 let barriSparklineCache: BarriSparklineSeries | null = null;
 let barriSparklineCodi: string | null = null;
 let barriSparklineLoadId = 0;
+let citySparklineCache: BarriSparklineSeries | null = null;
+let citySparklineLoadId = 0;
 
 function scheduleHistoryLoad(): void {
   if (historyLoadPromise) return;
@@ -150,6 +153,18 @@ function scheduleBarriSparklineLoad(): void {
     if (loadId !== barriSparklineLoadId) return;
     barriSparklineCodi = codi;
     barriSparklineCache = series;
+    void refresh();
+  });
+}
+
+function scheduleCitySparklineLoad(): void {
+  if (!historyIndex || selectedBarri || isHistoricalView(timeView)) return;
+  if (citySparklineCache) return;
+
+  const loadId = ++citySparklineLoadId;
+  void loadCitySparklineSeriesRecent(historyIndex).then((series) => {
+    if (loadId !== citySparklineLoadId) return;
+    citySparklineCache = series;
     void refresh();
   });
 }
@@ -333,14 +348,11 @@ function setupSparklineLoader() {
 function statsPending(): boolean {
   if (isHistoricalView(timeView)) return false;
   if (historyLoading) return true;
-  if (
-    selectedBarri &&
-    historyIndex &&
-    barriSparklineCodi !== selectedBarri.barri_codi
-  ) {
-    return true;
+  if (!historyIndex) return false;
+  if (selectedBarri) {
+    return barriSparklineCodi !== selectedBarri.barri_codi;
   }
-  return false;
+  return !citySparklineCache;
 }
 
 async function refresh() {
@@ -353,10 +365,13 @@ async function refresh() {
 
   const isHistorical = isHistoricalView(timeView);
 
-  const sparklines =
-    !isHistorical && selectedBarri && barriSparklineCodi === selectedBarri.barri_codi
+  const sparklines = !isHistorical
+    ? selectedBarri && barriSparklineCodi === selectedBarri.barri_codi
       ? barriSparklineCache
-      : null;
+      : !selectedBarri
+        ? citySparklineCache
+        : null
+    : null;
 
   const sampleCount =
     isHistorical && timeView.kind === "hour"
@@ -395,6 +410,7 @@ async function refresh() {
   updateTimelineStatus();
 
   scheduleBarriSparklineLoad();
+  scheduleCitySparklineLoad();
 }
 
 function selectBarri(barri: Barri) {
