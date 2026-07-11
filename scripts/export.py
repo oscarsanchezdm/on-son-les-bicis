@@ -473,6 +473,10 @@ def _export_summary_7d(conn: sqlite3.Connection, ts_iso: str) -> None:
             "pct_ebike": round(100 * ebike / cap, 2) if cap else 0,
             "pct_oos_anchors": round(100 * oos / cap, 2) if cap else 0,
             "pct_oos_fleet": round(100 * oos / fleet, 2) if fleet else 0,
+            "bikes_total": bikes,
+            "bikes_mechanical": mech,
+            "bikes_ebike": ebike,
+            "bikes_out_of_service": oos,
         }
 
     series = sorted(series_by_ts.values(), key=lambda entry: entry["ts"])
@@ -493,6 +497,15 @@ def _export_summary_7d(conn: sqlite3.Connection, ts_iso: str) -> None:
                     sum(s["pct_mechanical"] for s in samples) / len(samples), 2
                 ),
                 "avg_pct_ebike": round(sum(s["pct_ebike"] for s in samples) / len(samples), 2),
+                "avg_bikes_total": round(
+                    sum(s.get("bikes_total", 0) for s in samples) / len(samples)
+                ),
+                "avg_bikes_mechanical": round(
+                    sum(s.get("bikes_mechanical", 0) for s in samples) / len(samples)
+                ),
+                "avg_bikes_ebike": round(
+                    sum(s.get("bikes_ebike", 0) for s in samples) / len(samples)
+                ),
                 "samples": samples,
             }
         )

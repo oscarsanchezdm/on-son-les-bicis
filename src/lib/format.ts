@@ -4,6 +4,18 @@ export function formatPct(value: number): string {
   return `${value.toFixed(1)}%`;
 }
 
+export function formatCount(value: number): string {
+  return Math.round(value).toLocaleString("ca-ES");
+}
+
+/** Variació relativa respecte una mitjana (p.ex. +34%, -12%). */
+export function formatRelativeDeltaPct(current: number, avg: number): string {
+  if (avg <= 0) return current > 0 ? "+100%" : "0%";
+  const pct = Math.round(((current - avg) / avg) * 100);
+  const sign = pct >= 0 ? "+" : "";
+  return `${sign}${pct}%`;
+}
+
 function madridParts(isoOrDate: string | Date, options: Intl.DateTimeFormatOptions) {
   const d = typeof isoOrDate === "string" ? new Date(isoOrDate) : isoOrDate;
   return new Intl.DateTimeFormat("en-GB", { timeZone: MADRID_TZ, ...options }).formatToParts(d);

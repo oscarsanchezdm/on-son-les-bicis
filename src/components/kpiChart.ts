@@ -1,4 +1,4 @@
-import { formatPct } from "../lib/format";
+import { formatCount, formatPct } from "../lib/format";
 
 export type ChartPoint = { label: string; value: number };
 
@@ -6,6 +6,7 @@ export type KpiChartSpec = {
   title: string;
   subtitle?: string;
   points: ChartPoint[];
+  valueFormat?: "pct" | "count";
 };
 
 const CHART_WIDTH = 640;
@@ -28,7 +29,7 @@ function xScale(count: number, width: number) {
   return (index: number) => MARGIN.left + (count <= 1 ? width / 2 : (index / (count - 1)) * width);
 }
 
-function yBounds(values: number[]): { min: number; max: number } {
+function yBoundsPct(values: number[]): { min: number; max: number } {
   if (!values.length) return { min: 0, max: 100 };
   const minV = Math.min(...values);
   const maxV = Math.max(...values);
@@ -39,12 +40,44 @@ function yBounds(values: number[]): { min: number; max: number } {
   };
 }
 
-function yTickValues(min: number, max: number): number[] {
+function yBoundsCount(values: number[]): { min: number; max: number } {
+  if (!values.length) return { min: 0, max: 1 };
+  const minV = Math.min(...values);
+  const maxV = Math.max(...values);
+  const pad = Math.max((maxV - minV) * 0.12, 1);
+  return {
+    min: Math.max(0, Math.floor(minV - pad)),
+    max: Math.ceil(maxV + pad),
+  };
+}
+
+function yTickValuesPct(min: number, max: number): number[] {
   const span = max - min;
   const step = span <= 10 ? 2 : span <= 25 ? 5 : 10;
   const ticks: number[] = [];
   for (let v = min; v <= max + 0.001; v += step) ticks.push(Math.round(v * 10) / 10);
   return ticks;
+}
+
+function yTickValuesCount(min: number, max: number): number[] {
+  const span = max - min || 1;
+  const rough = span / 3;
+  const magnitude = Math.pow(10, Math.floor(Math.log10(rough)));
+  const step = Math.max(1, Math.ceil(rough / magnitude) * magnitude);
+  let lo = Math.floor(min / step) * step;
+  let hi = Math.ceil(max / step) * step;
+  const ticks: number[] = [];
+  for (let v = lo; v <= hi + 0.001; v += step) ticks.push(v);
+  while (ticks.length > 4) {
+    const center = (min + max) / 2;
+    if (ticks[ticks.length - 1] - center > center - ticks[0]) ticks.pop();
+    else ticks.shift();
+  }
+  return ticks.length ? ticks : [lo, hi];
+}
+
+function formatValue(value: number, format: "pct" | "count"): string {
+  return format === "pct" ? formatPct(value) : formatCount(value);
 }
 
 function labelStep(count: number): number {
@@ -62,20 +95,22 @@ function escapeHtml(text: string): string {
     .replaceAll('"', "&quot;");
 }
 
-function renderChartSvg(points: ChartPoint[]): string {
+function renderChartSvg(points: ChartPoint[], valueFormat: "pct" | "count"): string {
   const { w, h } = plotSize();
   const values = points.map((p) => p.value);
-  const { min, max } = yBounds(values);
+  const { min, max } =
+    valueFormat === "pct" ? yBoundsPct(values) : yBoundsCount(values);
   const y = yScale(min, max, h);
   const x = xScale(points.length, w);
-  const ticks = yTickValues(min, max);
+  const ticks =
+    valueFormat === "pct" ? yTickValuesPct(min, max) : yTickValuesCount(min, max);
   const step = labelStep(points.length);
 
   const grid = ticks
     .map((tick) => {
       const py = y(tick);
       return `<line class="kpi-chart-grid" x1="${MARGIN.left}" y1="${py}" x2="${MARGIN.left + w}" y2="${py}" />
-        <text class="kpi-chart-axis" x="${MARGIN.left - 8}" y="${py + 4}" text-anchor="end">${formatPct(tick)}</text>`;
+        <text class="kpi-chart-axis" x="${MARGIN.left - 8}" y="${py + 4}" text-anchor="end">${formatValue(tick, valueFormat)}</text>`;
     })
     .join("");
 
@@ -87,7 +122,7 @@ function renderChartSvg(points: ChartPoint[]): string {
     .map(
       (p, i) =>
         `<circle class="kpi-chart-dot" cx="${x(i)}" cy="${y(p.value)}" r="3.5">
-          <title>${escapeHtml(p.label)}: ${formatPct(p.value)}</title>
+          <title>${escapeHtml(p.label)}: ${formatValue(p.value, valueFormat)}</title>
         </circle>`
     )
     .join("");
@@ -157,7 +192,7 @@ export function openKpiChart(spec: KpiChartSpec): void {
     subtitle.textContent = "";
     subtitle.hidden = true;
   }
-  body.innerHTML = renderChartSvg(spec.points);
+  body.innerHTML = renderChartSvg(spec.points, spec.valueFormat ?? "pct");
   modal.hidden = false;
   document.body.classList.add("kpi-chart-open");
   (modal.querySelector(".kpi-chart-close") as HTMLButtonElement)?.focus();

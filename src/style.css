@@ -123,6 +123,11 @@ h1 {
   cursor: pointer;
   font: inherit;
   font-size: 0.85rem;
+  color: var(--teal);
+}
+
+.mode-toggle button .metric-icon {
+  color: var(--teal);
 }
 
 .metric-icon,

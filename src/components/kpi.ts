@@ -15,7 +15,7 @@ import {
   sparklineChartPoints,
   sparklineValues,
 } from "../lib/history";
-import { formatPct } from "../lib/format";
+import { formatCount, formatPct, formatRelativeDeltaPct } from "../lib/format";
 import { renderSparkline } from "../lib/sparkline";
 import { kpiIconHtml, metricIconHtml } from "../lib/icons";
 import { bindKpiCharts, type KpiChartSpec } from "./kpiChart";
@@ -65,22 +65,34 @@ export function latestFromBarri(barri: Barri, lastUpdated: string): LatestData {
   };
 }
 
-function histNote(
+function histNoteCount(
   summary: Summary7d | null,
   hour: number,
-  key: SparklineMetricKey,
-  currentPct: number,
-  barriAvg?: Partial<Record<SparklineMetricKey, number>> | null
+  key: Extract<SparklineMetricKey, "bikes_total" | "bikes_mechanical" | "bikes_ebike">,
+  current: number,
+  histAvg?: Partial<Record<SparklineMetricKey, number>> | null
 ): string {
-  const avg =
-    barriAvg?.[key] ??
-    (key === "pct_oos_anchors" ? null : hourlyAverage(summary, hour, key));
+  const avg = histAvg?.[key] ?? hourlyAverage(summary, hour, key);
+  if (avg === null || avg === undefined) return "";
+  const avgShown = Math.round(avg);
+  const currentShown = Math.round(current);
+  const delta = formatRelativeDeltaPct(currentShown, avgShown);
+  return `Mitjana 7 dies (${String(hour).padStart(2, "0")}:00): ${formatCount(avgShown)} (${delta})`;
+}
+
+function histNotePct(
+  summary: Summary7d | null,
+  hour: number,
+  key: Extract<SparklineMetricKey, "pct_oos_fleet">,
+  currentPct: number,
+  histAvg?: Partial<Record<SparklineMetricKey, number>> | null
+): string {
+  const avg = histAvg?.[key] ?? hourlyAverage(summary, hour, key);
   if (avg === null || avg === undefined) return "";
   const avgShown = Math.round(avg * 10) / 10;
   const currentShown = Math.round(currentPct * 10) / 10;
-  const delta = currentShown - avgShown;
-  const sign = delta >= 0 ? "+" : "";
-  return `Mitjana 7 dies (${String(hour).padStart(2, "0")}:00): ${formatPct(avgShown)} (${sign}${delta.toFixed(1)} pp)`;
+  const delta = formatRelativeDeltaPct(currentShown, avgShown);
+  return `Mitjana 7 dies (${String(hour).padStart(2, "0")}:00): ${formatPct(avgShown)} (${delta})`;
 }
 
 function chartPoints(
@@ -138,53 +150,80 @@ export function renderKpis(
 
   const showSpark = !isHistorical;
   const sampleCount = options.sampleCount ?? 0;
-  const barriHist = options.barriHistAverages ?? null;
+  const histAvg = options.barriHistAverages ?? null;
   const histSampleNote =
     isHistorical && sampleCount > 0
       ? `<small class="kpi-hist">Mitjana de ${sampleCount} mostra${sampleCount === 1 ? "" : "es"} (30 dies)</small>`
       : "";
+
   const bikesValues = showSpark
-    ? sparklines?.pct_bikes ?? sparklineValues(summary?.series ?? [], "pct_bikes")
+    ? sparklines?.bikes_total ?? sparklineValues(summary?.series ?? [], "bikes_total")
     : [];
   const mechValues = showSpark
-    ? sparklines?.pct_mechanical ?? sparklineValues(summary?.series ?? [], "pct_mechanical")
+    ? sparklines?.bikes_mechanical ?? sparklineValues(summary?.series ?? [], "bikes_mechanical")
     : [];
   const ebikeValues = showSpark
-    ? sparklines?.pct_ebike ?? sparklineValues(summary?.series ?? [], "pct_ebike")
+    ? sparklines?.bikes_ebike ?? sparklineValues(summary?.series ?? [], "bikes_ebike")
     : [];
   const oosValues = showSpark
     ? sparklines?.pct_oos_fleet ?? sparklineValues(summary?.series ?? [], "pct_oos_fleet")
     : [];
 
-  const bikesPoints = showSpark ? chartPoints("pct_bikes", sparklines, summary) : [];
-  const mechPoints = showSpark ? chartPoints("pct_mechanical", sparklines, summary) : [];
-  const ebikePoints = showSpark ? chartPoints("pct_ebike", sparklines, summary) : [];
+  const bikesPoints = showSpark ? chartPoints("bikes_total", sparklines, summary) : [];
+  const mechPoints = showSpark ? chartPoints("bikes_mechanical", sparklines, summary) : [];
+  const ebikePoints = showSpark ? chartPoints("bikes_ebike", sparklines, summary) : [];
   const oosPoints = showSpark ? chartPoints("pct_oos_fleet", sparklines, summary) : [];
 
   const chartSubtitle = `Últimes 24 h · ${scopeLabel}`;
   const charts: Record<string, KpiChartSpec | undefined> = showSpark
     ? {
         bikes: bikesPoints.length
-          ? { title: "Bicicletes disponibles (% ancoratges)", subtitle: chartSubtitle, points: bikesPoints }
+          ? {
+              title: "Bicicletes disponibles",
+              subtitle: chartSubtitle,
+              points: bikesPoints,
+              valueFormat: "count",
+            }
           : undefined,
         mechanical: mechPoints.length
-          ? { title: "Mecàniques (% ancoratges)", subtitle: chartSubtitle, points: mechPoints }
+          ? {
+              title: "Mecàniques",
+              subtitle: chartSubtitle,
+              points: mechPoints,
+              valueFormat: "count",
+            }
           : undefined,
         ebike: ebikePoints.length
-          ? { title: "Elèctriques (% ancoratges)", subtitle: chartSubtitle, points: ebikePoints }
+          ? {
+              title: "Elèctriques",
+              subtitle: chartSubtitle,
+              points: ebikePoints,
+              valueFormat: "count",
+            }
           : undefined,
         oos: oosPoints.length
-          ? { title: "Fora de servei (% bicicletes aparcades)", subtitle: chartSubtitle, points: oosPoints }
+          ? {
+              title: "Fora de servei (% bicicletes aparcades)",
+              subtitle: chartSubtitle,
+              points: oosPoints,
+              valueFormat: "pct",
+            }
           : undefined,
       }
     : {};
 
-  const showHist = !isHistorical && (scopeLabel !== "ciutat" ? !!barriHist : !!summary);
-  const histBikes = showHist ? histNote(summary, hour, "pct_bikes", t.pct_bikes, barriHist) : "";
-  const histMech = showHist ? histNote(summary, hour, "pct_mechanical", pctMech, barriHist) : "";
-  const histEbike = showHist ? histNote(summary, hour, "pct_ebike", pctEbike, barriHist) : "";
+  const showHist = !isHistorical && (!!histAvg || !!summary);
+  const histBikes = showHist
+    ? histNoteCount(summary, hour, "bikes_total", t.bikes_total, histAvg)
+    : "";
+  const histMech = showHist
+    ? histNoteCount(summary, hour, "bikes_mechanical", t.bikes_mechanical, histAvg)
+    : "";
+  const histEbike = showHist
+    ? histNoteCount(summary, hour, "bikes_ebike", t.bikes_ebike, histAvg)
+    : "";
   const histOos = showHist
-    ? histNote(summary, hour, "pct_oos_fleet", pctOosFleet, barriHist)
+    ? histNotePct(summary, hour, "pct_oos_fleet", pctOosFleet, histAvg)
     : "";
 
   const zeroMech = t.stations_zero_mechanical ?? 0;

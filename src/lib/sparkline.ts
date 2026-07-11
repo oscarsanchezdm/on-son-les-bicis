@@ -38,11 +38,21 @@ function yBounds(values: number[]): { min: number; max: number } {
 }
 
 function yTickValues(min: number, max: number): number[] {
-  const start = Math.floor(min / 20) * 20;
-  const end = Math.ceil(max / 20) * 20;
+  const step = 5;
+  let lo = Math.floor(min / step) * step;
+  let hi = Math.ceil(max / step) * step;
   const ticks: number[] = [];
-  for (let v = start; v <= end + 0.001; v += 20) ticks.push(v);
-  return ticks;
+  for (let v = lo; v <= hi + 0.001; v += step) ticks.push(v);
+
+  while (ticks.length > 4) {
+    const center = (min + max) / 2;
+    if (ticks[ticks.length - 1] - center > center - ticks[0]) {
+      ticks.pop();
+    } else {
+      ticks.shift();
+    }
+  }
+  return ticks.length ? ticks : [lo, hi];
 }
 
 function xLabelStep(count: number): number {
@@ -69,16 +79,18 @@ export function renderSparklineChart(
 
   const values = points.map((p) => p.value);
   const { min, max } = yBounds(values);
-  const range = max - min || 1;
   const plotW = width - CHART_MARGIN.left - CHART_MARGIN.right;
   const plotH = height - CHART_MARGIN.top - CHART_MARGIN.bottom;
   const stepX = plotW / Math.max(points.length - 1, 1);
   const ticks = yTickValues(min, max);
+  const plotMin = ticks[0] ?? min;
+  const plotMax = ticks[ticks.length - 1] ?? max;
+  const range = plotMax - plotMin || 1;
   const xStep = xLabelStep(points.length);
   const baselineY = CHART_MARGIN.top + plotH;
 
   const yAt = (value: number) =>
-    CHART_MARGIN.top + plotH - ((value - min) / range) * plotH;
+    CHART_MARGIN.top + plotH - ((value - plotMin) / range) * plotH;
 
   const grid = ticks
     .map((tick) => {

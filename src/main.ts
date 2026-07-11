@@ -16,6 +16,7 @@ import {
 import {
   barrisToLatestData,
   barriHistAveragesAtHour,
+  cityHistAveragesAtHour,
   currentMadridHour,
   hourViewScopeLabel,
   isHistoricalView,
@@ -293,9 +294,11 @@ async function refresh() {
         : await loadCitySparklineSeries(historyIndex)
       : null;
 
-  const barriHistAverages =
-    !isHistorical && selectedBarri && historyIndex
-      ? await barriHistAveragesAtHour(historyIndex, selectedBarri.barri_codi, hour)
+  const histAverages =
+    !isHistorical && historyIndex
+      ? selectedBarri
+        ? await barriHistAveragesAtHour(historyIndex, selectedBarri.barri_codi, hour)
+        : await cityHistAveragesAtHour(historyIndex, hour)
       : null;
 
   const sampleCount =
@@ -312,7 +315,7 @@ async function refresh() {
     sparklines,
     {
       sampleCount,
-      barriHistAverages,
+      barriHistAverages: histAverages,
     }
   );
   mapView.update(
