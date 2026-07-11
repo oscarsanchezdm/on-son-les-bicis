@@ -53,7 +53,10 @@ app.innerHTML = `
     <div class="site-header__inner">
       <div class="site-header__row">
         <div class="site-header__brand">
-          <h1>On són les <span class="title-accent"><span class="title-ebike-icon" aria-hidden="true">${iconEbike(22)}</span>bicis</span>?</h1>
+          <div class="site-header__title-row">
+            <h1>On són les <span class="title-accent"><span class="title-ebike-icon" aria-hidden="true">${iconEbike(22)}</span>bicis</span>?</h1>
+            <span id="data-mode-badge" class="data-mode-badge data-mode-badge--live">Temps real</span>
+          </div>
         </div>
         <div id="barri-filter-bar" class="barri-filter-bar hidden" hidden>
           <span id="barri-filter-label"></span>
@@ -471,6 +474,25 @@ function updateBarriFilterBar() {
   label.textContent = `Filtrat: ${selectedBarri.barri_nom}`;
 }
 
+function updateDataModeBadge(): void {
+  const badge = document.getElementById("data-mode-badge");
+  if (!badge) return;
+
+  if (timeView.kind === "latest") {
+    badge.textContent = "Temps real";
+    badge.className = "data-mode-badge data-mode-badge--live";
+    badge.title = latestData
+      ? `Dades actualitzades ${formatRelativeTime(latestData.last_updated)}`
+      : "";
+    return;
+  }
+
+  badge.textContent = replayPlaying ? "Replay" : "Històric";
+  badge.className = `data-mode-badge data-mode-badge--hist${replayPlaying ? " data-mode-badge--replay" : ""}`;
+  const scope = timeViewLabel(timeView, historyIndex);
+  badge.title = replayPlaying ? `${replayStatusLabel(timeView, true)} · ${scope}` : scope;
+}
+
 function updateTimelineStatus() {
   const timelineEl = document.getElementById("timeline");
   if (!timelineEl || !latestData) return;
@@ -593,6 +615,7 @@ async function refresh() {
   renderTableSection();
 
   updateBarriFilterBar();
+  updateDataModeBadge();
   updateLegend();
   const note = document.getElementById("legend-note")!;
   note.textContent = legendText();
