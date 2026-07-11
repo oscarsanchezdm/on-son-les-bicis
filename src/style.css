@@ -192,6 +192,12 @@ h1 {
   line-height: 1.3;
 }
 
+.kpi-fleet-mix {
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
 .kpi-station-gap--warn {
   color: var(--teal);
   font-weight: 600;
