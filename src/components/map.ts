@@ -80,6 +80,10 @@ export function createMap(
 ): MapView {
   const map = L.map(container, {
     scrollWheelZoom: true,
+    // Ratolins amb scroll suau envien molts esdeveniments wheel; ampliar el debounce
+    // i els píxels per nivell redueix zoomends consecutius i redibuixos del heatmap.
+    wheelDebounceTime: 80,
+    wheelPxPerZoomLevel: 90,
     rotate: true,
     bearing: MAP_BEARING,
     rotateControl: false,
@@ -139,9 +143,16 @@ export function createMap(
     marker.bindTooltip(html, options);
   }
 
-  map.on("zoomend", () => {
-    applyMarkerZoomScale();
-  });
+  let zoomScaleTimer: ReturnType<typeof setTimeout> | null = null;
+  function scheduleMarkerZoomScale(): void {
+    if (zoomScaleTimer !== null) clearTimeout(zoomScaleTimer);
+    zoomScaleTimer = setTimeout(() => {
+      zoomScaleTimer = null;
+      applyMarkerZoomScale();
+    }, 120);
+  }
+
+  map.on("zoomend", scheduleMarkerZoomScale);
 
   map.on("popupopen", (e) => {
     for (const layer of [stationLayer, offlineStationLayer]) {
