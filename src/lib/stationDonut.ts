@@ -148,16 +148,25 @@ export function breakdownFromStation(
   };
 }
 
-export function breakdownFromBarri(barri: Barri, context: StationPopupContext = {}): StationBreakdown {
-  const oos =
-    barri.bikes_out_of_service ??
-    bikesOutOfService(
-      barri.capacity_total,
-      barri.bikes_mechanical,
-      barri.bikes_ebike,
-      barri.docks_available_total,
-      barri.bikes_total
-    );
+export function breakdownFromBarri(
+  barri: Barri,
+  context: StationPopupContext = {},
+  stationsInBarri: Station[] = []
+): StationBreakdown {
+  const scoped = stationsInBarri.filter((s) => s.barri_codi === barri.barri_codi);
+  const oos = scoped.length
+    ? scoped.reduce((sum, s) => sum + stationOosCount(s), 0)
+    : (barri.bikes_out_of_service ??
+        bikesOutOfService(
+          barri.capacity_total,
+          barri.bikes_mechanical,
+          barri.bikes_ebike,
+          barri.docks_available_total,
+          barri.bikes_total
+        ));
+  const docks_disabled = scoped.length
+    ? scoped.reduce((sum, s) => sum + stationDocksDisabled(s), 0)
+    : (barri.docks_disabled_total ?? 0);
   return {
     name: barri.barri_nom,
     barri_codi: barri.barri_codi,
@@ -166,7 +175,7 @@ export function breakdownFromBarri(barri: Barri, context: StationPopupContext = 
     ebike: barri.bikes_ebike,
     docks: barri.docks_available_total,
     oos,
-    docks_disabled: 0,
+    docks_disabled,
     historical: context.historical,
     historicalLabel: context.historicalLabel,
   };

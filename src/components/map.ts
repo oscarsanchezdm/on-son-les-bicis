@@ -208,8 +208,9 @@ export function createMap(
         const barri = byCode.get(codi);
         if (!barri) return;
         const barriCtx = popupContext(timeView);
+        const barriStations = stations?.filter((s) => s.barri_codi === codi) ?? [];
         layer.bindPopup(
-          renderStationPopupContent(breakdownFromBarri(barri, barriCtx), barriCtx) +
+          renderStationPopupContent(breakdownFromBarri(barri, barriCtx, barriStations), barriCtx) +
             `<button type="button" class="station-popup__filter" data-barri-filter="${barri.barri_codi}">Filtrar per barri</button>` +
             `<p class="station-popup__extra">Estacions sense elèctriques: ${formatPct(pctOfStations(barri.stations_zero_ebike, barri.stations_active))} · Sense mecàniques: ${formatPct(pctOfStations(barri.stations_zero_mechanical ?? 0, barri.stations_active))}</p>`
         );
