@@ -228,7 +228,7 @@ export function pctOosOfAnchors(capacity: number, bikesOos: number): number {
   return (100 * bikesOos) / capacity;
 }
 
-/** % de bicis FS respecte del parc (disponibles + FS). */
+/** % de bicis FS respecte de les bicicletes aparcades (disponibles + FS). */
 export function pctOosOfBikeFleet(bikesAvailable: number, bikesOos: number): number {
   const fleet = bikesAvailable + bikesOos;
   if (fleet <= 0) return 0;

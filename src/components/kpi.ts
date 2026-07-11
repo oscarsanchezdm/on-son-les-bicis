@@ -173,7 +173,7 @@ export function renderKpis(
           ? { title: "Elèctriques (% ancoratges)", subtitle: chartSubtitle, points: ebikePoints }
           : undefined,
         oos: oosPoints.length
-          ? { title: "Fora de servei (% parc de bicis)", subtitle: chartSubtitle, points: oosPoints }
+          ? { title: "Fora de servei (% bicicletes aparcades)", subtitle: chartSubtitle, points: oosPoints }
           : undefined,
       }
     : {};
@@ -261,7 +261,7 @@ export function renderKpis(
         `
         <span class="kpi-label">${metricIconHtml("out_of_service", "kpi-icon")} Bicicletes fora de servei</span>
         <strong>${outOfService.toLocaleString("ca-ES")}</strong>
-        <small>${formatPct(pctOosFleet)} del parc de bicis · ${formatPct(pctOosAnchors)} dels ancoratges</small>
+        <small>${formatPct(pctOosFleet)} de bicicletes aparcades · ${formatPct(pctOosAnchors)} dels ancoratges</small>
         ${oosValues.length ? renderSparkline(oosValues) : ""}
         ${oosPoints.length > 1 ? sparkHint : ""}
         ${histOos ? `<small class="kpi-hist">${histOos}</small>` : ""}
