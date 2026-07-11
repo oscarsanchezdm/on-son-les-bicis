@@ -167,14 +167,14 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
           const fillOpacity = metricAbsoluteOpacity(value);
           return {
             fillColor: metricAbsoluteColor(mode),
-            fillOpacity: showStations ? fillOpacity * 0.85 : fillOpacity,
+            fillOpacity: showStations ? fillOpacity * 0.55 : fillOpacity,
             color: selectedBarriCodi === codi ? "#0f766e" : "#64748b",
             weight: selectedBarriCodi === codi ? 2 : 1,
           };
         }
         return {
           fillColor: metricPctColor(value, mode),
-          fillOpacity: showStations ? 0.14 : 0.45,
+          fillOpacity: showStations ? 0.08 : 0.45,
           color: selectedBarriCodi === codi ? "#0f766e" : "#64748b",
           weight: selectedBarriCodi === codi ? 2 : 1,
         };

@@ -47,8 +47,8 @@ function capacityWeight(capacity: number, maxCapacity: number): number {
 
 function splatRadius(zoom: number): number {
   const base =
-    zoom >= 15 ? 18 : zoom >= 13 ? 22 : zoom >= 12 ? 24 : zoom >= 11 ? 28 : 32;
-  return Math.max(14, base * mapZoomVisualScale(zoom));
+    zoom >= 15 ? 22 : zoom >= 13 ? 28 : zoom >= 12 ? 32 : zoom >= 11 ? 36 : 40;
+  return Math.max(18, base * mapZoomVisualScale(zoom));
 }
 
 function splatAlphaScale(zoom: number): number {
