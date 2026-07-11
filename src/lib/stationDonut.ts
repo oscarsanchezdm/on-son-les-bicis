@@ -3,6 +3,7 @@ import { bikesOutOfService, stationDocksDisabled, stationOosCount } from "./data
 import { METRIC_ABSOLUTE_COLORS } from "./colors";
 import { formatPct } from "./format";
 import { countIconHtml } from "./icons";
+import type { ChartPoint } from "./history";
 import { renderSparklineChart } from "./sparkline";
 
 export type StationBreakdown = {
@@ -286,11 +287,11 @@ function sparklineLabel(b: StationBreakdown): string {
   return `${metric} (% ancoratges) · últimes 24 h · ${scope}`;
 }
 
-function renderSparklineBlock(b: StationBreakdown, values: number[], compact = false): string {
-  if (values.length <= 1) return "";
+function renderSparklineBlock(b: StationBreakdown, points: ChartPoint[], compact = false): string {
+  if (points.length <= 1) return "";
   const width = compact ? 248 : 280;
-  const height = compact ? 72 : 80;
-  return `<div class="station-donut-modal__spark${compact ? " station-popup__spark-inner" : ""}"><p class="station-donut-modal__spark-label">${sparklineLabel(b)}</p>${renderSparklineChart(values, width, height)}</div>`;
+  const height = compact ? 84 : 92;
+  return `<div class="station-donut-modal__spark${compact ? " station-popup__spark-inner" : ""}"><p class="station-donut-modal__spark-label">${sparklineLabel(b)}</p>${renderSparklineChart(points, width, height)}</div>`;
 }
 
 function renderModalPanel(b: StationBreakdown, sparklineHtml = ""): string {
@@ -307,7 +308,7 @@ function renderModalPanel(b: StationBreakdown, sparklineHtml = ""): string {
 }
 
 let modalRoot: HTMLElement | null = null;
-let sparklineLoader: ((b: StationBreakdown) => Promise<number[]>) | null = null;
+let sparklineLoader: ((b: StationBreakdown) => Promise<ChartPoint[]>) | null = null;
 let sparklineMetricMode: MetricMode = "total";
 
 const SPARKLINE_METRIC_LABEL: Record<MetricMode, string> = {
@@ -323,7 +324,7 @@ export function setStationDonutMetricMode(mode: MetricMode): void {
 }
 
 export function setStationDonutSparklineLoader(
-  loader: (b: StationBreakdown) => Promise<number[]>
+  loader: (b: StationBreakdown) => Promise<ChartPoint[]>
 ): void {
   sparklineLoader = loader;
 }
@@ -358,9 +359,9 @@ export function openStationDonutModal(b: StationBreakdown): void {
   closeBtn?.focus();
 
   if (sparklineLoader && !b.historical) {
-    void sparklineLoader(b).then((values) => {
+    void sparklineLoader(b).then((points) => {
       if (root.hidden) return;
-      host.innerHTML = renderModalPanel(b, renderSparklineBlock(b, values));
+      host.innerHTML = renderModalPanel(b, renderSparklineBlock(b, points));
       host.querySelector<HTMLButtonElement>(".station-donut-modal__close")?.focus();
     });
   }
