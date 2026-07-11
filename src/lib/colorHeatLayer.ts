@@ -98,12 +98,12 @@ const ColorHeatLayerImpl = L.Renderer.extend({
     this._stations = stations;
     this._mode = mode;
     this._heatScale = heatScale;
-    if (this._map) L.Renderer.prototype._update.call(this);
+    if (this._map) this._update();
     return this;
   },
 
   redraw() {
-    if (this._map) L.Renderer.prototype._update.call(this);
+    if (this._map) this._update();
     return this;
   },
 
