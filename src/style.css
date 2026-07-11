@@ -436,6 +436,18 @@ body.kpi-chart-open {
   border-top: 1px solid var(--border);
 }
 
+.station-popup__spark {
+  margin-top: 0.5rem;
+  padding-top: 0.45rem;
+  border-top: 1px solid var(--border);
+}
+
+.station-popup__spark-inner {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
 .station-donut-modal__spark-label {
   margin: 0 0 0.35rem;
   font-size: 0.78rem;

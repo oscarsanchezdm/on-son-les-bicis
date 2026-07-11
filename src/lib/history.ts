@@ -661,3 +661,25 @@ export async function loadStationSparklinePct(
 
   return values;
 }
+
+/** Recent % bikes for one barri (popup/modal sparkline, last 24 h). */
+export async function loadBarriSparklinePct(
+  index: HistoryIndex | null,
+  barriCodi: string,
+  hours = CHART_DETAIL_HOURS
+): Promise<number[]> {
+  if (!index?.files?.length) return [];
+
+  const cutoffKey = historyCutoffKeyUtc(hours);
+  const values: number[] = [];
+
+  for (const file of [...index.files].sort((a, b) => a.key.localeCompare(b.key))) {
+    if (file.key < cutoffKey) continue;
+    const snapshot = await loadHourlySnapshot(file.key);
+    const b = snapshot?.barris?.find((x) => x.barri_codi === barriCodi);
+    if (!b || b.capacity_total <= 0) continue;
+    values.push(b.pct_bikes);
+  }
+
+  return values;
+}
