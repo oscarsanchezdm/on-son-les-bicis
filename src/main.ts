@@ -33,7 +33,7 @@ import {
 } from "./lib/history";
 import { heatLegendGradient, pctLegendLabels, type HeatScaleMode } from "./lib/colors";
 import { formatRelativeTime } from "./lib/format";
-import { metricIconHtml } from "./lib/icons";
+import { iconEbike, metricIconHtml } from "./lib/icons";
 import { setStationDonutSparklineLoader, setStationDonutMetricMode } from "./lib/stationDonut";
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
@@ -44,7 +44,7 @@ app.innerHTML = `
       <div class="site-header__row">
         <div class="site-header__brand">
           <p class="eyebrow">Dades obertes · Bicing Barcelona</p>
-          <h1>On són les bicis?</h1>
+          <h1>On són les <span class="title-accent"><span class="title-ebike-icon" aria-hidden="true">${iconEbike(22)}</span>bicis</span>?</h1>
         </div>
         <div id="barri-filter-bar" class="barri-filter-bar hidden" hidden>
           <span id="barri-filter-label"></span>
@@ -52,7 +52,7 @@ app.innerHTML = `
         </div>
       </div>
       <div class="mode-toggle" role="group" aria-label="Mètrica del mapa">
-        <button type="button" data-mode="total" class="active">${metricIconHtml("total")} Totals</button>
+        <button type="button" data-mode="total" class="active">${metricIconHtml("total")} Bicicletes</button>
         <button type="button" data-mode="mechanical">${metricIconHtml("mechanical")} Mecàniques</button>
         <button type="button" data-mode="ebike">${metricIconHtml("ebike")} Elèctriques</button>
         <button type="button" data-mode="docks">${metricIconHtml("docks")} Ancoratges</button>
