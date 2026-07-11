@@ -261,25 +261,27 @@ function renderDonutSvg(
 
 function legendRow(
   seg: SegmentDef & { count: number; pct: number },
-  compact: boolean
+  compact: boolean,
+  fullLabels = false
 ): string {
   const count = seg.count.toLocaleString("ca-ES");
   const pct = formatPct(seg.pct);
   const icon =
     seg.key === "docks_disabled" ? countIconHtml("dock") : countIconHtml(seg.icon);
+  const label = compact && !fullLabels ? seg.short : seg.label;
   if (compact) {
-    return `<li class="station-donut-legend__item"><span class="station-donut-legend__swatch" style="background:${seg.color}"></span>${icon}<span class="station-donut-legend__label">${seg.short}</span><span class="station-donut-legend__vals"><strong>${count}</strong> · ${pct}</span></li>`;
+    return `<li class="station-donut-legend__item"><span class="station-donut-legend__swatch" style="background:${seg.color}"></span>${icon}<span class="station-donut-legend__label">${label}</span><span class="station-donut-legend__vals"><strong>${count}</strong> · ${pct}</span></li>`;
   }
-  return `<li class="station-donut-legend__item station-donut-legend__item--full"><span class="station-donut-legend__swatch" style="background:${seg.color}"></span>${icon}<span class="station-donut-legend__label">${seg.label}</span><span class="station-donut-legend__vals"><strong>${count}</strong><span>${pct}</span></span></li>`;
+  return `<li class="station-donut-legend__item station-donut-legend__item--full"><span class="station-donut-legend__swatch" style="background:${seg.color}"></span>${icon}<span class="station-donut-legend__label">${label}</span><span class="station-donut-legend__vals"><strong>${count}</strong><span>${pct}</span></span></li>`;
 }
 
-function renderLegend(b: StationBreakdown, compact: boolean): string {
+function renderLegend(b: StationBreakdown, compact: boolean, fullLabels = false): string {
   const items = activeSegments(b);
   if (!items.length) {
     return `<p class="station-donut-empty">Sense dades d'ocupació.</p>`;
   }
   const cls = compact ? "station-donut-legend station-donut-legend--compact" : "station-donut-legend";
-  return `<ul class="${cls}">${items.map((s) => legendRow(s, compact)).join("")}</ul>`;
+  return `<ul class="${cls}">${items.map((s) => legendRow(s, compact, fullLabels)).join("")}</ul>`;
 }
 
 function encodeBreakdown(b: StationBreakdown): string {
@@ -317,7 +319,7 @@ export function renderCompositionPanel(
 ): string {
   const clickable = options.clickable !== false && !b.historical;
   const payload = clickable ? encodeBreakdown(b) : "";
-  const donutInner = renderDonutSvg(b, 128, "station-donut station-donut--card", {
+  const donutInner = renderDonutSvg(b, 72, "station-donut station-donut--card", {
     showCenterTotal: false,
   });
   const chartHtml = clickable
@@ -328,14 +330,14 @@ export function renderCompositionPanel(
     : "";
 
   return `<div class="composition-card__inner">
-    <div class="composition-card__chart">${chartHtml}</div>
-    <div class="composition-card__body">
-      <div class="composition-card__head">
-        <p class="composition-card__title"><span>${options.scopeLabel}</span>${clearBtn}</p>
-        <p class="composition-card__total"><strong>${b.capacity.toLocaleString("ca-ES")}</strong> ancoratges totals</p>
-      </div>
+    <div class="composition-card__head">
+      <p class="composition-card__title"><span>${options.scopeLabel}</span>${clearBtn}</p>
+      <p class="composition-card__total"><strong>${b.capacity.toLocaleString("ca-ES")}</strong> ancoratges totals</p>
       ${compositionHistoricalNote(b)}
-      ${renderLegend(b, false)}
+    </div>
+    <div class="composition-card__row">
+      <div class="composition-card__chart">${chartHtml}</div>
+      <div class="composition-card__legend">${renderLegend(b, true, true)}</div>
     </div>
   </div>`;
 }
@@ -350,6 +352,11 @@ function popupStatsLine(b: StationBreakdown): string {
       return `<span class="station-popup__stat">${icon}${seg.label}: <strong>${seg.count.toLocaleString("ca-ES")}</strong></span>`;
     })
     .join("");
+}
+
+function popupSparklineSlot(b: StationBreakdown): string {
+  if (b.historical || (!b.station_id && !b.barri_codi)) return "";
+  return `<div class="station-popup__spark-host" data-sparkline-breakdown="${encodeBreakdown(b)}">${renderSparklineLoading(b)}</div>`;
 }
 
 function historicalNotePopup(b: StationBreakdown): string {
@@ -367,6 +374,7 @@ export function renderStationPopupContent(
     ${metaLine(b)}
     ${historicalNotePopup(b)}
     <p class="station-popup__stats">${popupStatsLine(b)}</p>
+    ${popupSparklineSlot(b)}
   </div>`;
 }
 
@@ -405,6 +413,7 @@ function renderModalPanel(b: StationBreakdown, sparklineHtml = ""): string {
 }
 
 let modalSparklineRequest = 0;
+let popupSparklineRequest = 0;
 let modalRoot: HTMLElement | null = null;
 let sparklineLoader: ((b: StationBreakdown) => Promise<ChartPoint[]>) | null = null;
 let sparklineMetricMode: MetricMode = "total";
@@ -491,5 +500,30 @@ export function bindStationDonutInPopup(popupEl: HTMLElement | null | undefined)
         /* ignore malformed payload */
       }
     });
+  });
+}
+
+/** Load 24h sparkline into map popup when slot is present. */
+export function hydratePopupSparkline(popupEl: HTMLElement | null | undefined): void {
+  if (!popupEl || !sparklineLoader) return;
+  const host = popupEl.querySelector<HTMLElement>("[data-sparkline-breakdown]");
+  if (!host) return;
+  const raw = host.getAttribute("data-sparkline-breakdown");
+  if (!raw) return;
+  let breakdown: StationBreakdown;
+  try {
+    breakdown = JSON.parse(decodeURIComponent(raw)) as StationBreakdown;
+  } catch {
+    return;
+  }
+  const requestId = ++popupSparklineRequest;
+  host.innerHTML = renderSparklineLoading(breakdown);
+  void sparklineLoader(breakdown).then((points) => {
+    if (requestId !== popupSparklineRequest) return;
+    if (!host.isConnected) return;
+    host.innerHTML =
+      points.length > 1
+        ? renderSparklineBlock(breakdown, points, true)
+        : renderSparklineEmpty(breakdown);
   });
 }

@@ -606,8 +606,31 @@ async function refresh() {
   scheduleHistAveragesLoad();
 }
 
+function applyBarriFilter(barri: Barri): void {
+  if (selectedBarri?.barri_codi === barri.barri_codi) return;
+  barriSparklineLoadId++;
+  barriSparklineCodi = null;
+  barriSparklineCache = null;
+  resetHistAveragesCache();
+  selectedStation = null;
+  selectedBarri = barri;
+}
+
+function findBarriByCodi(codi: string): Barri | null {
+  return (
+    displayBarris.find((b) => b.barri_codi === codi) ??
+    barrisData?.barris.find((b) => b.barri_codi === codi) ??
+    null
+  );
+}
+
 function selectStation(station: Station) {
+  const barri = findBarriByCodi(station.barri_codi);
+  if (barri && (!selectedBarri || selectedBarri.barri_codi !== barri.barri_codi)) {
+    applyBarriFilter(barri);
+  }
   if (!selectedBarri) return;
+
   const next =
     selectedStation?.station_id === station.station_id ? null : station;
   selectedStation = next;
@@ -618,6 +641,13 @@ function selectStation(station: Station) {
 function clearStationSelection() {
   selectedStation = null;
   void refresh();
+}
+
+function selectBarriFromMap(barri: Barri) {
+  if (selectedBarri?.barri_codi === barri.barri_codi) return;
+  applyBarriFilter(barri);
+  void refresh();
+  mapView?.focusBarri(barri.barri_codi, displayStations);
 }
 
 function selectBarri(barri: Barri) {
@@ -714,9 +744,8 @@ async function init() {
 
     mapView = createMap(document.getElementById("map")!, geo, {
       onBarriFilter: selectBarri,
-      onStationSelect: (station) => {
-        if (selectedBarri) selectStation(station);
-      },
+      onBarriMapClick: selectBarriFromMap,
+      onStationSelect: selectStation,
     });
     void refresh();
 
