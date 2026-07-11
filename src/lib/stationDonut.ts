@@ -1,4 +1,4 @@
-import type { Barri, Station } from "./data";
+import type { Barri, MetricMode, Station } from "./data";
 import { bikesOutOfService, stationDocksDisabled, stationOosCount } from "./data";
 import { METRIC_ABSOLUTE_COLORS } from "./colors";
 import { formatPct } from "./format";
@@ -270,7 +270,8 @@ export function renderStationPopupContent(
 
 function sparklineLabel(b: StationBreakdown): string {
   const scope = b.barri_codi && !b.station_id ? "barri" : "estació";
-  return `Bicicletes (% ancoratges) · últimes 24 h · ${scope}`;
+  const metric = SPARKLINE_METRIC_LABEL[sparklineMetricMode];
+  return `${metric} (% ancoratges) · últimes 24 h · ${scope}`;
 }
 
 function renderSparklineBlock(b: StationBreakdown, values: number[], compact = false): string {
@@ -295,6 +296,19 @@ function renderModalPanel(b: StationBreakdown, sparklineHtml = ""): string {
 
 let modalRoot: HTMLElement | null = null;
 let sparklineLoader: ((b: StationBreakdown) => Promise<number[]>) | null = null;
+let sparklineMetricMode: MetricMode = "total";
+
+const SPARKLINE_METRIC_LABEL: Record<MetricMode, string> = {
+  total: "Bicicletes",
+  mechanical: "Mecàniques",
+  ebike: "Elèctriques",
+  docks: "Ancoratges lliures",
+  out_of_service: "Fora de servei",
+};
+
+export function setStationDonutMetricMode(mode: MetricMode): void {
+  sparklineMetricMode = mode;
+}
 
 export function setStationDonutSparklineLoader(
   loader: (b: StationBreakdown) => Promise<number[]>
