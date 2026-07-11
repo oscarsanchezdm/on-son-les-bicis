@@ -87,7 +87,7 @@ function renderContent(metrics: UsageMetrics, scope: string, isLatest: boolean):
         <div>
           <h2>Bicicletes en ús (aprox.)</h2>
           <p class="section-note usage-note">
-            Ciutat · màxim aparcades del dia − bicis a estacions. Dia en curs: referència del dia anterior.
+            Ciutat · màxim aparcades del dia − bicis a estacions. Dia en curs: màxim entre avui i el dia anterior.
           </p>
         </div>
         <div class="usage-headline">
