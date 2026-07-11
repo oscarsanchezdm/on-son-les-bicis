@@ -109,10 +109,16 @@ function columnMax(barris: Barri[], key: Exclude<BarriSortKey, "barri_nom">): nu
   return Math.max(1, ...barris.map((b) => barriMetricCount(b, metric)));
 }
 
+function capacityBadge(count: number, title: string): string {
+  return `<span class="barri-stations-badge barri-docks-badge" title="${title}">${countIconHtml("dock")}<span class="barri-stations-badge__count">${count.toLocaleString("ca-ES")}</span></span>`;
+}
+
 function barriNameCell(barri: Barri): string {
   const n = barri.stations_active;
-  const badge = `<span class="barri-stations-badge" title="${n} estacions">${countIconHtml("dock")}<span class="barri-stations-badge__count">${n}</span></span>`;
-  return `<td class="barri-name"><span class="barri-name__text">${barri.barri_nom}</span>${badge}</td>`;
+  const capacity = barri.capacity_total;
+  const stationBadge = `<span class="barri-stations-badge" title="${n} estacions">${countIconHtml("station")}<span class="barri-stations-badge__count">${n}</span></span>`;
+  const dockBadge = capacityBadge(capacity, `${capacity.toLocaleString("ca-ES")} ancoratges`);
+  return `<td class="barri-name"><span class="barri-name__text">${barri.barri_nom}</span><span class="barri-name__badges">${stationBadge}${dockBadge}</span></td>`;
 }
 
 const METRIC_KEYS = Object.keys(COLUMN_METRIC) as Exclude<BarriSortKey, "barri_nom">[];
