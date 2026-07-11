@@ -3,6 +3,7 @@ import { renderBarriTable } from "./components/barriTable";
 import { latestFromBarri, renderKpis } from "./components/kpi";
 import { createMap } from "./components/map";
 import { renderStationTable } from "./components/stationTable";
+import { hideUsageCard, renderUsageCard } from "./components/usageCard";
 import { renderTimeSelector, setTimelineStatus, timeViewLabel, updateTimeSelector } from "./components/timeline";
 import type { Barri, MetricMode, Station } from "./lib/data";
 import {
@@ -83,6 +84,7 @@ app.innerHTML = `
       <p class="section-note" id="table-note">Ordeneu per columna o seleccioneu un barri per filtrar.</p>
       <div id="barri-table"></div>
     </section>
+    <div id="usage-card" hidden></div>
   </main>
   <footer class="site-footer">
     <p id="footer-meta">Font: <a href="https://opendata-ajuntament.barcelona.cat/" target="_blank" rel="noopener">Open Data BCN</a> · Bicing (B:SM)</p>
@@ -323,6 +325,18 @@ async function refresh() {
     heatScale
   );
   renderTableSection();
+
+  const usageEl = document.getElementById("usage-card")!;
+  if (selectedBarri) {
+    hideUsageCard(usageEl);
+  } else {
+    void renderUsageCard(usageEl, {
+      timeView,
+      historyIndex,
+      summary: summaryData,
+      liveData: latestData,
+    });
+  }
 
   updateBarriFilterBar();
   updateLegend();

@@ -177,6 +177,13 @@ function ensureModal(): HTMLElement {
   return modalRoot;
 }
 
+export function renderKpiChartSvg(
+  points: ChartPoint[],
+  valueFormat: "pct" | "count" = "count"
+): string {
+  return renderChartSvg(points, valueFormat);
+}
+
 export function openKpiChart(spec: KpiChartSpec): void {
   if (!spec.points.length) return;
   const modal = ensureModal();

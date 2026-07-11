@@ -840,6 +840,74 @@ function stationSparklinePct(tuple: StationTuple, capacity: number, mode: Metric
   }
 }
 
+export type CityUsageSnapshot = {
+  ts: string;
+  localDate: string;
+  localHour: number;
+  dayType: DayType;
+  bikes: number;
+  oos: number;
+};
+
+export function cityUsageFromSnapshot(
+  snapshot: HourlySnapshot,
+  file: HistoryFile
+): CityUsageSnapshot | null {
+  const barris = snapshot.barris ?? [];
+  if (!barris.length) return null;
+
+  let capacity = 0;
+  let bikes = 0;
+  let mechanical = 0;
+  let ebike = 0;
+  let docks = 0;
+  for (const b of barris) {
+    capacity += b.capacity_total;
+    bikes += b.bikes_total;
+    mechanical += b.bikes_mechanical;
+    ebike += b.bikes_ebike;
+    docks += b.docks_available_total;
+  }
+
+  const oos = bikesOutOfService(capacity, mechanical, ebike, docks, bikes);
+  return {
+    ts: snapshot.ts,
+    localDate: file.localDate,
+    localHour: file.localHour,
+    dayType: file.dayType,
+    bikes,
+    oos,
+  };
+}
+
+/** City-wide snapshots for usage estimation (Barcelona). */
+export async function loadCityUsageSnapshots(
+  index: HistoryIndex | null,
+  options: { days?: number; dayType?: DayType | null } = {}
+): Promise<CityUsageSnapshot[]> {
+  if (!index?.files?.length) return [];
+
+  const days = options.days ?? 7;
+  const cutoffDates = new Set<string>();
+  for (let d = 0; d < days; d++) cutoffDates.add(madridDateKey(d));
+
+  const files = index.files.filter(
+    (f) =>
+      cutoffDates.has(f.localDate) &&
+      (options.dayType === undefined || options.dayType === null || f.dayType === options.dayType)
+  );
+
+  const out: CityUsageSnapshot[] = [];
+  for (const file of files) {
+    const snap = await loadHourlySnapshot(file.key);
+    if (!snap) continue;
+    const point = cityUsageFromSnapshot(snap, file);
+    if (point) out.push(point);
+  }
+
+  return out.sort((a, b) => a.ts.localeCompare(b.ts));
+}
+
 /** Recent % bikes for one station (modal sparkline, last 24 h). */
 export async function loadStationSparklinePct(
   index: HistoryIndex | null,
