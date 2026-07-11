@@ -3,7 +3,7 @@ import { renderBarriTable } from "./components/barriTable";
 import { latestFromBarri, renderKpis } from "./components/kpi";
 import { createMap } from "./components/map";
 import { renderStationTable } from "./components/stationTable";
-import { renderTimeSelector, dataModeBadgeLabel, replayStatusLabel, setTimelineStatus, timeViewLabel, updateTimeSelector } from "./components/timeline";
+import { renderTimeSelector, replayStatusLabel, setTimelineStatus, timeViewLabel, updateTimeSelector } from "./components/timeline";
 import type { Barri, MetricMode, Station } from "./lib/data";
 import {
   enrichBarrisWithFleetOos,
@@ -19,7 +19,6 @@ import {
   barrisToLatestData,
   cityHistAveragesAtHour,
   currentMadridHour,
-  hourViewScopeLabel,
   hoursForDayType,
   isHistoricalView,
   loadBarriSparklinePct,
@@ -51,7 +50,6 @@ app.innerHTML = `
         <div class="site-header__brand">
           <div class="site-header__title-row">
             <h1>On són les <span class="title-accent"><span class="title-ebike-icon" aria-hidden="true">${iconEbike(22)}</span>bicis</span>?</h1>
-            <span id="data-mode-badge" class="data-mode-badge data-mode-badge--hist" hidden></span>
           </div>
         </div>
         <div id="barri-filter-bar" class="barri-filter-bar hidden" hidden>
@@ -430,26 +428,6 @@ function buildKpiData() {
   return barrisToLatestData(displayBarris, latestData.last_updated);
 }
 
-function updateDataModeBadge(): void {
-  const badge = document.getElementById("data-mode-badge");
-  if (!badge) return;
-
-  const label = dataModeBadgeLabel(timeView);
-  if (!label) {
-    badge.hidden = true;
-    badge.textContent = "";
-    badge.title = "";
-    return;
-  }
-
-  badge.hidden = false;
-  badge.textContent = label;
-  badge.className = `data-mode-badge data-mode-badge--hist${replayPlaying ? " data-mode-badge--replay" : ""}`;
-  if (timeView.kind === "hour") {
-    badge.title = hourViewScopeLabel(timeView.hour, timeView.dayType);
-  }
-}
-
 function updateBarriFilterBar() {
   const bar = document.getElementById("barri-filter-bar")!;
   const label = document.getElementById("barri-filter-label")!;
@@ -579,7 +557,6 @@ async function refresh() {
   renderTableSection();
 
   updateBarriFilterBar();
-  updateDataModeBadge();
   updateLegend();
   const note = document.getElementById("legend-note")!;
   note.textContent = legendText();

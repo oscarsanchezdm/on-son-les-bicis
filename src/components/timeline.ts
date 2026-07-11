@@ -262,15 +262,6 @@ export function setTimelineStatus(
   badge.hidden = false;
 }
 
-export function dayTypeShortLabel(dayType: DayType): string {
-  return DAY_TYPES.find((d) => d.id === dayType)?.label ?? dayType;
-}
-
-export function dataModeBadgeLabel(view: TimeView): string | null {
-  if (view.kind === "latest") return null;
-  return `${formatHour(view.hour)} · ${dayTypeShortLabel(view.dayType)}`;
-}
-
 export function timeViewLabel(view: TimeView, _index: HistoryIndex | null): string {
   if (view.kind === "latest") return "ciutat";
   return hourViewScopeLabel(view.hour, view.dayType);
