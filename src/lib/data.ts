@@ -14,6 +14,7 @@ export type Station = {
   total: number;
   docks_available: number;
   bikes_disabled?: number;
+  docks_disabled?: number;
   pct_bikes: number;
   pct_docks_free: number;
 };
@@ -184,21 +185,23 @@ export function stationCount(station: Station, mode: MetricMode): number {
   }
 }
 
-/** Bicis fora de servei = capacitat − mecàniques − elèctriques − ancoratges lliures. */
+/** Bicis fora de servei: GBFS num_vehicles_disabled o residual (sense ancoratges avariats). */
 export function bikesOutOfService(
   capacity: number,
   mechanical: number,
   ebike: number,
   docksAvailable: number,
   bikesAvailable?: number,
-  bikesDisabled?: number
+  bikesDisabled?: number,
+  docksDisabled?: number
 ): number {
   if (typeof bikesDisabled === "number") {
     return Math.max(0, bikesDisabled);
   }
   const available = bikesAvailable ?? mechanical + ebike;
   if (available <= 0) return 0;
-  return Math.max(0, capacity - mechanical - ebike - docksAvailable);
+  const brokenDocks = Math.max(0, docksDisabled ?? 0);
+  return Math.max(0, capacity - mechanical - ebike - docksAvailable - brokenDocks);
 }
 
 export function stationOosCount(station: Station): number {
@@ -208,8 +211,13 @@ export function stationOosCount(station: Station): number {
     station.ebike,
     station.docks_available,
     station.total,
-    station.bikes_disabled
+    station.bikes_disabled,
+    station.docks_disabled
   );
+}
+
+export function stationDocksDisabled(station: Station): number {
+  return Math.max(0, station.docks_disabled ?? 0);
 }
 
 export function pctBikesOutOfService(

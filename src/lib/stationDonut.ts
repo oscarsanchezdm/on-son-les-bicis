@@ -1,19 +1,25 @@
 import type { Barri, Station } from "./data";
-import { bikesOutOfService, stationOosCount } from "./data";
+import { bikesOutOfService, stationDocksDisabled, stationOosCount } from "./data";
 import { METRIC_ABSOLUTE_COLORS } from "./colors";
 import { formatPct } from "./format";
 import { countIconHtml } from "./icons";
+import { renderSparkline } from "./sparkline";
 
 export type StationBreakdown = {
   name: string;
+  station_id?: string;
   capacity: number;
   mechanical: number;
   ebike: number;
   docks: number;
   oos: number;
+  docks_disabled: number;
+  barri_nom?: string;
+  district?: string;
+  status?: string;
 };
 
-type SegmentKey = "ebike" | "mechanical" | "docks" | "oos";
+type SegmentKey = "ebike" | "mechanical" | "docks" | "oos" | "docks_disabled";
 
 type SegmentDef = {
   key: SegmentKey;
@@ -23,6 +29,8 @@ type SegmentDef = {
   icon: "ebike" | "mechanical" | "dock" | "maintenance";
   value: (b: StationBreakdown) => number;
 };
+
+const DOCKS_DISABLED_COLOR = "#64748b";
 
 const SEGMENTS: SegmentDef[] = [
   {
@@ -56,6 +64,14 @@ const SEGMENTS: SegmentDef[] = [
     color: METRIC_ABSOLUTE_COLORS.out_of_service,
     icon: "maintenance",
     value: (b) => b.oos,
+  },
+  {
+    key: "docks_disabled",
+    label: "Ancoratges avariats",
+    short: "Avar.",
+    color: DOCKS_DISABLED_COLOR,
+    icon: "dock",
+    value: (b) => b.docks_disabled,
   },
 ];
 
@@ -103,14 +119,18 @@ function activeSegments(b: StationBreakdown) {
 }
 
 export function breakdownFromStation(station: Station): StationBreakdown {
-  const oos = stationOosCount(station);
   return {
     name: station.name,
+    station_id: station.station_id,
     capacity: station.capacity,
     mechanical: station.mechanical,
     ebike: station.ebike,
     docks: station.docks_available,
-    oos,
+    oos: stationOosCount(station),
+    docks_disabled: stationDocksDisabled(station),
+    barri_nom: station.barri_nom,
+    district: station.district,
+    status: station.status,
   };
 }
 
@@ -131,6 +151,7 @@ export function breakdownFromBarri(barri: Barri): StationBreakdown {
     ebike: barri.bikes_ebike,
     docks: barri.docks_available_total,
     oos,
+    docks_disabled: 0,
   };
 }
 
@@ -168,10 +189,12 @@ function legendRow(
 ): string {
   const count = seg.count.toLocaleString("ca-ES");
   const pct = formatPct(seg.pct);
+  const icon =
+    seg.key === "docks_disabled" ? countIconHtml("dock") : countIconHtml(seg.icon);
   if (compact) {
-    return `<li class="station-donut-legend__item"><span class="station-donut-legend__swatch" style="background:${seg.color}"></span>${countIconHtml(seg.icon)}<span class="station-donut-legend__label">${seg.short}</span><span class="station-donut-legend__vals"><strong>${count}</strong> · ${pct}</span></li>`;
+    return `<li class="station-donut-legend__item"><span class="station-donut-legend__swatch" style="background:${seg.color}"></span>${icon}<span class="station-donut-legend__label">${seg.short}</span><span class="station-donut-legend__vals"><strong>${count}</strong> · ${pct}</span></li>`;
   }
-  return `<li class="station-donut-legend__item station-donut-legend__item--full"><span class="station-donut-legend__swatch" style="background:${seg.color}"></span>${countIconHtml(seg.icon)}<span class="station-donut-legend__label">${seg.label}</span><span class="station-donut-legend__vals"><strong>${count}</strong><span>${pct}</span></span></li>`;
+  return `<li class="station-donut-legend__item station-donut-legend__item--full"><span class="station-donut-legend__swatch" style="background:${seg.color}"></span>${icon}<span class="station-donut-legend__label">${seg.label}</span><span class="station-donut-legend__vals"><strong>${count}</strong><span>${pct}</span></span></li>`;
 }
 
 function renderLegend(b: StationBreakdown, compact: boolean): string {
@@ -187,6 +210,18 @@ function encodeBreakdown(b: StationBreakdown): string {
   return encodeURIComponent(JSON.stringify(b));
 }
 
+function metaLine(b: StationBreakdown): string {
+  const parts: string[] = [];
+  if (b.barri_nom) parts.push(b.barri_nom);
+  if (b.district) parts.push(b.district);
+  if (!parts.length) return "";
+  const offline =
+    b.status && b.status !== "IN_SERVICE" && b.status !== "ACTIVE"
+      ? ' · <span class="station-offline-badge">fora de servei</span>'
+      : "";
+  return `<p class="station-popup__meta">${parts.join(" · ")}${offline}</p>`;
+}
+
 export function renderStationPopupContent(
   b: StationBreakdown,
   options: { historical?: boolean } = {}
@@ -197,6 +232,7 @@ export function renderStationPopupContent(
   const payload = encodeBreakdown(b);
   return `<div class="station-popup">
     <p class="station-popup__title"><strong>${b.name}</strong></p>
+    ${metaLine(b)}
     ${hist}
     <div class="station-popup__chart">
       <button type="button" class="station-donut-trigger" data-station-breakdown="${payload}" aria-label="Amplia el gràfic de distribució d'ancoratges">
@@ -208,17 +244,26 @@ export function renderStationPopupContent(
   </div>`;
 }
 
-function renderModalPanel(b: StationBreakdown): string {
+function renderModalPanel(b: StationBreakdown, sparklineHtml = ""): string {
   return `<div class="station-donut-modal__panel" role="dialog" aria-modal="true" aria-label="Distribució d'ancoratges: ${b.name}">
     <button type="button" class="station-donut-modal__close" aria-label="Tanca">×</button>
     <p class="station-donut-modal__title"><strong>${b.name}</strong></p>
+    ${metaLine(b)}
     <p class="station-donut-modal__subtitle">${b.capacity.toLocaleString("ca-ES")} ancoratges totals</p>
     <div class="station-donut-modal__chart">${renderDonutSvg(b, 200, "station-donut station-donut--large")}</div>
     ${renderLegend(b, false)}
+    ${sparklineHtml}
   </div>`;
 }
 
 let modalRoot: HTMLElement | null = null;
+let sparklineLoader: ((b: StationBreakdown) => Promise<number[]>) | null = null;
+
+export function setStationDonutSparklineLoader(
+  loader: (b: StationBreakdown) => Promise<number[]>
+): void {
+  sparklineLoader = loader;
+}
 
 function ensureModal(): HTMLElement {
   if (modalRoot) return modalRoot;
@@ -248,6 +293,18 @@ export function openStationDonutModal(b: StationBreakdown): void {
   document.body.classList.add("station-donut-modal-open");
   const closeBtn = host.querySelector<HTMLButtonElement>(".station-donut-modal__close");
   closeBtn?.focus();
+
+  if (sparklineLoader) {
+    void sparklineLoader(b).then((values) => {
+      if (root.hidden) return;
+      const spark =
+        values.length > 1
+          ? `<div class="station-donut-modal__spark"><p class="station-donut-modal__spark-label">Bicicletes (% ancoratges) · últimes 24 h</p>${renderSparkline(values, 280, 56)}</div>`
+          : "";
+      host.innerHTML = renderModalPanel(b, spark);
+      host.querySelector<HTMLButtonElement>(".station-donut-modal__close")?.focus();
+    });
+  }
 }
 
 export function closeStationDonutModal(): void {

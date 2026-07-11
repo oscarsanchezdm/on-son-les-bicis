@@ -68,11 +68,14 @@ export function latestFromBarri(barri: Barri, lastUpdated: string): LatestData {
 function histNote(
   summary: Summary7d | null,
   hour: number,
-  key: "pct_bikes" | "pct_mechanical" | "pct_ebike",
-  currentPct: number
+  key: SparklineMetricKey,
+  currentPct: number,
+  barriAvg?: Partial<Record<SparklineMetricKey, number>> | null
 ): string {
-  const avg = hourlyAverage(summary, hour, key);
-  if (avg === null) return "";
+  const avg =
+    barriAvg?.[key] ??
+    (key === "pct_oos_anchors" ? null : hourlyAverage(summary, hour, key));
+  if (avg === null || avg === undefined) return "";
   const delta = currentPct - avg;
   const sign = delta >= 0 ? "+" : "";
   return `Mitjana 7 dies (${String(hour).padStart(2, "0")}:00): ${formatPct(avg)} (${sign}${delta.toFixed(1)} pp)`;
@@ -101,13 +104,20 @@ function kpiCard(
   return `<article class="kpi-card${chartable ? " kpi-card--chartable" : ""}"${attrs}>${inner}</article>`;
 }
 
+export type KpiRenderOptions = {
+  sampleCount?: number;
+  weeklyTrend?: Partial<Record<SparklineMetricKey, number[]>>;
+  barriHistAverages?: Partial<Record<SparklineMetricKey, number>> | null;
+};
+
 export function renderKpis(
   container: HTMLElement,
   data: LatestData,
   summary: Summary7d | null,
   scopeLabel = "ciutat",
   isHistorical = false,
-  sparklines: BarriSparklineSeries | null = null
+  sparklines: BarriSparklineSeries | null = null,
+  options: KpiRenderOptions = {}
 ): void {
   const t = data.totals;
   const hour = currentMadridHour();
@@ -127,6 +137,20 @@ export function renderKpis(
   const pctZeroAny = pctOfStations(t.stations_zero_any, t.stations_active);
 
   const showSpark = !isHistorical;
+  const sampleCount = options.sampleCount ?? 0;
+  const weeklyTrend = options.weeklyTrend ?? {};
+  const barriHist = options.barriHistAverages ?? null;
+  const histSampleNote =
+    isHistorical && sampleCount > 0
+      ? `<small class="kpi-hist">Mitjana de ${sampleCount} mostra${sampleCount === 1 ? "" : "es"} (30 dies)</small>`
+      : "";
+
+  function weeklySpark(key: SparklineMetricKey): string {
+    const vals = weeklyTrend[key];
+    return vals && vals.length > 1
+      ? `<div class="kpi-weekly-trend"><small>Tendència 7 dies</small>${renderSparkline(vals)}</div>`
+      : "";
+  }
   const bikesValues = showSpark
     ? sparklines?.pct_bikes ?? sparklineValues(summary?.series ?? [], "pct_bikes")
     : [];
@@ -163,10 +187,13 @@ export function renderKpis(
       }
     : {};
 
-  const showCityHist = !isHistorical && scopeLabel === "ciutat";
-  const histBikes = showCityHist ? histNote(summary, hour, "pct_bikes", t.pct_bikes) : "";
-  const histMech = showCityHist ? histNote(summary, hour, "pct_mechanical", pctMech) : "";
-  const histEbike = showCityHist ? histNote(summary, hour, "pct_ebike", pctEbike) : "";
+  const showHist = !isHistorical && (scopeLabel !== "ciutat" ? !!barriHist : !!summary);
+  const histBikes = showHist ? histNote(summary, hour, "pct_bikes", t.pct_bikes, barriHist) : "";
+  const histMech = showHist ? histNote(summary, hour, "pct_mechanical", pctMech, barriHist) : "";
+  const histEbike = showHist ? histNote(summary, hour, "pct_ebike", pctEbike, barriHist) : "";
+  const histOos = showHist
+    ? histNote(summary, hour, "pct_oos_anchors", pctOosAnchors, barriHist)
+    : "";
 
   const zeroMech = t.stations_zero_mechanical ?? 0;
   const zeroEbike = t.stations_zero_ebike;
@@ -206,6 +233,8 @@ export function renderKpis(
         ${bikesValues.length ? renderSparkline(bikesValues) : ""}
         ${bikesPoints.length > 1 ? sparkHint : ""}
         ${histBikes ? `<small class="kpi-hist">${histBikes}</small>` : ""}
+        ${histSampleNote}
+        ${isHistorical ? weeklySpark("pct_bikes") : ""}
       `
       )}
       ${kpiCard(
@@ -219,6 +248,7 @@ export function renderKpis(
         ${mechValues.length ? renderSparkline(mechValues) : ""}
         ${mechPoints.length > 1 ? sparkHint : ""}
         ${histMech ? `<small class="kpi-hist">${histMech}</small>` : ""}
+        ${isHistorical ? weeklySpark("pct_mechanical") : ""}
       `
       )}
       ${kpiCard(
@@ -232,6 +262,7 @@ export function renderKpis(
         ${ebikeValues.length ? renderSparkline(ebikeValues) : ""}
         ${ebikePoints.length > 1 ? sparkHint : ""}
         ${histEbike ? `<small class="kpi-hist">${histEbike}</small>` : ""}
+        ${isHistorical ? weeklySpark("pct_ebike") : ""}
       `
       )}
       ${kpiCard(
@@ -243,6 +274,8 @@ export function renderKpis(
         <small>${formatPct(pctOosAnchors)} dels ancoratges · ${formatPct(pctOosAvailable)} de les bicis disponibles</small>
         ${oosValues.length ? renderSparkline(oosValues) : ""}
         ${oosPoints.length > 1 ? sparkHint : ""}
+        ${histOos ? `<small class="kpi-hist">${histOos}</small>` : ""}
+        ${isHistorical ? weeklySpark("pct_oos_anchors") : ""}
       `
       )}
       </div>

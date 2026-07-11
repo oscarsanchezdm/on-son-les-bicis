@@ -137,14 +137,19 @@ def download_superficie() -> None:
         keys = {k.lower(): v for k, v in row.items()}
         codi_dist = (keys.get("codi_districte") or keys.get("02.codi_districte") or "").zfill(2)
         codi_barri = (keys.get("codi_barri") or keys.get("04.codi_barri") or "").zfill(2)
+        superficie_raw = (
+            keys.get("superfície (ha)")
+            or keys.get("superficie (ha)")
+            or keys.get("06.superfície (ha)")
+            or keys.get("06.superficie (ha)")
+            or keys.get("superficie_ha")
+            or ""
+        )
         rows.append(
             {
                 "codi_barri": f"{codi_dist}{codi_barri}",
                 "nom_barri": keys.get("nom_barri") or keys.get("05.nom_barri") or "",
-                "superficie_ha": keys.get("superfície (ha)")
-                or keys.get("superficie (ha)")
-                or keys.get("06.superfície (ha)")
-                or "",
+                "superficie_ha": str(superficie_raw).strip().replace(",", "."),
             }
         )
 
