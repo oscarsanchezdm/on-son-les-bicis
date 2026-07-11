@@ -8,6 +8,7 @@ import { renderSparklineChart } from "./sparkline";
 export type StationBreakdown = {
   name: string;
   station_id?: string;
+  barri_codi?: string;
   capacity: number;
   mechanical: number;
   ebike: number;
@@ -158,6 +159,7 @@ export function breakdownFromBarri(barri: Barri, context: StationPopupContext = 
     );
   return {
     name: barri.barri_nom,
+    barri_codi: barri.barri_codi,
     capacity: barri.capacity_total,
     mechanical: barri.bikes_mechanical,
     ebike: barri.bikes_ebike,
@@ -246,6 +248,10 @@ export function renderStationPopupContent(
   b: StationBreakdown,
   _options: StationPopupContext = {}
 ): string {
+  const sparkSlot =
+    !b.historical && (b.station_id || b.barri_codi)
+      ? `<div class="station-popup__spark" data-sparkline-slot></div>`
+      : "";
   const payload = encodeBreakdown(b);
   return `<div class="station-popup">
     <p class="station-popup__title"><strong>${b.name}</strong></p>
@@ -258,7 +264,20 @@ export function renderStationPopupContent(
       </button>
       ${renderLegend(b, true)}
     </div>
+    ${sparkSlot}
   </div>`;
+}
+
+function sparklineLabel(b: StationBreakdown): string {
+  const scope = b.barri_codi && !b.station_id ? "barri" : "estació";
+  return `Bicicletes (% ancoratges) · últimes 24 h · ${scope}`;
+}
+
+function renderSparklineBlock(b: StationBreakdown, values: number[], compact = false): string {
+  if (values.length <= 1) return "";
+  const width = compact ? 248 : 280;
+  const height = compact ? 72 : 80;
+  return `<div class="station-donut-modal__spark${compact ? " station-popup__spark-inner" : ""}"><p class="station-donut-modal__spark-label">${sparklineLabel(b)}</p>${renderSparklineChart(values, width, height)}</div>`;
 }
 
 function renderModalPanel(b: StationBreakdown, sparklineHtml = ""): string {
@@ -315,11 +334,7 @@ export function openStationDonutModal(b: StationBreakdown): void {
   if (sparklineLoader && !b.historical) {
     void sparklineLoader(b).then((values) => {
       if (root.hidden) return;
-      const spark =
-        values.length > 1
-          ? `<div class="station-donut-modal__spark"><p class="station-donut-modal__spark-label">Bicicletes (% ancoratges) · últimes 24 h</p>${renderSparklineChart(values)}</div>`
-          : "";
-      host.innerHTML = renderModalPanel(b, spark);
+      host.innerHTML = renderModalPanel(b, renderSparklineBlock(b, values));
       host.querySelector<HTMLButtonElement>(".station-donut-modal__close")?.focus();
     });
   }
@@ -344,5 +359,30 @@ export function bindStationDonutInPopup(popupEl: HTMLElement | null | undefined)
         /* ignore malformed payload */
       }
     });
+  });
+  hydratePopupSparkline(popupEl);
+}
+
+function hydratePopupSparkline(popupEl: HTMLElement): void {
+  if (!sparklineLoader) return;
+  const slot = popupEl.querySelector<HTMLElement>("[data-sparkline-slot]");
+  const btn = popupEl.querySelector<HTMLButtonElement>("[data-station-breakdown]");
+  if (!slot || !btn) return;
+
+  const raw = btn.getAttribute("data-station-breakdown");
+  if (!raw) return;
+
+  let breakdown: StationBreakdown;
+  try {
+    breakdown = JSON.parse(decodeURIComponent(raw)) as StationBreakdown;
+  } catch {
+    return;
+  }
+
+  if (breakdown.historical || (!breakdown.station_id && !breakdown.barri_codi)) return;
+
+  void sparklineLoader(breakdown).then((values) => {
+    if (!popupEl.isConnected) return;
+    slot.innerHTML = renderSparklineBlock(breakdown, values, true);
   });
 }

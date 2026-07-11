@@ -19,6 +19,7 @@ import {
   currentMadridHour,
   hourViewScopeLabel,
   isHistoricalView,
+  loadBarriSparklinePct,
   loadBarriSparklineSeries,
   loadCitySparklineSeries,
   loadHistoryIndex,
@@ -411,8 +412,14 @@ async function init() {
     }
 
     setStationDonutSparklineLoader(async (b) => {
-      if (!b.station_id || !historyIndex) return [];
-      return loadStationSparklinePct(historyIndex, b.station_id, b.capacity, stationIdOrder);
+      if (!historyIndex || b.historical) return [];
+      if (b.station_id) {
+        return loadStationSparklinePct(historyIndex, b.station_id, b.capacity, stationIdOrder);
+      }
+      if (b.barri_codi) {
+        return loadBarriSparklinePct(historyIndex, b.barri_codi);
+      }
+      return [];
     });
 
     mapView = createMap(document.getElementById("map")!, geo);
