@@ -718,23 +718,27 @@ export async function loadStationSparklinePct(
   stationIdOrder: string[] | null,
   mode: MetricMode = "total",
   hours = CHART_DETAIL_HOURS
-): Promise<number[]> {
+): Promise<ChartPoint[]> {
   if (!index?.files?.length || !stationIdOrder?.length || capacity <= 0) return [];
   const idx = stationIdOrder.indexOf(stationId);
   if (idx < 0) return [];
 
   const cutoffKey = historyCutoffKeyUtc(hours);
-  const values: number[] = [];
+  const points: ChartPoint[] = [];
 
   for (const file of [...index.files].sort((a, b) => a.key.localeCompare(b.key))) {
     if (file.key < cutoffKey) continue;
     const snapshot = await loadHourlySnapshot(file.key);
     const tuple = snapshot?.v?.[idx];
     if (!tuple) continue;
-    values.push(stationSparklinePct(tuple, capacity, mode));
+    points.push({
+      label: formatHour(file.localHour),
+      value: stationSparklinePct(tuple, capacity, mode),
+      key: file.key,
+    });
   }
 
-  return values;
+  return points;
 }
 
 /** Recent metric % for one barri (popup/modal sparkline, last 24 h). */
@@ -743,19 +747,23 @@ export async function loadBarriSparklinePct(
   barriCodi: string,
   mode: MetricMode = "total",
   hours = CHART_DETAIL_HOURS
-): Promise<number[]> {
+): Promise<ChartPoint[]> {
   if (!index?.files?.length) return [];
 
   const cutoffKey = historyCutoffKeyUtc(hours);
-  const values: number[] = [];
+  const points: ChartPoint[] = [];
 
   for (const file of [...index.files].sort((a, b) => a.key.localeCompare(b.key))) {
     if (file.key < cutoffKey) continue;
     const snapshot = await loadHourlySnapshot(file.key);
     const b = snapshot?.barris?.find((x) => x.barri_codi === barriCodi);
     if (!b || b.capacity_total <= 0) continue;
-    values.push(barriSparklinePct(b, mode));
+    points.push({
+      label: formatHour(file.localHour),
+      value: barriSparklinePct(b, mode),
+      key: file.key,
+    });
   }
 
-  return values;
+  return points;
 }

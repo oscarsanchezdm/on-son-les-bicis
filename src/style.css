@@ -451,8 +451,17 @@ body.kpi-chart-open {
 .sparkline-chart {
   display: block;
   width: 100%;
-  height: 80px;
+  height: 92px;
   color: #0f766e;
+}
+
+.sparkline-chart__axis-line {
+  stroke: #cbd5e1;
+  stroke-width: 1;
+}
+
+.sparkline-chart__axis--x {
+  font-size: 8px;
 }
 
 .sparkline-chart__grid {
