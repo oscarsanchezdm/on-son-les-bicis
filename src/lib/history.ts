@@ -145,6 +145,65 @@ export function hoursForDayType(index: HistoryIndex | null, dayType: DayType): n
   return index?.hoursByDayType?.[dayType] ?? [];
 }
 
+export const REPLAY_DAY_TYPE_ORDER: DayType[] = ["weekday", "friday", "saturday", "sunday"];
+
+/** First hour for replay when entering a day type (prefers 00:00). */
+export function replayStartHour(index: HistoryIndex | null, dayType: DayType): number | null {
+  const hours = hoursForDayType(index, dayType);
+  if (!hours.length) return null;
+  return hours.includes(0) ? 0 : hours[0]!;
+}
+
+/** Next hour in replay: same day, then next day type at 00:00; null when finished. */
+export function nextReplayHourView(
+  index: HistoryIndex | null,
+  view: Extract<TimeView, { kind: "hour" }>
+): Extract<TimeView, { kind: "hour" }> | null {
+  if (!index) return null;
+  const hours = hoursForDayType(index, view.dayType);
+  if (!hours.length) return null;
+
+  const idx = hours.indexOf(view.hour);
+  if (idx < 0) {
+    return { kind: "hour", hour: hours[0]!, dayType: view.dayType };
+  }
+  if (idx < hours.length - 1) {
+    return { kind: "hour", hour: hours[idx + 1]!, dayType: view.dayType };
+  }
+
+  const dayIdx = REPLAY_DAY_TYPE_ORDER.indexOf(view.dayType);
+  for (let d = dayIdx + 1; d < REPLAY_DAY_TYPE_ORDER.length; d++) {
+    const dayType = REPLAY_DAY_TYPE_ORDER[d]!;
+    const hour = replayStartHour(index, dayType);
+    if (hour !== null) return { kind: "hour", hour, dayType };
+  }
+  return null;
+}
+
+/** Previous hour in replay: same day, then previous day type at last hour. */
+export function prevReplayHourView(
+  index: HistoryIndex | null,
+  view: Extract<TimeView, { kind: "hour" }>
+): Extract<TimeView, { kind: "hour" }> | null {
+  if (!index) return null;
+  const hours = hoursForDayType(index, view.dayType);
+  if (!hours.length) return null;
+
+  const idx = hours.indexOf(view.hour);
+  if (idx > 0) {
+    return { kind: "hour", hour: hours[idx - 1]!, dayType: view.dayType };
+  }
+
+  const dayIdx = REPLAY_DAY_TYPE_ORDER.indexOf(view.dayType);
+  for (let d = dayIdx - 1; d >= 0; d--) {
+    const dayType = REPLAY_DAY_TYPE_ORDER[d]!;
+    const dayHours = hoursForDayType(index, dayType);
+    if (!dayHours.length) continue;
+    return { kind: "hour", hour: dayHours[dayHours.length - 1]!, dayType };
+  }
+  return null;
+}
+
 function madridDateKey(daysAgo: number): string {
   const now = new Date();
   const parts = new Intl.DateTimeFormat("en-CA", {
