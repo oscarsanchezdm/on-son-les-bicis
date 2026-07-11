@@ -215,19 +215,19 @@ export function bindKpiCharts(
   container: HTMLElement,
   charts: Record<string, KpiChartSpec | undefined>
 ): void {
-  container.querySelectorAll<HTMLElement>("[data-kpi-chart]").forEach((card) => {
-    const key = card.dataset.kpiChart;
+  container.querySelectorAll<HTMLElement>("[data-kpi-chart]").forEach((row) => {
+    const key = row.dataset.kpiChart;
     if (!key) return;
     const spec = charts[key];
     if (!spec?.points.length) return;
 
-    card.setAttribute("role", "button");
-    card.setAttribute("tabindex", "0");
-    card.setAttribute("aria-label", `${spec.title}: obrir gràfic detallat`);
+    row.setAttribute("role", "button");
+    row.setAttribute("tabindex", "0");
+    row.setAttribute("aria-label", `${spec.title}: obrir gràfic detallat`);
 
     const open = () => openKpiChart(spec);
-    card.addEventListener("click", open);
-    card.addEventListener("keydown", (e) => {
+    row.addEventListener("click", open);
+    row.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
         open();
