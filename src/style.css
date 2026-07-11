@@ -737,6 +737,29 @@ body.kpi-chart-open {
   line-height: 1.35;
 }
 
+.station-popup__filter {
+  display: block;
+  width: 100%;
+  margin-top: 0.55rem;
+  padding: 0.4rem 0.65rem;
+  border: 1px solid var(--teal);
+  border-radius: 8px;
+  background: #f0fdfa;
+  color: var(--teal);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+}
+
+.station-popup__filter:hover,
+.station-popup__filter:focus-visible {
+  background: var(--teal);
+  color: #fff;
+  outline: none;
+}
+
 .station-donut-trigger {
   display: flex;
   flex-direction: column;

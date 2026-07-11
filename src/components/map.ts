@@ -73,7 +73,11 @@ const CITY_ZOOM = 12;
 /** Inclinació horària (sentit horari) per alinear la Gran Via. */
 const MAP_BEARING = 45;
 
-export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection): MapView {
+export function createMap(
+  container: HTMLElement,
+  geo: GeoJSON.FeatureCollection,
+  options?: { onBarriFilter?: (barri: Barri) => void }
+): MapView {
   const map = L.map(container, {
     scrollWheelZoom: true,
     rotate: true,
@@ -105,6 +109,8 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
   let heatLayer: ColorHeatLayer | null = null;
   let heatMode: MetricMode | null = null;
   let heatScaleMode: HeatScaleMode = "percent";
+  const onBarriFilter = options?.onBarriFilter ?? null;
+  let barrisByCode = new Map<string, Barri>();
   type UpdateArgs = [
     MetricMode,
     Barri[],
@@ -127,7 +133,24 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
       });
     }
     bindStationDonutInPopup(e.popup.getElement() ?? undefined);
+    bindBarriFilterInPopup(e.popup.getElement() ?? undefined);
   });
+
+  function bindBarriFilterInPopup(popupEl: HTMLElement | undefined): void {
+    if (!popupEl || !onBarriFilter) return;
+    const btn = popupEl.querySelector<HTMLButtonElement>("[data-barri-filter]");
+    if (!btn || btn.dataset.bound === "1") return;
+    btn.dataset.bound = "1";
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const codi = btn.dataset.barriFilter;
+      if (!codi) return;
+      const barri = barrisByCode.get(codi);
+      if (!barri) return;
+      onBarriFilter(barri);
+      map.closePopup();
+    });
+  }
 
   function update(
     mode: MetricMode,
@@ -141,6 +164,7 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
     const zoom = map.getZoom();
     const zoomScale = mapZoomVisualScale(zoom);
     const byCode = new Map(barris.map((b) => [b.barri_codi, b]));
+    barrisByCode = byCode;
     const showStations = stations !== null;
 
     if (barriLayer) {
@@ -186,6 +210,7 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
         const barriCtx = popupContext(timeView);
         layer.bindPopup(
           renderStationPopupContent(breakdownFromBarri(barri, barriCtx), barriCtx) +
+            `<button type="button" class="station-popup__filter" data-barri-filter="${barri.barri_codi}">Filtrar per barri</button>` +
             `<p class="station-popup__extra">Estacions sense elèctriques: ${formatPct(pctOfStations(barri.stations_zero_ebike, barri.stations_active))} · Sense mecàniques: ${formatPct(pctOfStations(barri.stations_zero_mechanical ?? 0, barri.stations_active))}</p>`
         );
       },

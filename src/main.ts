@@ -412,7 +412,9 @@ async function init() {
       footer.innerHTML = `Font: <a href="https://opendata-ajuntament.barcelona.cat/" target="_blank" rel="noopener">Open Data BCN</a> · ${meta.source}<br/><small>${meta.disclaimer} · ${meta.station_count} estacions · ${meta.barri_count} barris · ${formatRelativeTime(meta.last_updated)}</small>`;
     }
 
-    mapView = createMap(document.getElementById("map")!, geo);
+    mapView = createMap(document.getElementById("map")!, geo, {
+      onBarriFilter: selectBarri,
+    });
     void refresh();
 
     renderTimeSelector(document.getElementById("timeline")!, {
