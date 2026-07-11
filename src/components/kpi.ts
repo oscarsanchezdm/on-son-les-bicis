@@ -3,6 +3,7 @@ import {
   bikesOutOfService,
   pctBikesOutOfService,
   pctOfStations,
+  pctOosOfAnchors,
   pctOosOfBikeFleet,
 } from "../lib/data";
 import type { BarriSparklineSeries, SparklineMetricKey, Summary7d } from "../lib/history";
@@ -128,6 +129,8 @@ export function renderKpis(
     t.bikes_out_of_service ??
     bikesOutOfService(t.capacity, t.bikes_mechanical, t.bikes_ebike, t.docks_available, t.bikes_total);
   const pctOosFleet = pctOosOfBikeFleet(t.bikes_total, outOfService);
+  const pctOosAnchors =
+    t.pct_bikes_out_of_service ?? pctOosOfAnchors(t.capacity, outOfService);
   const pctZeroEbike = pctOfStations(t.stations_zero_ebike, t.stations_active);
   const pctZeroMech = pctOfStations(t.stations_zero_mechanical ?? 0, t.stations_active);
   const pctZeroAny = pctOfStations(t.stations_zero_any, t.stations_active);
@@ -258,7 +261,7 @@ export function renderKpis(
         `
         <span class="kpi-label">${metricIconHtml("out_of_service", "kpi-icon")} Bicicletes fora de servei</span>
         <strong>${outOfService.toLocaleString("ca-ES")}</strong>
-        <small>${formatPct(pctOosFleet)} del parc de bicis (disponibles + FS) · ${formatPct(t.pct_bikes)} de bicicletes aparcades</small>
+        <small>${formatPct(pctOosFleet)} del parc de bicis · ${formatPct(pctOosAnchors)} dels ancoratges</small>
         ${oosValues.length ? renderSparkline(oosValues) : ""}
         ${oosPoints.length > 1 ? sparkHint : ""}
         ${histOos ? `<small class="kpi-hist">${histOos}</small>` : ""}
