@@ -349,14 +349,14 @@ function popupStatsLine(b: StationBreakdown): string {
     .map((seg) => {
       const icon =
         seg.key === "docks_disabled" ? countIconHtml("dock") : countIconHtml(seg.icon);
-      return `<span class="station-popup__stat">${icon}${seg.label}: <strong>${seg.count.toLocaleString("ca-ES")}</strong></span>`;
+      return `<span class="station-popup__stat">${icon}${seg.short}: <strong>${seg.count.toLocaleString("ca-ES")}</strong></span>`;
     })
     .join("");
 }
 
 function popupSparklineSlot(b: StationBreakdown): string {
   if (b.historical || (!b.station_id && !b.barri_codi)) return "";
-  return `<div class="station-popup__spark-host" data-sparkline-breakdown="${encodeBreakdown(b)}">${renderSparklineLoading(b)}</div>`;
+  return `<div class="station-popup__spark-host" data-sparkline-breakdown="${encodeBreakdown(b)}">${renderSparklineLoading(b, true)}</div>`;
 }
 
 function historicalNotePopup(b: StationBreakdown): string {
@@ -378,25 +378,29 @@ export function renderStationPopupContent(
   </div>`;
 }
 
-function renderSparklineLoading(b: StationBreakdown): string {
-  return `<div class="station-donut-modal__spark station-donut-modal__spark--pending"><p class="station-donut-modal__spark-label">${sparklineLabel(b)}</p>${asyncLoadingHtml("station-donut-modal__spark-status")}</div>`;
+const POPUP_SPARKLINE_WIDTH = 200;
+const POPUP_SPARKLINE_HEIGHT = 56;
+
+function renderSparklineLoading(b: StationBreakdown, compact = false): string {
+  return `<div class="station-donut-modal__spark station-donut-modal__spark--pending${compact ? " station-popup__spark-inner" : ""}"><p class="station-donut-modal__spark-label">${sparklineLabel(b, compact)}</p>${asyncLoadingHtml("station-donut-modal__spark-status")}</div>`;
 }
 
-function renderSparklineEmpty(b: StationBreakdown): string {
-  return `<div class="station-donut-modal__spark station-donut-modal__spark--empty"><p class="station-donut-modal__spark-label">${sparklineLabel(b)}</p><p class="station-donut-empty">Sense prou dades recents.</p></div>`;
+function renderSparklineEmpty(b: StationBreakdown, compact = false): string {
+  return `<div class="station-donut-modal__spark station-donut-modal__spark--empty${compact ? " station-popup__spark-inner" : ""}"><p class="station-donut-modal__spark-label">${sparklineLabel(b, compact)}</p><p class="station-donut-empty">Sense prou dades recents.</p></div>`;
 }
 
-function sparklineLabel(b: StationBreakdown): string {
-  const scope = b.barri_codi && !b.station_id ? "barri" : "estació";
+function sparklineLabel(b: StationBreakdown, compact = false): string {
   const metric = SPARKLINE_METRIC_LABEL[sparklineMetricMode];
+  if (compact) return `${metric} · 24 h`;
+  const scope = b.barri_codi && !b.station_id ? "barri" : "estació";
   return `${metric} (% ancoratges) · últimes 24 h · ${scope}`;
 }
 
 function renderSparklineBlock(b: StationBreakdown, points: ChartPoint[], compact = false): string {
   if (points.length <= 1) return "";
-  const width = compact ? 248 : 280;
-  const height = compact ? 84 : 92;
-  return `<div class="station-donut-modal__spark${compact ? " station-popup__spark-inner" : ""}"><p class="station-donut-modal__spark-label">${sparklineLabel(b)}</p>${renderSparklineChart(points, width, height)}</div>`;
+  const width = compact ? POPUP_SPARKLINE_WIDTH : 280;
+  const height = compact ? POPUP_SPARKLINE_HEIGHT : 92;
+  return `<div class="station-donut-modal__spark${compact ? " station-popup__spark-inner" : ""}"><p class="station-donut-modal__spark-label">${sparklineLabel(b, compact)}</p>${renderSparklineChart(points, width, height)}</div>`;
 }
 
 function renderModalPanel(b: StationBreakdown, sparklineHtml = ""): string {
@@ -524,6 +528,6 @@ export function hydratePopupSparkline(popupEl: HTMLElement | null | undefined): 
     host.innerHTML =
       points.length > 1
         ? renderSparklineBlock(breakdown, points, true)
-        : renderSparklineEmpty(breakdown);
+        : renderSparklineEmpty(breakdown, true);
   });
 }
