@@ -17,7 +17,6 @@ import {
   barrisToLatestData,
   barriHistAveragesAtHour,
   currentMadridHour,
-  dailyTrendValues,
   hourViewScopeLabel,
   isHistoricalView,
   loadBarriSparklineSeries,
@@ -29,7 +28,6 @@ import {
   loadSummary7d,
   sampleCountForView,
   type HistoryIndex,
-  type SparklineMetricKey,
   type TimeView,
 } from "./lib/history";
 import { heatLegendGradient, pctLegendLabels, type HeatScaleMode } from "./lib/colors";
@@ -298,20 +296,6 @@ async function refresh() {
       ? await barriHistAveragesAtHour(historyIndex, selectedBarri.barri_codi, hour)
       : null;
 
-  const weeklyTrendKeys: SparklineMetricKey[] = [
-    "pct_bikes",
-    "pct_mechanical",
-    "pct_ebike",
-    "pct_oos_anchors",
-  ];
-  const weeklyTrend = isHistorical
-    ? Object.fromEntries(
-        await Promise.all(
-          weeklyTrendKeys.map(async (key) => [key, await dailyTrendValues(key)] as const)
-        )
-      )
-    : undefined;
-
   const sampleCount =
     isHistorical && timeView.kind === "hour"
       ? sampleCountForView(historyIndex, timeView)
@@ -326,7 +310,6 @@ async function refresh() {
     sparklines,
     {
       sampleCount,
-      weeklyTrend,
       barriHistAverages,
     }
   );

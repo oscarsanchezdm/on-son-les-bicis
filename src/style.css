@@ -442,16 +442,6 @@ body.kpi-chart-open {
   color: var(--muted);
 }
 
-.kpi-weekly-trend {
-  margin-top: 0.35rem;
-}
-
-.kpi-weekly-trend small {
-  display: block;
-  font-size: 0.72rem;
-  color: var(--muted);
-  margin-bottom: 0.15rem;
-}
 
 .site-footer small {
   display: block;

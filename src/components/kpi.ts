@@ -106,7 +106,6 @@ function kpiCard(
 
 export type KpiRenderOptions = {
   sampleCount?: number;
-  weeklyTrend?: Partial<Record<SparklineMetricKey, number[]>>;
   barriHistAverages?: Partial<Record<SparklineMetricKey, number>> | null;
 };
 
@@ -138,19 +137,11 @@ export function renderKpis(
 
   const showSpark = !isHistorical;
   const sampleCount = options.sampleCount ?? 0;
-  const weeklyTrend = options.weeklyTrend ?? {};
   const barriHist = options.barriHistAverages ?? null;
   const histSampleNote =
     isHistorical && sampleCount > 0
       ? `<small class="kpi-hist">Mitjana de ${sampleCount} mostra${sampleCount === 1 ? "" : "es"} (30 dies)</small>`
       : "";
-
-  function weeklySpark(key: SparklineMetricKey): string {
-    const vals = weeklyTrend[key];
-    return vals && vals.length > 1
-      ? `<div class="kpi-weekly-trend"><small>Tendència 7 dies</small>${renderSparkline(vals)}</div>`
-      : "";
-  }
   const bikesValues = showSpark
     ? sparklines?.pct_bikes ?? sparklineValues(summary?.series ?? [], "pct_bikes")
     : [];
@@ -234,7 +225,6 @@ export function renderKpis(
         ${bikesPoints.length > 1 ? sparkHint : ""}
         ${histBikes ? `<small class="kpi-hist">${histBikes}</small>` : ""}
         ${histSampleNote}
-        ${isHistorical ? weeklySpark("pct_bikes") : ""}
       `
       )}
       ${kpiCard(
@@ -248,7 +238,6 @@ export function renderKpis(
         ${mechValues.length ? renderSparkline(mechValues) : ""}
         ${mechPoints.length > 1 ? sparkHint : ""}
         ${histMech ? `<small class="kpi-hist">${histMech}</small>` : ""}
-        ${isHistorical ? weeklySpark("pct_mechanical") : ""}
       `
       )}
       ${kpiCard(
@@ -262,7 +251,6 @@ export function renderKpis(
         ${ebikeValues.length ? renderSparkline(ebikeValues) : ""}
         ${ebikePoints.length > 1 ? sparkHint : ""}
         ${histEbike ? `<small class="kpi-hist">${histEbike}</small>` : ""}
-        ${isHistorical ? weeklySpark("pct_ebike") : ""}
       `
       )}
       ${kpiCard(
@@ -275,7 +263,6 @@ export function renderKpis(
         ${oosValues.length ? renderSparkline(oosValues) : ""}
         ${oosPoints.length > 1 ? sparkHint : ""}
         ${histOos ? `<small class="kpi-hist">${histOos}</small>` : ""}
-        ${isHistorical ? weeklySpark("pct_oos_anchors") : ""}
       `
       )}
       </div>

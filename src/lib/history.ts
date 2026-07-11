@@ -1,10 +1,5 @@
 import type { Barri, LatestData, Station } from "./data";
-import {
-  bikesOutOfService,
-  loadDailyHistory,
-  pctBikesOutOfService,
-  pctOosOfAnchors,
-} from "./data";
+import { bikesOutOfService, pctBikesOutOfService, pctOosOfAnchors } from "./data";
 import { formatDateTime, formatHour, historyFileLocalLabel } from "./format";
 
 const BASE = import.meta.env.BASE_URL;
@@ -662,48 +657,6 @@ export async function loadStationSparklinePct(
     if (!tuple) continue;
     const total = tuple[2] ?? 0;
     values.push(Math.round((100 * total) / capacity * 100) / 100);
-  }
-
-  return values;
-}
-
-/** City-level daily trend (last N days) from history/daily snapshots. */
-export async function dailyTrendValues(
-  key: SparklineMetricKey = "pct_bikes",
-  days = 7
-): Promise<number[]> {
-  const values: number[] = [];
-
-  for (let d = days - 1; d >= 0; d--) {
-    const dayKey = madridDateKey(d);
-    const entries = await loadDailyHistory(dayKey);
-    if (!entries.length) continue;
-
-    const last = entries[entries.length - 1] as {
-      pct_bikes?: number;
-      pct_mechanical?: number;
-      pct_ebike?: number;
-      bikes_total?: number;
-      capacity_total?: number;
-      bikes_mechanical?: number;
-      bikes_ebike?: number;
-      docks_available_total?: number;
-    };
-
-    let value = 0;
-    if (key === "pct_bikes") value = last.pct_bikes ?? 0;
-    else if (key === "pct_mechanical") value = last.pct_mechanical ?? 0;
-    else if (key === "pct_ebike") value = last.pct_ebike ?? 0;
-    else if (key === "pct_oos_anchors") {
-      const cap = last.capacity_total ?? 0;
-      const bikes = last.bikes_total ?? 0;
-      const mech = last.bikes_mechanical ?? 0;
-      const ebike = last.bikes_ebike ?? 0;
-      const docks = last.docks_available_total ?? 0;
-      const oos = bikesOutOfService(cap, mech, ebike, docks, bikes);
-      value = pctOosOfAnchors(cap, oos);
-    }
-    values.push(value);
   }
 
   return values;

@@ -106,15 +106,6 @@ export async function loadBarrisGeo(): Promise<GeoJSON.FeatureCollection> {
   return res.json();
 }
 
-export async function loadDailyHistory(day: string): Promise<Array<Record<string, unknown>>> {
-  const res = await fetch(`${BASE}data/history/daily/${day}.json.gz`);
-  if (!res.ok) return [];
-  const ds = new DecompressionStream("gzip");
-  const decompressed = res.body!.pipeThrough(ds);
-  const text = await new Response(decompressed).text();
-  return JSON.parse(text);
-}
-
 export function barriMetric(barri: Barri, mode: MetricMode): number {
   switch (mode) {
     case "mechanical":

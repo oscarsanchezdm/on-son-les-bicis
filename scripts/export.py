@@ -278,15 +278,12 @@ def _export_latest(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
 
 
 def _export_history(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
-    """Export hourly snapshot; roll up daily file once per day."""
+    """Export hourly snapshot for history averages."""
     dt = datetime.fromisoformat(ts_iso.replace("Z", "+00:00"))
     hour_key = dt.strftime("%Y-%m-%d-%H")
-    day_key = dt.strftime("%Y-%m-%d")
 
     hourly_dir = DATA_DIR / "history" / "hourly"
-    daily_dir = DATA_DIR / "history" / "daily"
     hourly_dir.mkdir(parents=True, exist_ok=True)
-    daily_dir.mkdir(parents=True, exist_ok=True)
 
     barri_rows = conn.execute(
         """
@@ -342,51 +339,11 @@ def _export_history(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
     with gzip.open(hourly_path, "wt", encoding="utf-8") as f:
         json.dump(hourly_payload, f, ensure_ascii=False)
 
-    # Daily: append snapshot summary if new hour
-    daily_path = daily_dir / f"{day_key}.json.gz"
-    daily_entries: list[dict] = []
-    if daily_path.exists():
-        with gzip.open(daily_path, "rt", encoding="utf-8") as f:
-            daily_entries = json.load(f)
-
-    if not daily_entries or daily_entries[-1].get("ts") != ts_iso:
-        city = conn.execute(
-            """
-            SELECT SUM(bikes_total), SUM(capacity_total), SUM(bikes_ebike),
-                   SUM(bikes_mechanical), SUM(docks_available_total)
-            FROM barri_snapshots WHERE ts = ?
-            """,
-            (ts,),
-        ).fetchone()
-        daily_entries.append(
-            {
-                "ts": ts_iso,
-                "bikes_total": city[0],
-                "capacity_total": city[1],
-                "bikes_ebike": city[2],
-                "bikes_mechanical": city[3],
-                "docks_available_total": city[4],
-                "pct_bikes": round(100 * city[0] / city[1], 2) if city[1] else 0,
-                "pct_mechanical": round(100 * city[3] / city[1], 2) if city[1] else 0,
-                "pct_ebike": round(100 * city[2] / city[1], 2) if city[1] else 0,
-            }
-        )
-        with gzip.open(daily_path, "wt", encoding="utf-8") as f:
-            json.dump(daily_entries, f, ensure_ascii=False)
-
     # Prune old hourly files (keep 30 days)
     cutoff = dt.timestamp() - 30 * 86400
     for path in hourly_dir.glob("*.json.gz"):
         try:
             file_dt = datetime.strptime(_hourly_file_key(path), "%Y-%m-%d-%H")
-            if file_dt.timestamp() < cutoff:
-                path.unlink()
-        except ValueError:
-            continue
-
-    for path in daily_dir.glob("*.json.gz"):
-        try:
-            file_dt = datetime.strptime(path.stem, "%Y-%m-%d")
             if file_dt.timestamp() < cutoff:
                 path.unlink()
         except ValueError:
