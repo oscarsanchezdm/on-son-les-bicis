@@ -715,6 +715,71 @@ export async function loadBarriSparklineSeries(
   };
 }
 
+/** Recent hourly snapshots for one station (for KPI sparklines). */
+export async function loadStationSparklineSeries(
+  index: HistoryIndex | null,
+  stationId: string,
+  capacity: number,
+  stationIdOrder: string[] | null,
+  hours = CHART_DETAIL_HOURS
+): Promise<BarriSparklineSeries | null> {
+  if (!index?.files?.length || !stationIdOrder?.length || capacity <= 0) return null;
+  const idx = stationIdOrder.indexOf(stationId);
+  if (idx < 0) return null;
+
+  const bikes_total: number[] = [];
+  const bikes_mechanical: number[] = [];
+  const bikes_ebike: number[] = [];
+  const pct_bikes: number[] = [];
+  const pct_mechanical: number[] = [];
+  const pct_ebike: number[] = [];
+  const pct_oos_anchors: number[] = [];
+  const pct_oos_fleet: number[] = [];
+  const labels: string[] = [];
+  const keys: string[] = [];
+
+  for (const file of recentHistoryFiles(index, hours)) {
+    const snapshot = await loadHourlySnapshot(file.key);
+    const tuple = snapshot?.v?.[idx];
+    if (!tuple) continue;
+    const [mechanical, ebike, total, docks, bikes_disabled, docks_disabled] = tuple;
+    if (capacity <= 0) continue;
+    const oos = bikesOutOfService(
+      capacity,
+      mechanical,
+      ebike,
+      docks,
+      total,
+      bikes_disabled,
+      docks_disabled
+    );
+    labels.push(historyFileLocalLabel(file.localDate, file.localHour));
+    keys.push(file.key);
+    bikes_total.push(total);
+    bikes_mechanical.push(mechanical);
+    bikes_ebike.push(ebike);
+    pct_bikes.push(Math.round((100 * total) / capacity * 100) / 100);
+    pct_mechanical.push(Math.round((100 * mechanical) / capacity * 100) / 100);
+    pct_ebike.push(Math.round((100 * ebike) / capacity * 100) / 100);
+    pct_oos_anchors.push(pctOosOfAnchors(capacity, oos));
+    pct_oos_fleet.push(pctOosOfBikeFleet(total, oos));
+  }
+
+  if (!pct_bikes.length) return null;
+  return {
+    labels,
+    keys,
+    bikes_total,
+    bikes_mechanical,
+    bikes_ebike,
+    pct_bikes,
+    pct_mechanical,
+    pct_ebike,
+    pct_oos_anchors,
+    pct_oos_fleet,
+  };
+}
+
 /** Recent hourly city totals (for KPI sparklines, últimes 24 h). */
 export async function loadCitySparklineSeriesRecent(
   index: HistoryIndex | null,

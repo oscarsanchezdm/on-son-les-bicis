@@ -1,10 +1,12 @@
-import type { Barri, LatestData } from "../lib/data";
+import type { Barri, LatestData, Station } from "../lib/data";
 import {
   bikesOutOfService,
   pctBikesOutOfService,
   pctOfStations,
   pctOosOfAnchors,
   pctOosOfBikeFleet,
+  stationOosAnchorPct,
+  stationOosCount,
 } from "../lib/data";
 import type { BarriSparklineSeries, SparklineMetricKey, Summary7d } from "../lib/history";
 import {
@@ -58,6 +60,38 @@ export function latestFromBarri(barri: Barri, lastUpdated: string): LatestData {
       pct_docks_free: barri.pct_docks_free,
       pct_mechanical: barri.pct_mechanical,
       pct_ebike: barri.pct_ebike,
+      bikes_out_of_service: oos,
+      pct_bikes_out_of_service: pctOos,
+      worst_barri: null,
+    },
+    stations: [],
+  };
+}
+
+/** Build KPI-shaped data for a single station. */
+export function latestFromStation(station: Station, lastUpdated: string): LatestData {
+  const oos = stationOosCount(station);
+  const pctOos = stationOosAnchorPct(station);
+  const zeroMech = station.mechanical <= 0 ? 1 : 0;
+  const zeroEbike = station.ebike <= 0 ? 1 : 0;
+  const zeroAny = station.total <= 0 ? 1 : 0;
+
+  return {
+    last_updated: lastUpdated,
+    totals: {
+      capacity: station.capacity,
+      bikes_total: station.total,
+      bikes_mechanical: station.mechanical,
+      bikes_ebike: station.ebike,
+      docks_available: station.docks_available,
+      stations_active: 1,
+      stations_zero_ebike: zeroEbike,
+      stations_zero_mechanical: zeroMech,
+      stations_zero_any: zeroAny,
+      pct_bikes: station.pct_bikes,
+      pct_docks_free: station.pct_docks_free,
+      pct_mechanical: station.capacity ? (100 * station.mechanical) / station.capacity : 0,
+      pct_ebike: station.capacity ? (100 * station.ebike) / station.capacity : 0,
       bikes_out_of_service: oos,
       pct_bikes_out_of_service: pctOos,
       worst_barri: null,
@@ -125,6 +159,8 @@ export type KpiRenderOptions = {
   barriHistAverages?: Partial<Record<SparklineMetricKey, number>> | null;
   /** Sparklines o mitjana 7d encara no disponibles (càrrega diferida). */
   statsPending?: boolean;
+  /** Vista d'una sola estació: amaga notes agregades d'estacions sense bicis. */
+  stationScope?: boolean;
 };
 
 function sparklineSlot(values: number[], pending: boolean): string {
@@ -222,7 +258,7 @@ export function renderKpis(
       }
     : {};
 
-  const showHist = !isHistorical && (!!histAvg || !!summary);
+  const showHist = !isHistorical && !options.stationScope && (!!histAvg || !!summary);
   const histBikes = showHist
     ? histNoteCount(summary, hour, "bikes_total", t.bikes_total, t.capacity, histAvg)
     : "";
@@ -239,15 +275,15 @@ export function renderKpis(
   const zeroMech = t.stations_zero_mechanical ?? 0;
   const zeroEbike = t.stations_zero_ebike;
   const zeroMechNote =
-    zeroMech > 0
+    !options.stationScope && zeroMech > 0
       ? `<small class="kpi-station-gap kpi-station-gap--warn">${zeroMech} est. sense mecàniques (${formatPct(pctZeroMech)})</small>`
       : "";
   const zeroEbikeNote =
-    zeroEbike > 0
+    !options.stationScope && zeroEbike > 0
       ? `<small class="kpi-station-gap kpi-station-gap--warn">${zeroEbike} est. sense elèctriques (${formatPct(pctZeroEbike)})</small>`
       : "";
   const zeroAnyNote =
-    t.stations_zero_any > 0
+    !options.stationScope && t.stations_zero_any > 0
       ? `<small class="kpi-station-gap kpi-station-gap--warn">${t.stations_zero_any} est. sense bicicletes (${formatPct(pctZeroAny)})</small>`
       : "";
 

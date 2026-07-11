@@ -7,19 +7,10 @@ import {
 export type CompositionCardOptions = {
   breakdown: StationBreakdown | null;
   scopeLabel: string;
-  backLabel?: string;
-  onBack?: () => void;
 };
 
-function bindBack(container: HTMLElement, onBack?: () => void): void {
-  const btn = container.querySelector<HTMLButtonElement>("#composition-back");
-  if (!btn || btn.dataset.bound === "1") return;
-  btn.dataset.bound = "1";
-  btn.addEventListener("click", () => onBack?.());
-}
-
 export function renderCompositionCard(container: HTMLElement, options: CompositionCardOptions): void {
-  const { breakdown, scopeLabel, backLabel } = options;
+  const { breakdown, scopeLabel } = options;
 
   if (!breakdown || breakdown.capacity <= 0) {
     container.innerHTML = `<article class="composition-card composition-card--empty">
@@ -31,11 +22,9 @@ export function renderCompositionCard(container: HTMLElement, options: Compositi
   container.innerHTML = `<article class="composition-card">
     ${renderCompositionPanel(breakdown, {
       scopeLabel,
-      backLabel,
       clickable: !breakdown.historical,
     })}
   </article>`;
 
   bindStationDonutInPopup(container);
-  bindBack(container, options.onBack);
 }
