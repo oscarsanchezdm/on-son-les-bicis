@@ -1,5 +1,5 @@
 import type { Barri, LatestData, Station } from "./data";
-import { bikesOutOfService, pctBikesOutOfService, pctOosOfAnchors } from "./data";
+import { bikesOutOfService, pctBikesOutOfService, pctOosOfAnchors, pctOosOfBikeFleet } from "./data";
 import { formatDateTime, formatHour, historyFileLocalLabel } from "./format";
 
 const BASE = import.meta.env.BASE_URL;
@@ -362,7 +362,12 @@ export function hourViewScopeLabel(hour: number, dayType: DayType): string {
   return `mitjana ${dayTypeLabel(dayType)} a les ${formatHour(hour)}`;
 }
 
-export type SparklineMetricKey = "pct_bikes" | "pct_mechanical" | "pct_ebike" | "pct_oos_anchors";
+export type SparklineMetricKey =
+  | "pct_bikes"
+  | "pct_mechanical"
+  | "pct_ebike"
+  | "pct_oos_anchors"
+  | "pct_oos_fleet";
 
 export type ChartPoint = { label: string; value: number; ts?: string; key?: string };
 
@@ -419,6 +424,8 @@ export function sparklineChartPoints(
     let value: number | undefined;
     if (key === "pct_oos_anchors") {
       value = p.pct_oos_anchors ?? p.pct_oos_fleet;
+    } else if (key === "pct_oos_fleet") {
+      value = p.pct_oos_fleet ?? p.pct_oos_anchors;
     } else {
       value = p[key];
     }
@@ -468,6 +475,16 @@ export function hourlyAverage(
       samples.length
     );
   }
+  if (key === "pct_oos_fleet") {
+    const samples = bucket.samples.filter(
+      (s) => s.pct_oos_fleet !== undefined || s.pct_oos_anchors !== undefined
+    );
+    if (!samples.length) return null;
+    return (
+      samples.reduce((sum, s) => sum + (s.pct_oos_fleet ?? s.pct_oos_anchors ?? 0), 0) /
+      samples.length
+    );
+  }
   return null;
 }
 
@@ -498,6 +515,7 @@ export type BarriSparklineSeries = {
   pct_mechanical: number[];
   pct_ebike: number[];
   pct_oos_anchors: number[];
+  pct_oos_fleet: number[];
 };
 
 /** Recent hourly snapshots for one barri (for KPI sparklines). */
@@ -511,6 +529,7 @@ export async function loadBarriSparklineSeries(
   const pct_mechanical: number[] = [];
   const pct_ebike: number[] = [];
   const pct_oos_anchors: number[] = [];
+  const pct_oos_fleet: number[] = [];
   const labels: string[] = [];
   const keys: string[] = [];
 
@@ -532,10 +551,11 @@ export async function loadBarriSparklineSeries(
     pct_mechanical.push((100 * b.bikes_mechanical) / b.capacity_total);
     pct_ebike.push(b.pct_ebike);
     pct_oos_anchors.push(pctOosOfAnchors(b.capacity_total, oos));
+    pct_oos_fleet.push(pctOosOfBikeFleet(b.bikes_total, oos));
   }
 
   if (!pct_bikes.length) return null;
-  return { labels, keys, pct_bikes, pct_mechanical, pct_ebike, pct_oos_anchors };
+  return { labels, keys, pct_bikes, pct_mechanical, pct_ebike, pct_oos_anchors, pct_oos_fleet };
 }
 
 /** Recent hourly city totals (for KPI sparklines when no barri is selected). */
@@ -548,6 +568,7 @@ export async function loadCitySparklineSeries(
   const pct_mechanical: number[] = [];
   const pct_ebike: number[] = [];
   const pct_oos_anchors: number[] = [];
+  const pct_oos_fleet: number[] = [];
   const labels: string[] = [];
   const keys: string[] = [];
 
@@ -577,10 +598,11 @@ export async function loadCitySparklineSeries(
     pct_mechanical.push((100 * mechanical) / capacity);
     pct_ebike.push((100 * ebike) / capacity);
     pct_oos_anchors.push(pctOosOfAnchors(capacity, oos));
+    pct_oos_fleet.push(pctOosOfBikeFleet(bikes, oos));
   }
 
   if (!pct_bikes.length) return null;
-  return { labels, keys, pct_bikes, pct_mechanical, pct_ebike, pct_oos_anchors };
+  return { labels, keys, pct_bikes, pct_mechanical, pct_ebike, pct_oos_anchors, pct_oos_fleet };
 }
 
 function filesForHourLastDays(
@@ -607,6 +629,7 @@ export async function barriHistAveragesAtHour(
   const pct_mechanical: number[] = [];
   const pct_ebike: number[] = [];
   const pct_oos_anchors: number[] = [];
+  const pct_oos_fleet: number[] = [];
 
   for (const file of matches) {
     const snapshot = await loadHourlySnapshot(file.key);
@@ -623,6 +646,7 @@ export async function barriHistAveragesAtHour(
     pct_mechanical.push((100 * b.bikes_mechanical) / b.capacity_total);
     pct_ebike.push(b.pct_ebike);
     pct_oos_anchors.push(pctOosOfAnchors(b.capacity_total, oos));
+    pct_oos_fleet.push(pctOosOfBikeFleet(b.bikes_total, oos));
   }
 
   if (!pct_bikes.length) return null;
@@ -632,6 +656,7 @@ export async function barriHistAveragesAtHour(
     pct_mechanical: avg(pct_mechanical),
     pct_ebike: avg(pct_ebike),
     pct_oos_anchors: avg(pct_oos_anchors),
+    pct_oos_fleet: avg(pct_oos_fleet),
   };
 }
 
