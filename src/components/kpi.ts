@@ -76,9 +76,11 @@ function histNote(
     barriAvg?.[key] ??
     (key === "pct_oos_anchors" ? null : hourlyAverage(summary, hour, key));
   if (avg === null || avg === undefined) return "";
-  const delta = currentPct - avg;
+  const avgShown = Math.round(avg * 10) / 10;
+  const currentShown = Math.round(currentPct * 10) / 10;
+  const delta = currentShown - avgShown;
   const sign = delta >= 0 ? "+" : "";
-  return `Mitjana 7 dies (${String(hour).padStart(2, "0")}:00): ${formatPct(avg)} (${sign}${delta.toFixed(1)} pp)`;
+  return `Mitjana 7 dies (${String(hour).padStart(2, "0")}:00): ${formatPct(avgShown)} (${sign}${delta.toFixed(1)} pp)`;
 }
 
 function chartPoints(
@@ -122,6 +124,8 @@ export function renderKpis(
   const hour = currentMadridHour();
   const pctMechOfBikes = t.bikes_total ? (100 * t.bikes_mechanical) / t.bikes_total : 0;
   const pctEbikeOfBikes = t.bikes_total ? (100 * t.bikes_ebike) / t.bikes_total : 0;
+  const pctMech = t.capacity ? (100 * t.bikes_mechanical) / t.capacity : 0;
+  const pctEbike = t.capacity ? (100 * t.bikes_ebike) / t.capacity : 0;
   const outOfService =
     t.bikes_out_of_service ??
     bikesOutOfService(t.capacity, t.bikes_mechanical, t.bikes_ebike, t.docks_available, t.bikes_total);
@@ -177,12 +181,8 @@ export function renderKpis(
 
   const showHist = !isHistorical && (scopeLabel !== "ciutat" ? !!barriHist : !!summary);
   const histBikes = showHist ? histNote(summary, hour, "pct_bikes", t.pct_bikes, barriHist) : "";
-  const histMech = showHist
-    ? histNote(summary, hour, "pct_mechanical_fleet", pctMechOfBikes, barriHist)
-    : "";
-  const histEbike = showHist
-    ? histNote(summary, hour, "pct_ebike_fleet", pctEbikeOfBikes, barriHist)
-    : "";
+  const histMech = showHist ? histNote(summary, hour, "pct_mechanical", pctMech, barriHist) : "";
+  const histEbike = showHist ? histNote(summary, hour, "pct_ebike", pctEbike, barriHist) : "";
   const histOos = showHist
     ? histNote(summary, hour, "pct_oos_fleet", pctOosFleet, barriHist)
     : "";
