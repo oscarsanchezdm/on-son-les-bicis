@@ -1,5 +1,5 @@
 import type { Barri, LatestData, MetricMode, Station } from "./data";
-import { bikesOutOfService, pctBikesOutOfService, pctOosOfAnchors, pctOosOfBikeFleet } from "./data";
+import { bikesOutOfService, pctBikesOutOfService, pctOosOfAnchors, pctOosOfBikeFleet, pctOosFleetFromPctBikesAndAnchors } from "./data";
 import { formatDateTime, formatHour, historyFileLocalLabel } from "./format";
 
 const BASE = import.meta.env.BASE_URL;
@@ -425,7 +425,11 @@ export function sparklineChartPoints(
     if (key === "pct_oos_anchors") {
       value = p.pct_oos_anchors ?? p.pct_oos_fleet;
     } else if (key === "pct_oos_fleet") {
-      value = p.pct_oos_fleet ?? p.pct_oos_anchors;
+      value =
+        p.pct_oos_fleet ??
+        (p.pct_bikes !== undefined && p.pct_oos_anchors !== undefined
+          ? pctOosFleetFromPctBikesAndAnchors(p.pct_bikes, p.pct_oos_anchors)
+          : undefined);
     } else {
       value = p[key];
     }
@@ -466,23 +470,26 @@ export function hourlyAverage(
   if (key === "pct_mechanical") return bucket.avg_pct_mechanical;
   if (key === "pct_ebike") return bucket.avg_pct_ebike;
   if (key === "pct_oos_anchors") {
-    const samples = bucket.samples.filter(
-      (s) => s.pct_oos_anchors !== undefined || s.pct_oos_fleet !== undefined
-    );
+    const samples = bucket.samples.filter((s) => s.pct_oos_anchors !== undefined);
     if (!samples.length) return null;
     return (
-      samples.reduce((sum, s) => sum + (s.pct_oos_anchors ?? s.pct_oos_fleet ?? 0), 0) /
-      samples.length
+      samples.reduce((sum, s) => sum + (s.pct_oos_anchors ?? 0), 0) / samples.length
     );
   }
   if (key === "pct_oos_fleet") {
     const samples = bucket.samples.filter(
-      (s) => s.pct_oos_fleet !== undefined || s.pct_oos_anchors !== undefined
+      (s) =>
+        s.pct_oos_fleet !== undefined ||
+        (s.pct_bikes !== undefined && s.pct_oos_anchors !== undefined)
     );
     if (!samples.length) return null;
     return (
-      samples.reduce((sum, s) => sum + (s.pct_oos_fleet ?? s.pct_oos_anchors ?? 0), 0) /
-      samples.length
+      samples.reduce((sum, s) => {
+        const fleet =
+          s.pct_oos_fleet ??
+          pctOosFleetFromPctBikesAndAnchors(s.pct_bikes, s.pct_oos_anchors!);
+        return sum + fleet;
+      }, 0) / samples.length
     );
   }
   return null;

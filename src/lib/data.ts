@@ -235,6 +235,13 @@ export function pctOosOfBikeFleet(bikesAvailable: number, bikesOos: number): num
   return (100 * bikesOos) / fleet;
 }
 
+/** Fleet % a partir de % bicis i % FS sobre ancoratges (mateixa capacitat). */
+export function pctOosFleetFromPctBikesAndAnchors(pctBikes: number, pctOosAnchors: number): number {
+  const denom = pctBikes + pctOosAnchors;
+  if (denom <= 0) return 0;
+  return (100 * pctOosAnchors) / denom;
+}
+
 export function barriOosAnchorPct(barri: Barri): number {
   const oos =
     barri.bikes_out_of_service ??
