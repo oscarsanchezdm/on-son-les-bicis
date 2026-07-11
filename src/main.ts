@@ -4,7 +4,7 @@ import { renderCompositionCard } from "./components/compositionCard";
 import { latestFromBarri, renderKpis } from "./components/kpi";
 import { createMap } from "./components/map";
 import { renderStationTable } from "./components/stationTable";
-import { renderTimeSelector, replayStatusLabel, setTimelineStatus, timeViewLabel, updateTimeSelector } from "./components/timeline";
+import { renderTimeSelector, dataModeBadgeLabel, replayStatusLabel, setTimelineStatus, timeViewLabel, updateTimeSelector } from "./components/timeline";
 import type { Barri, MetricMode, Station } from "./lib/data";
 import {
   enrichBarrisWithFleetOos,
@@ -20,6 +20,7 @@ import {
   barrisToLatestData,
   cityHistAveragesAtHour,
   currentMadridHour,
+  hourViewScopeLabel,
   hoursForDayType,
   isHistoricalView,
   loadBarriSparklinePct,
@@ -55,7 +56,7 @@ app.innerHTML = `
         <div class="site-header__brand">
           <div class="site-header__title-row">
             <h1>On són les <span class="title-accent"><span class="title-ebike-icon" aria-hidden="true">${iconEbike(22)}</span>bicis</span>?</h1>
-            <span id="data-mode-badge" class="data-mode-badge data-mode-badge--live">Temps real</span>
+            <span id="data-mode-badge" class="data-mode-badge data-mode-badge--hist" hidden></span>
           </div>
         </div>
         <div id="barri-filter-bar" class="barri-filter-bar hidden" hidden>
@@ -478,19 +479,20 @@ function updateDataModeBadge(): void {
   const badge = document.getElementById("data-mode-badge");
   if (!badge) return;
 
-  if (timeView.kind === "latest") {
-    badge.textContent = "Temps real";
-    badge.className = "data-mode-badge data-mode-badge--live";
-    badge.title = latestData
-      ? `Dades actualitzades ${formatRelativeTime(latestData.last_updated)}`
-      : "";
+  const label = dataModeBadgeLabel(timeView);
+  if (!label) {
+    badge.hidden = true;
+    badge.textContent = "";
+    badge.title = "";
     return;
   }
 
-  badge.textContent = replayPlaying ? "Replay" : "Històric";
+  badge.hidden = false;
+  badge.textContent = label;
   badge.className = `data-mode-badge data-mode-badge--hist${replayPlaying ? " data-mode-badge--replay" : ""}`;
-  const scope = timeViewLabel(timeView, historyIndex);
-  badge.title = replayPlaying ? `${replayStatusLabel(timeView, true)} · ${scope}` : scope;
+  if (timeView.kind === "hour") {
+    badge.title = hourViewScopeLabel(timeView.hour, timeView.dayType);
+  }
 }
 
 function updateTimelineStatus() {
