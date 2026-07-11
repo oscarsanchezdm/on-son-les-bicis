@@ -88,6 +88,24 @@ h1 {
   font-size: clamp(1.75rem, 4vw, 2.5rem);
 }
 
+.title-accent {
+  color: var(--teal);
+}
+
+.title-ebike-icon {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: -0.14em;
+  margin-right: -0.08em;
+  line-height: 0;
+  color: var(--teal);
+}
+
+.title-ebike-icon svg {
+  width: 1.05em;
+  height: 1.05em;
+}
+
 .mode-toggle {
   display: flex;
   flex-wrap: wrap;
@@ -127,9 +145,9 @@ h1 {
 }
 
 .mode-toggle button.active {
-  background: var(--text);
+  background: var(--teal);
   color: white;
-  border-color: var(--text);
+  border-color: var(--teal);
 }
 
 .kpi-panel {
@@ -199,7 +217,7 @@ h1 {
 }
 
 .kpi-station-gap--warn {
-  color: #b45309;
+  color: var(--teal);
   font-weight: 600;
 }
 
