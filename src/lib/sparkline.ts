@@ -26,33 +26,46 @@ export function renderSparkline(
 
 const CHART_MARGIN = { top: 8, right: 10, bottom: 20, left: 36 };
 
-function yBounds(values: number[]): { min: number; max: number } {
+/** Rang de dibuix que sempre conté totes les dades (amb marge). */
+function plotRange(values: number[]): { min: number; max: number } {
   if (!values.length) return { min: 0, max: 100 };
   const minV = Math.min(...values);
   const maxV = Math.max(...values);
-  const pad = Math.max((maxV - minV) * 0.12, 2);
-  return {
-    min: Math.max(0, Math.floor((minV - pad) / 5) * 5),
-    max: Math.min(100, Math.ceil((maxV + pad) / 5) * 5) || 100,
-  };
+  const span = maxV - minV || 1;
+  const pad = Math.max(span * 0.1, 2);
+  let lo = Math.max(0, minV - pad);
+  let hi = Math.min(100, maxV + pad);
+  if (hi - lo < 5) {
+    const mid = (minV + maxV) / 2;
+    lo = Math.max(0, mid - 2.5);
+    hi = Math.min(100, mid + 2.5);
+  }
+  return { min: lo, max: hi };
 }
 
-function yTickValues(min: number, max: number): number[] {
-  const step = 5;
-  let lo = Math.floor(min / step) * step;
-  let hi = Math.ceil(max / step) * step;
-  const ticks: number[] = [];
-  for (let v = lo; v <= hi + 0.001; v += step) ticks.push(v);
+/** Fins a 4 etiquetes d'eix Y (múltiples de 5%) dins del rang de dibuix. */
+function yTickValues(plotMin: number, plotMax: number): number[] {
+  const span = plotMax - plotMin;
+  if (span <= 0) return [plotMin];
 
-  while (ticks.length > 4) {
-    const center = (min + max) / 2;
-    if (ticks[ticks.length - 1] - center > center - ticks[0]) {
-      ticks.pop();
-    } else {
-      ticks.shift();
-    }
+  for (const step of [5, 10, 15, 20, 25]) {
+    const start = Math.ceil(plotMin / step) * step;
+    const ticks: number[] = [];
+    for (let v = start; v <= plotMax + 0.001; v += step) ticks.push(v);
+    if (ticks.length >= 2 && ticks.length <= 4) return ticks;
   }
-  return ticks.length ? ticks : [lo, hi];
+
+  const lo5 = Math.ceil(plotMin / 5) * 5;
+  const hi5 = Math.floor(plotMax / 5) * 5;
+  if (hi5 > lo5) {
+    const mid = Math.round((lo5 + hi5) / 2 / 5) * 5;
+    const ticks = [lo5, mid, hi5].filter((v, i, arr) => arr.indexOf(v) === i);
+    if (ticks.length >= 2 && ticks.length <= 4) return ticks;
+  }
+
+  return [Math.round(plotMin), Math.round(plotMax)].filter(
+    (v, i, arr) => arr.indexOf(v) === i
+  );
 }
 
 function xLabelStep(count: number): number {
@@ -78,13 +91,11 @@ export function renderSparklineChart(
   if (!points.length) return "";
 
   const values = points.map((p) => p.value);
-  const { min, max } = yBounds(values);
+  const { min: plotMin, max: plotMax } = plotRange(values);
   const plotW = width - CHART_MARGIN.left - CHART_MARGIN.right;
   const plotH = height - CHART_MARGIN.top - CHART_MARGIN.bottom;
   const stepX = plotW / Math.max(points.length - 1, 1);
-  const ticks = yTickValues(min, max);
-  const plotMin = ticks[0] ?? min;
-  const plotMax = ticks[ticks.length - 1] ?? max;
+  const ticks = yTickValues(plotMin, plotMax);
   const range = plotMax - plotMin || 1;
   const xStep = xLabelStep(points.length);
   const baselineY = CHART_MARGIN.top + plotH;

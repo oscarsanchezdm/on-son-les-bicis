@@ -465,6 +465,7 @@ body.kpi-chart-open {
   width: 100%;
   height: 92px;
   color: #0f766e;
+  overflow: visible;
 }
 
 .sparkline-chart__axis-line {
