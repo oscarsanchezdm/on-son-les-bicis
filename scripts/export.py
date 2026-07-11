@@ -186,10 +186,10 @@ def _export_latest(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
             "superficie_ha": row[16],
         }
         oos = barri_oos.get(item["barri_codi"], 0)
-        fleet = item["bikes_total"] + oos
+        cap = item["capacity_total"]
         item["bikes_out_of_service"] = oos
         item["pct_bikes_out_of_service"] = (
-            round(100 * oos / fleet, 2) if fleet else 0
+            round(100 * oos / cap, 2) if cap else 0
         )
         barri_list.append(item)
         if worst_barri is None or item["pct_bikes"] < worst_barri["pct_bikes"]:
@@ -224,10 +224,10 @@ def _export_latest(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
                     else 0,
                     "bikes_out_of_service": total_oos,
                     "pct_bikes_out_of_service": round(
-                        100 * total_oos / (totals["bikes_total"] + total_oos),
+                        100 * total_oos / totals["capacity"],
                         2,
                     )
-                    if totals["bikes_total"] + total_oos
+                    if totals["capacity"]
                     else 0,
                     "worst_barri": worst_barri,
                 },
@@ -501,7 +501,6 @@ def _export_summary_7d(conn: sqlite3.Connection, ts_iso: str) -> None:
         mech = mech or 0
         ebike = ebike or 0
         oos = _bikes_out_of_service(cap, mech, ebike, docks, bikes)
-        fleet = bikes + oos
         series_by_ts[ts] = {
             "ts": ts,
             "date": dt.strftime("%d/%m"),
@@ -509,7 +508,7 @@ def _export_summary_7d(conn: sqlite3.Connection, ts_iso: str) -> None:
             "pct_bikes": round(100 * bikes / cap, 2) if cap else 0,
             "pct_mechanical": round(100 * mech / cap, 2) if cap else 0,
             "pct_ebike": round(100 * ebike / cap, 2) if cap else 0,
-            "pct_oos_fleet": round(100 * oos / fleet, 2) if fleet else 0,
+            "pct_oos_anchors": round(100 * oos / cap, 2) if cap else 0,
         }
 
     series = sorted(series_by_ts.values(), key=lambda entry: entry["ts"])

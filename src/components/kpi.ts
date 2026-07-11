@@ -3,7 +3,8 @@ import {
   bikesOutOfService,
   pctBikesOutOfService,
   pctOfStations,
-  pctOosOfBikeFleet,
+  pctOosOfAnchors,
+  pctOosOfAvailableBikes,
 } from "../lib/data";
 import type { BarriSparklineSeries, SparklineMetricKey, Summary7d } from "../lib/history";
 import {
@@ -118,8 +119,9 @@ export function renderKpis(
   const outOfService =
     t.bikes_out_of_service ??
     bikesOutOfService(t.capacity, t.bikes_mechanical, t.bikes_ebike, t.docks_available, t.bikes_total);
-  const pctOutOfService = pctOosOfBikeFleet(t.bikes_total, outOfService);
-  const pctOosOfAvailable = t.bikes_total ? (100 * outOfService) / t.bikes_total : 0;
+  const pctOosAnchors =
+    t.pct_bikes_out_of_service ?? pctOosOfAnchors(t.capacity, outOfService);
+  const pctOosAvailable = pctOosOfAvailableBikes(t.bikes_total, outOfService);
   const pctZeroEbike = pctOfStations(t.stations_zero_ebike, t.stations_active);
   const pctZeroMech = pctOfStations(t.stations_zero_mechanical ?? 0, t.stations_active);
   const pctZeroAny = pctOfStations(t.stations_zero_any, t.stations_active);
@@ -135,13 +137,13 @@ export function renderKpis(
     ? sparklines?.pct_ebike ?? sparklineValues(summary?.series ?? [], "pct_ebike")
     : [];
   const oosValues = showSpark
-    ? sparklines?.pct_oos_fleet ?? sparklineValues(summary?.series ?? [], "pct_oos_fleet")
+    ? sparklines?.pct_oos_anchors ?? sparklineValues(summary?.series ?? [], "pct_oos_anchors")
     : [];
 
   const bikesPoints = showSpark ? chartPoints("pct_bikes", sparklines, summary) : [];
   const mechPoints = showSpark ? chartPoints("pct_mechanical", sparklines, summary) : [];
   const ebikePoints = showSpark ? chartPoints("pct_ebike", sparklines, summary) : [];
-  const oosPoints = showSpark ? chartPoints("pct_oos_fleet", sparklines, summary) : [];
+  const oosPoints = showSpark ? chartPoints("pct_oos_anchors", sparklines, summary) : [];
 
   const chartSubtitle = `Últimes 24 h · ${scopeLabel}`;
   const charts: Record<string, KpiChartSpec | undefined> = showSpark
@@ -156,7 +158,7 @@ export function renderKpis(
           ? { title: "Elèctriques (% ancoratges)", subtitle: chartSubtitle, points: ebikePoints }
           : undefined,
         oos: oosPoints.length
-          ? { title: "Fora de servei (% parc de bicicletes)", subtitle: chartSubtitle, points: oosPoints }
+          ? { title: "Fora de servei (% ancoratges)", subtitle: chartSubtitle, points: oosPoints }
           : undefined,
       }
     : {};
@@ -238,7 +240,7 @@ export function renderKpis(
         `
         <span class="kpi-label">${metricIconHtml("out_of_service", "kpi-icon")} Bicicletes fora de servei</span>
         <strong>${outOfService.toLocaleString("ca-ES")}</strong>
-        <small>${formatPct(pctOosOfAvailable)} de les bicicletes disponibles</small>
+        <small>${formatPct(pctOosAnchors)} dels ancoratges · ${formatPct(pctOosAvailable)} de les bicis disponibles</small>
         ${oosValues.length ? renderSparkline(oosValues) : ""}
         ${oosPoints.length > 1 ? sparkHint : ""}
       `
