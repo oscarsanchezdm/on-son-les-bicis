@@ -522,7 +522,7 @@ function renderTableSection() {
     tableTitle.textContent = `Estacions · ${selectedBarri.barri_nom}`;
     renderStationTable(tableContainer, barriStations(), mode, timeView, {
       selectedId: selectedStation?.station_id ?? null,
-      onSelect: selectStation,
+      onSelect: (station) => selectStation(station, false),
       heatScale,
     });
     return;
@@ -647,7 +647,7 @@ function findBarriByCodi(codi: string): Barri | null {
   );
 }
 
-function selectStation(station: Station) {
+function selectStation(station: Station, fromMap = false) {
   const barri = findBarriByCodi(station.barri_codi);
   if (barri && (!selectedBarri || selectedBarri.barri_codi !== barri.barri_codi)) {
     applyBarriFilter(barri);
@@ -657,8 +657,13 @@ function selectStation(station: Station) {
   const next =
     selectedStation?.station_id === station.station_id ? null : station;
   selectedStation = next;
+  if (fromMap && next) {
+    mapView?.setPendingPopup({ stationId: next.station_id });
+  }
   void refresh();
-  mapView?.focusStation(selectedStation?.station_id ?? null);
+  if (!fromMap) {
+    mapView?.focusStation(selectedStation?.station_id ?? null);
+  }
 }
 
 function clearStationSelection() {
@@ -669,8 +674,8 @@ function clearStationSelection() {
 function selectBarriFromMap(barri: Barri) {
   if (selectedBarri?.barri_codi === barri.barri_codi) return;
   applyBarriFilter(barri);
+  mapView?.setPendingPopup({ barriCodi: barri.barri_codi });
   void refresh();
-  mapView?.focusBarri(barri.barri_codi, displayStations);
 }
 
 function selectBarri(barri: Barri) {
@@ -768,7 +773,7 @@ async function init() {
     mapView = createMap(document.getElementById("map")!, geo, {
       onBarriFilter: selectBarri,
       onBarriMapClick: selectBarriFromMap,
-      onStationSelect: selectStation,
+      onStationSelect: (station) => selectStation(station, true),
     });
     void refresh();
 
