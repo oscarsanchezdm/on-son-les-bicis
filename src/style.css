@@ -489,7 +489,7 @@ body.kpi-chart-open {
 
 .map-section {
   display: grid;
-  grid-template-columns: 1fr 220px;
+  grid-template-columns: 1fr minmax(0, 240px);
   gap: 1rem;
 }
 
@@ -511,6 +511,8 @@ body.kpi-chart-open {
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 1rem;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .legend-bar {
@@ -559,10 +561,17 @@ body.kpi-chart-open {
 
 .legend-scale-labels--quad {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.2rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.15rem;
   text-align: center;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
+  line-height: 1.25;
+}
+
+.legend-scale-labels--quad > span {
+  min-width: 0;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .leaflet-color-heat {
@@ -950,6 +959,35 @@ body.station-donut-modal-open {
 .barri-name {
   font-weight: 500;
   min-width: 10rem;
+}
+
+.barri-name__text {
+  margin-right: 0.35rem;
+}
+
+.barri-stations-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.12rem 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #475569;
+  background: #f1f5f9;
+  border-radius: 999px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.barri-stations-badge .count-icon {
+  display: inline-flex;
+  line-height: 0;
+  color: #64748b;
+}
+
+.barri-stations-badge__count {
+  line-height: 1;
 }
 
 .pct-cell {
