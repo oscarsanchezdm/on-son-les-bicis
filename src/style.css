@@ -167,7 +167,7 @@ h1 {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 1rem 1.1rem;
+  padding: 0.75rem 0.9rem;
 }
 
 .composition-card--empty {
@@ -177,12 +177,39 @@ h1 {
 
 .composition-card__inner {
   display: flex;
-  gap: 1.25rem;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.composition-card__row {
+  display: flex;
+  gap: 0.65rem;
   align-items: flex-start;
 }
 
 .composition-card__chart {
   flex-shrink: 0;
+}
+
+.composition-card__legend {
+  flex: 1;
+  min-width: 0;
+}
+
+.composition-card__legend .station-donut-legend {
+  margin: 0;
+}
+
+.composition-card__legend .station-donut-legend__item {
+  font-size: 0.66rem;
+  line-height: 1.15;
+  grid-template-columns: 0.4rem auto 1fr auto;
+  gap: 0.12rem 0.2rem;
+}
+
+.composition-card__legend .station-donut-legend__vals {
+  font-size: 0.64rem;
+  white-space: nowrap;
 }
 
 .composition-card__donut-btn {
@@ -199,13 +226,8 @@ h1 {
   outline-offset: 2px;
 }
 
-.composition-card__body {
-  flex: 1;
-  min-width: 0;
-}
-
 .composition-card__head {
-  margin-bottom: 0.5rem;
+  margin: 0;
 }
 
 .composition-card__title {
@@ -214,19 +236,19 @@ h1 {
   gap: 0.35rem;
   margin: 0;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 0.92rem;
   line-height: 1.25;
 }
 
 .composition-card__total {
-  margin: 0.2rem 0 0;
-  font-size: 0.88rem;
+  margin: 0.1rem 0 0;
+  font-size: 0.78rem;
   color: var(--muted);
 }
 
 .composition-card__total strong {
   color: var(--text);
-  font-size: 1.05rem;
+  font-size: 0.9rem;
 }
 
 .composition-card__note {
@@ -254,14 +276,17 @@ h1 {
   border-color: var(--teal);
 }
 
-.composition-card .station-donut-legend {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.4rem 1.25rem;
+.station-popup__spark-host {
+  margin-top: 0.45rem;
 }
 
-.composition-card .station-donut-legend__item--full {
-  font-size: 0.84rem;
+.station-popup__spark-host .station-donut-modal__spark {
+  margin: 0;
+}
+
+.station-popup__spark-host .station-donut-modal__spark-label {
+  font-size: 0.68rem;
+  margin-bottom: 0.2rem;
 }
 
 .station-popup--simple .station-popup__stats {
@@ -1530,17 +1555,12 @@ body.station-donut-modal-open {
     max-height: min(22rem, 45vh);
   }
 
-  .composition-card__inner {
-    flex-direction: column;
-    align-items: stretch;
+  .composition-card__row {
+    gap: 0.5rem;
   }
 
-  .composition-card__chart {
-    align-self: center;
-  }
-
-  .composition-card .station-donut-legend {
-    grid-template-columns: 1fr;
+  .composition-card__legend .station-donut-legend__item {
+    font-size: 0.62rem;
   }
 
   .hour-select-label {

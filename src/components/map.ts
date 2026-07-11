@@ -26,6 +26,7 @@ import {
   bindStationDonutInPopup,
   breakdownFromBarri,
   breakdownFromStation,
+  hydratePopupSparkline,
   renderStationPopupContent,
   type StationPopupContext,
 } from "../lib/stationDonut";
@@ -76,7 +77,11 @@ const MAP_BEARING = 45;
 export function createMap(
   container: HTMLElement,
   geo: GeoJSON.FeatureCollection,
-  options?: { onBarriFilter?: (barri: Barri) => void; onStationSelect?: (station: Station) => void }
+  options?: {
+    onBarriFilter?: (barri: Barri) => void;
+    onBarriMapClick?: (barri: Barri) => void;
+    onStationSelect?: (station: Station) => void;
+  }
 ): MapView {
   const map = L.map(container, {
     scrollWheelZoom: true,
@@ -110,6 +115,7 @@ export function createMap(
   let heatMode: MetricMode | null = null;
   let heatScaleMode: HeatScaleMode = "percent";
   const onBarriFilter = options?.onBarriFilter ?? null;
+  const onBarriMapClick = options?.onBarriMapClick ?? null;
   const onStationSelect = options?.onStationSelect ?? null;
   let barrisByCode = new Map<string, Barri>();
   type UpdateArgs = [
@@ -134,6 +140,7 @@ export function createMap(
       });
     }
     bindStationDonutInPopup(e.popup.getElement() ?? undefined);
+    hydratePopupSparkline(e.popup.getElement() ?? undefined);
     bindBarriFilterInPopup(e.popup.getElement() ?? undefined);
   });
 
@@ -215,6 +222,9 @@ export function createMap(
             `<button type="button" class="station-popup__filter" data-barri-filter="${barri.barri_codi}">Filtrar per barri</button>` +
             `<p class="station-popup__extra">Estacions sense elèctriques: ${formatPct(pctOfStations(barri.stations_zero_ebike, barri.stations_active))} · Sense mecàniques: ${formatPct(pctOfStations(barri.stations_zero_mechanical ?? 0, barri.stations_active))}</p>`
         );
+        layer.on("click", () => {
+          onBarriMapClick?.(barri);
+        });
       },
     });
 
