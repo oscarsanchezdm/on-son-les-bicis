@@ -15,7 +15,7 @@ import {
   sparklineChartPoints,
   sparklineValues,
 } from "../lib/history";
-import { formatDateTime, formatPct, formatRelativeTime } from "../lib/format";
+import { formatPct } from "../lib/format";
 import { renderSparkline } from "../lib/sparkline";
 import { kpiIconHtml, metricIconHtml } from "../lib/icons";
 import { bindKpiCharts, type KpiChartSpec } from "./kpiChart";
@@ -209,11 +209,6 @@ export function renderKpis(
 
   container.innerHTML = `
     <div class="kpi-panel">
-      <p class="kpi-update" title="${formatDateTime(data.last_updated)}">
-        <span class="kpi-label">Darrera actualització</span>
-        <strong>${formatRelativeTime(data.last_updated)}</strong>
-        <span class="kpi-update-date">${formatDateTime(data.last_updated)}</span>
-      </p>
       <div class="kpi-grid">
       ${kpiCard(
         "bikes",
