@@ -149,12 +149,7 @@ export function renderKpis(
   const pctZeroAny = pctOfStations(t.stations_zero_any, t.stations_active);
 
   const showSpark = !isHistorical;
-  const sampleCount = options.sampleCount ?? 0;
   const histAvg = options.barriHistAverages ?? null;
-  const histSampleNote =
-    isHistorical && sampleCount > 0
-      ? `<small class="kpi-hist">Mitjana de ${sampleCount} mostra${sampleCount === 1 ? "" : "es"} (30 dies)</small>`
-      : "";
 
   const bikesValues = showSpark
     ? sparklines?.bikes_total ?? sparklineValues(summary?.series ?? [], "bikes_total")
@@ -245,10 +240,11 @@ export function renderKpis(
     ? `<small class="kpi-chart-hint">Clica per veure el detall</small>`
     : "";
 
-  const bikesLabelScope = scopeLabel === "ciutat" ? "" : ` (${scopeLabel})`;
+  const bikesLabelScope =
+    !isHistorical && scopeLabel !== "ciutat" ? ` (${scopeLabel})` : "";
   const fleetMixNote =
     t.bikes_total > 0
-      ? `<small class="kpi-fleet-mix">Parc: ${formatPct(pctMechOfBikes)} mecàniques · ${formatPct(pctEbikeOfBikes)} elèctriques</small>`
+      ? `<small class="kpi-fleet-mix">${formatPct(pctMechOfBikes)} mecà. · ${formatPct(pctEbikeOfBikes)} elè.</small>`
       : "";
 
   container.innerHTML = `
@@ -266,7 +262,6 @@ export function renderKpis(
         ${bikesValues.length ? renderSparkline(bikesValues) : ""}
         ${bikesPoints.length > 1 ? sparkHint : ""}
         ${histBikes ? `<small class="kpi-hist">${histBikes}</small>` : ""}
-        ${histSampleNote}
       `
       )}
       ${kpiCard(

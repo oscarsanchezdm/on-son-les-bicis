@@ -33,7 +33,7 @@ import {
   type TimeView,
 } from "./lib/history";
 import { heatLegendGradient, pctLegendLabels, type HeatScaleMode } from "./lib/colors";
-import { formatDateTime, formatRelativeTime } from "./lib/format";
+import { formatRelativeTime } from "./lib/format";
 import { iconEbike, metricIconHtml } from "./lib/icons";
 import { setStationDonutSparklineLoader, setStationDonutMetricMode } from "./lib/stationDonut";
 
@@ -230,11 +230,7 @@ function updateTimelineStatus() {
   if (!timelineEl || !latestData) return;
 
   if (timeView.kind === "latest") {
-    setTimelineStatus(
-      timelineEl,
-      `<span class="timeline-meta-label">Darrera actualització</span><strong>${formatRelativeTime(latestData.last_updated)}</strong><span class="timeline-meta-date">${formatDateTime(latestData.last_updated)}</span>`,
-      true
-    );
+    setTimelineStatus(timelineEl, formatRelativeTime(latestData.last_updated));
     return;
   }
 

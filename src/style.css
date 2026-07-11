@@ -201,6 +201,7 @@ h1 {
   font-size: 0.78rem;
   color: var(--muted);
   line-height: 1.35;
+  white-space: nowrap;
 }
 
 .kpi-station-gap--warn {
@@ -1135,11 +1136,28 @@ body.station-donut-modal-open {
 
 .timeline-head {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: 0.5rem;
   flex-wrap: wrap;
   margin-bottom: 0.45rem;
+}
+
+.timeline-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: #ecfdf5;
+  border: 1px solid #99f6e4;
+  color: var(--teal);
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.timeline-badge[hidden] {
+  display: none;
 }
 
 .timeline h2 {
@@ -1195,6 +1213,7 @@ body.station-donut-modal-open {
   font-weight: 600;
   font-size: 0.82rem;
   cursor: pointer;
+  color: var(--teal);
 }
 
 .time-btn.active {
@@ -1217,6 +1236,7 @@ body.station-donut-modal-open {
   font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
+  color: var(--teal);
 }
 
 .day-type-btn:disabled {
@@ -1242,40 +1262,6 @@ body.station-donut-modal-open {
 
 .hour-picker input[type="range"] {
   flex: 1;
-}
-
-.timeline-status {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 0.35rem 0.6rem;
-  font-size: 0.82rem;
-  color: var(--muted);
-  margin: 0;
-  line-height: 1.35;
-  text-align: right;
-  flex: 1;
-  min-width: 12rem;
-}
-
-.timeline-status[hidden] {
-  display: none;
-}
-
-.timeline-meta-label {
-  font-size: 0.8rem;
-  color: var(--muted);
-}
-
-.timeline-status strong {
-  color: var(--text);
-  font-size: 0.88rem;
-}
-
-.timeline-meta-date {
-  font-size: 0.78rem;
-  color: #94a3b8;
 }
 
 .error {
@@ -1332,20 +1318,6 @@ body.station-donut-modal-open {
     line-height: 1.2;
   }
 
-  .timeline-status {
-    font-size: 0.78rem;
-    justify-content: flex-start;
-  }
-
-  .timeline-status strong {
-    font-size: 0.82rem;
-  }
-
-  .timeline-meta-date {
-    width: 100%;
-    font-size: 0.72rem;
-  }
-
   .table-wrap {
     max-height: min(22rem, 45vh);
   }
@@ -1358,12 +1330,8 @@ body.station-donut-modal-open {
   }
 
   .timeline-head {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .timeline-status {
-    text-align: left;
+    flex-direction: row;
+    align-items: center;
   }
 
   .map-section {

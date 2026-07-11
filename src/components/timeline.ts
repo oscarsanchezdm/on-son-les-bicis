@@ -38,9 +38,6 @@ function defaultHour(index: HistoryIndex | null, dayType: DayType): number {
   return hours[hours.length - 1]!;
 }
 
-function defaultStatus(_view: TimeView, _index: HistoryIndex | null): string {
-  return "";
-}
 
 function hourOptions(index: HistoryIndex | null, dayType: DayType, selectedHour: number): string {
   const hours = hoursForDayType(index, dayType);
@@ -63,7 +60,7 @@ function paintTimeline(container: HTMLElement, opts: TimeSelectorOptions) {
     <section class="timeline">
       <div class="timeline-head">
         <h2>Franja horària</h2>
-        <p class="timeline-status" id="timeline-status">${defaultStatus(timeView, index)}</p>
+        <span class="timeline-badge" id="timeline-badge" hidden></span>
       </div>
       <div class="time-controls">
         <button type="button" id="btn-latest" class="time-btn ${isLatest ? "active" : ""}">
@@ -115,8 +112,8 @@ function syncTimelineControls(container: HTMLElement, opts: TimeSelectorOptions)
     }
   }
 
-  const status = container.querySelector("#timeline-status");
-  if (status) status.textContent = defaultStatus(timeView, index);
+  const badge = container.querySelector("#timeline-badge");
+  if (badge) badge.hidden = true;
 }
 
 function bindTimelineEvents(container: HTMLElement) {
@@ -181,18 +178,17 @@ export function updateTimeSelector(container: HTMLElement, opts: TimeSelectorOpt
 export function setTimelineStatus(
   container: HTMLElement,
   content: string,
-  asHtml = false
+  _asHtml = false
 ): void {
-  const status = container.querySelector("#timeline-status");
-  if (!status) return;
+  const badge = container.querySelector("#timeline-badge");
+  if (!badge) return;
   if (!content) {
-    status.innerHTML = "";
-    status.hidden = true;
+    badge.textContent = "";
+    badge.hidden = true;
     return;
   }
-  status.hidden = false;
-  if (asHtml) status.innerHTML = content;
-  else status.textContent = content;
+  badge.textContent = content;
+  badge.hidden = false;
 }
 
 export function timeViewLabel(view: TimeView, _index: HistoryIndex | null): string {
