@@ -32,7 +32,7 @@ import {
   type TimeView,
 } from "./lib/history";
 import { heatLegendGradient, pctLegendLabels, type HeatScaleMode } from "./lib/colors";
-import { formatRelativeTime } from "./lib/format";
+import { formatDateTime, formatRelativeTime } from "./lib/format";
 import { iconEbike, metricIconHtml } from "./lib/icons";
 import { setStationDonutSparklineLoader, setStationDonutMetricMode } from "./lib/stationDonut";
 
@@ -43,7 +43,6 @@ app.innerHTML = `
     <div class="site-header__inner">
       <div class="site-header__row">
         <div class="site-header__brand">
-          <p class="eyebrow">Dades obertes · Bicing Barcelona</p>
           <h1>On són les <span class="title-accent"><span class="title-ebike-icon" aria-hidden="true">${iconEbike(22)}</span>bicis</span>?</h1>
         </div>
         <div id="barri-filter-bar" class="barri-filter-bar hidden" hidden>
@@ -227,32 +226,18 @@ function updateBarriFilterBar() {
 
 function updateTimelineStatus() {
   const timelineEl = document.getElementById("timeline");
-  if (!timelineEl) return;
+  if (!timelineEl || !latestData) return;
 
   if (timeView.kind === "latest") {
-    setTimelineStatus(timelineEl, "Dades en temps real.");
-    return;
-  }
-
-  const label = timeViewLabel(timeView, historyIndex);
-  if (!displayBarris.length) {
-    const n = sampleCountForView(historyIndex, timeView);
     setTimelineStatus(
       timelineEl,
-      n
-        ? `${label}: sense dades per a aquesta franja.`
-        : `${hourViewScopeLabel(timeView.hour, timeView.dayType)}: dades insuficients (30 dies).`
+      `<span class="timeline-meta-label">Darrera actualització</span><strong>${formatRelativeTime(latestData.last_updated)}</strong><span class="timeline-meta-date">${formatDateTime(latestData.last_updated)}</span>`,
+      true
     );
     return;
   }
 
-  const n = sampleCountForView(historyIndex, timeView);
-  const agg = barrisToLatestData(displayBarris, latestData!.last_updated).totals;
-  const pctOos = agg.pct_bikes_out_of_service ?? 0;
-  setTimelineStatus(
-    timelineEl,
-    `${label}: ${agg.pct_bikes.toFixed(1)}% bicicletes · ${agg.pct_mechanical.toFixed(1)}% mecàniques · ${agg.pct_ebike.toFixed(1)}% elèctriques · ${pctOos.toFixed(1)}% FS · ${n} mostra${n === 1 ? "" : "es"}.`
-  );
+  setTimelineStatus(timelineEl, "");
 }
 
 function renderTableSection() {
@@ -374,7 +359,7 @@ async function applyTimeView(view: TimeView) {
     displayBarris = enrichBarrisWithFleetOos(barrisData.barris, latestData.stations);
     displayStations = latestData.stations;
   } else {
-    setTimelineStatus(timelineEl, `${timeViewLabel(view, historyIndex)}: carregant…`);
+    setTimelineStatus(timelineEl, "");
     const { barris, stations } = await loadHourlyViewData(
       historyIndex,
       view.hour,

@@ -154,30 +154,6 @@ h1 {
   margin: 0.75rem 0 1rem;
 }
 
-.kpi-update {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 0.35rem 0.6rem;
-  margin: 0 0 0.5rem;
-  padding: 0.45rem 0.7rem;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 0.82rem;
-  color: var(--muted);
-}
-
-.kpi-update strong {
-  color: var(--text);
-  font-size: 0.88rem;
-}
-
-.kpi-update-date {
-  font-size: 0.78rem;
-  color: #94a3b8;
-}
-
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -1007,8 +983,8 @@ body.station-donut-modal-open {
   font-size: 0.72rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  color: #475569;
-  background: #f1f5f9;
+  color: var(--teal);
+  background: #f0fdfa;
   border-radius: 999px;
   vertical-align: middle;
   white-space: nowrap;
@@ -1017,7 +993,7 @@ body.station-donut-modal-open {
 .barri-stations-badge .count-icon {
   display: inline-flex;
   line-height: 0;
-  color: #64748b;
+  color: var(--teal);
 }
 
 .barri-stations-badge__count {
@@ -1208,13 +1184,37 @@ body.station-donut-modal-open {
 }
 
 .timeline-status {
-  font-size: 0.78rem;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.35rem 0.6rem;
+  font-size: 0.82rem;
   color: var(--muted);
   margin: 0;
   line-height: 1.35;
   text-align: right;
   flex: 1;
   min-width: 12rem;
+}
+
+.timeline-status[hidden] {
+  display: none;
+}
+
+.timeline-meta-label {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.timeline-status strong {
+  color: var(--text);
+  font-size: 0.88rem;
+}
+
+.timeline-meta-date {
+  font-size: 0.78rem;
+  color: #94a3b8;
 }
 
 .error {
@@ -1271,17 +1271,16 @@ body.station-donut-modal-open {
     line-height: 1.2;
   }
 
-  .kpi-update {
+  .timeline-status {
     font-size: 0.78rem;
-    padding: 0.4rem 0.55rem;
-    margin-bottom: 0.4rem;
+    justify-content: flex-start;
   }
 
-  .kpi-update strong {
+  .timeline-status strong {
     font-size: 0.82rem;
   }
 
-  .kpi-update-date {
+  .timeline-meta-date {
     width: 100%;
     font-size: 0.72rem;
   }

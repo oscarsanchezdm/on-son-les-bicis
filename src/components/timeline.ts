@@ -3,7 +3,6 @@ import {
   dayTypeLabel,
   hoursForDayType,
   hourViewScopeLabel,
-  sampleCountForView,
   type DayType,
   type HistoryIndex,
   type TimeView,
@@ -39,15 +38,8 @@ function defaultHour(index: HistoryIndex | null, dayType: DayType): number {
   return hours[hours.length - 1]!;
 }
 
-function defaultStatus(view: TimeView, index: HistoryIndex | null): string {
-  if (view.kind === "latest") {
-    return "Dades en temps real.";
-  }
-  const n = sampleCountForView(index, view);
-  if (!n) {
-    return `Sense dades per a ${hourViewScopeLabel(view.hour, view.dayType)}.`;
-  }
-  return `${hourViewScopeLabel(view.hour, view.dayType)} · mitjana de ${n} mostra${n === 1 ? "" : "es"} (30 dies).`;
+function defaultStatus(_view: TimeView, _index: HistoryIndex | null): string {
+  return "";
 }
 
 function hourOptions(index: HistoryIndex | null, dayType: DayType, selectedHour: number): string {
@@ -186,9 +178,21 @@ export function updateTimeSelector(container: HTMLElement, opts: TimeSelectorOpt
   syncTimelineControls(container, opts);
 }
 
-export function setTimelineStatus(container: HTMLElement, text: string): void {
+export function setTimelineStatus(
+  container: HTMLElement,
+  content: string,
+  asHtml = false
+): void {
   const status = container.querySelector("#timeline-status");
-  if (status) status.textContent = text;
+  if (!status) return;
+  if (!content) {
+    status.innerHTML = "";
+    status.hidden = true;
+    return;
+  }
+  status.hidden = false;
+  if (asHtml) status.innerHTML = content;
+  else status.textContent = content;
 }
 
 export function timeViewLabel(view: TimeView, _index: HistoryIndex | null): string {
