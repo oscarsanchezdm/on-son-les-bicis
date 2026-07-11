@@ -38,6 +38,8 @@ export type Barri = {
   stations_zero_any: number;
   bikes_out_of_service?: number;
   pct_bikes_out_of_service?: number;
+  /** Suma d'ancoratges avariats (num_docks_disabled) a les estacions del barri. */
+  docks_disabled_total?: number;
   superficie_ha: number | null;
 };
 
@@ -264,21 +266,26 @@ export function pctOfStations(count: number, stationsActive: number): number {
   return (100 * count) / stationsActive;
 }
 
-/** Recompute OOS totals per barri from station snapshots (avoids phantom FS on empty stations). */
+/** Recompute OOS i ancoratges avariats per barri des de les estacions. */
 export function enrichBarrisWithFleetOos(barris: Barri[], stations: Station[]): Barri[] {
   const oosByBarri = new Map<string, number>();
+  const docksDisabledByBarri = new Map<string, number>();
   for (const station of stations) {
-    oosByBarri.set(
-      station.barri_codi,
-      (oosByBarri.get(station.barri_codi) ?? 0) + stationOosCount(station)
+    const codi = station.barri_codi;
+    oosByBarri.set(codi, (oosByBarri.get(codi) ?? 0) + stationOosCount(station));
+    docksDisabledByBarri.set(
+      codi,
+      (docksDisabledByBarri.get(codi) ?? 0) + stationDocksDisabled(station)
     );
   }
   return barris.map((barri) => {
     const oos = oosByBarri.get(barri.barri_codi) ?? 0;
+    const docksDisabled = docksDisabledByBarri.get(barri.barri_codi) ?? 0;
     return {
       ...barri,
       bikes_out_of_service: oos,
       pct_bikes_out_of_service: pctOosOfAnchors(barri.capacity_total, oos),
+      docks_disabled_total: docksDisabled,
     };
   });
 }

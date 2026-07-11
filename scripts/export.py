@@ -74,6 +74,7 @@ def _export_latest(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
     station_list = []
     features = []
     barri_oos: dict[str, int] = defaultdict(int)
+    barri_docks_disabled: dict[str, int] = defaultdict(int)
     total_oos = 0
     totals = {
         "capacity": 0,
@@ -143,6 +144,7 @@ def _export_latest(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
             total_oos += station_oos
             if barri_codi:
                 barri_oos[barri_codi] += station_oos
+                barri_docks_disabled[barri_codi] += max(0, docks_disabled or 0)
             totals["capacity"] += capacity
             totals["bikes_total"] += total
             totals["bikes_mechanical"] += mechanical
@@ -196,6 +198,7 @@ def _export_latest(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
         item["pct_bikes_out_of_service"] = (
             round(100 * oos / cap, 2) if cap else 0
         )
+        item["docks_disabled_total"] = barri_docks_disabled.get(item["barri_codi"], 0)
         barri_list.append(item)
         if worst_barri is None or item["pct_bikes"] < worst_barri["pct_bikes"]:
             worst_barri = item

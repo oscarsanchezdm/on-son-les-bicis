@@ -367,7 +367,9 @@ async function applyTimeView(view: TimeView) {
       stationIdOrder
     );
     if (requestId !== timeViewRequest) return;
-    displayBarris = barris;
+    displayBarris = stations
+      ? enrichBarrisWithFleetOos(barris, stations)
+      : barris;
     displayStations = stations;
   }
 
