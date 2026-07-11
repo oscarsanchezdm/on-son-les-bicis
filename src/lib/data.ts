@@ -228,10 +228,11 @@ export function pctOosOfAnchors(capacity: number, bikesOos: number): number {
   return (100 * bikesOos) / capacity;
 }
 
-/** % de bicis FS respecte del nombre de bicis disponibles. */
-export function pctOosOfAvailableBikes(bikesAvailable: number, bikesOos: number): number {
-  if (bikesAvailable <= 0) return 0;
-  return (100 * bikesOos) / bikesAvailable;
+/** % de bicis FS respecte del parc (disponibles + FS). */
+export function pctOosOfBikeFleet(bikesAvailable: number, bikesOos: number): number {
+  const fleet = bikesAvailable + bikesOos;
+  if (fleet <= 0) return 0;
+  return (100 * bikesOos) / fleet;
 }
 
 export function barriOosAnchorPct(barri: Barri): number {
