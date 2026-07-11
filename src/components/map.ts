@@ -51,6 +51,7 @@ export type MapView = {
     heatScale?: HeatScaleMode
   ) => void;
   focusBarri: (codi: string | null, stations: Station[] | null) => void;
+  focusStation: (stationId: string | null) => void;
 };
 
 const CITY_CENTER: L.LatLngExpression = [41.387, 2.17];
@@ -82,6 +83,7 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
   }).addTo(map);
 
   const stationLayer = L.layerGroup().addTo(map);
+  const stationMarkers = new Map<string, L.CircleMarker>();
   let barriLayer: L.GeoJSON | null = null;
   let heatLayer: ColorHeatLayer | null = null;
   let heatMode: MetricMode | null = null;
@@ -155,9 +157,11 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
     });
 
     stationLayer.clearLayers();
+    stationMarkers.clear();
 
     if (showStations && stations) {
       const activeStations = stations.filter((s) => isStationMappable(s));
+      const offlineStations = stations.filter((s) => !isStationMappable(s));
       const isAbsolute = heatScale === "absolute";
       const maxCount = isAbsolute
         ? Math.max(1, ...activeStations.map((s) => stationCount(s, mode)))
@@ -181,6 +185,7 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
         const tooltip = stationTooltipHtml(s);
 
         const bindStationUi = (layer: L.CircleMarker) => {
+          stationMarkers.set(s.station_id, layer);
           const tooltipOptions = { sticky: true, className: "station-tooltip" };
           return layer
             .bindPopup(popup)
@@ -232,6 +237,32 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
         }
       }
 
+      for (const s of offlineStations) {
+        if (!s.lat || !s.lon) continue;
+        const popup = stationPopupHtml(s, isHistorical);
+        const tooltip = stationTooltipHtml(s);
+        const marker = L.circleMarker([s.lat, s.lon], {
+          pane: "stationPane",
+          radius: 6,
+          fillColor: "#94a3b8",
+          fillOpacity: 0.8,
+          color: "#64748b",
+          weight: 1,
+          className: "station-dot station-dot--offline",
+        })
+          .bindPopup(popup)
+          .bindTooltip(tooltip, { sticky: true, className: "station-tooltip" })
+          .on("popupopen", function (this: L.CircleMarker) {
+            this.closeTooltip();
+            this.unbindTooltip();
+          })
+          .on("popupclose", function (this: L.CircleMarker) {
+            this.bindTooltip(tooltip, { sticky: true, className: "station-tooltip" });
+          });
+        marker.addTo(stationLayer);
+        stationMarkers.set(s.station_id, marker);
+      }
+
       if (heatLayer && (heatMode !== mode || heatScaleMode !== heatScale)) {
         map.removeLayer(heatLayer);
         heatLayer = null;
@@ -276,5 +307,14 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
     map.flyToBounds(bounds, { padding: [56, 56], maxZoom: 16, duration: 0.7 });
   }
 
-  return { map, update, focusBarri };
+  function focusStation(stationId: string | null) {
+    if (!stationId) return;
+    const marker = stationMarkers.get(stationId);
+    if (!marker) return;
+    const latlng = marker.getLatLng();
+    map.flyTo(latlng, Math.max(map.getZoom(), 15), { duration: 0.5 });
+    window.setTimeout(() => marker.openPopup(), 400);
+  }
+
+  return { map, update, focusBarri, focusStation };
 }

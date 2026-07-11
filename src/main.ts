@@ -2,11 +2,22 @@ import "./style.css";
 import { renderBarriTable } from "./components/barriTable";
 import { latestFromBarri, renderKpis } from "./components/kpi";
 import { createMap } from "./components/map";
+import { renderStationTable } from "./components/stationTable";
 import { renderTimeSelector, setTimelineStatus, timeViewLabel, updateTimeSelector } from "./components/timeline";
 import type { Barri, MetricMode, Station } from "./lib/data";
-import { enrichBarrisWithFleetOos, cityOosFromStations, loadBarris, loadBarrisGeo, loadLatest } from "./lib/data";
+import {
+  enrichBarrisWithFleetOos,
+  cityOosFromStations,
+  loadBarris,
+  loadBarrisGeo,
+  loadLatest,
+  loadMeta,
+} from "./lib/data";
 import {
   barrisToLatestData,
+  barriHistAveragesAtHour,
+  currentMadridHour,
+  dailyTrendValues,
   hourViewScopeLabel,
   isHistoricalView,
   loadBarriSparklineSeries,
@@ -14,13 +25,17 @@ import {
   loadHistoryIndex,
   loadHourlyViewData,
   loadStationIds,
+  loadStationSparklinePct,
   loadSummary7d,
   sampleCountForView,
   type HistoryIndex,
+  type SparklineMetricKey,
   type TimeView,
 } from "./lib/history";
 import { heatLegendGradient, pctLegendLabels, type HeatScaleMode } from "./lib/colors";
+import { formatRelativeTime } from "./lib/format";
 import { metricIconHtml } from "./lib/icons";
+import { setStationDonutSparklineLoader } from "./lib/stationDonut";
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 
@@ -65,13 +80,13 @@ app.innerHTML = `
       </aside>
     </section>
     <section class="barri-section">
-      <h2>Barris</h2>
+      <h2 id="table-title">Barris</h2>
       <p class="section-note" id="table-note">Ordeneu per columna o seleccioneu un barri per filtrar.</p>
       <div id="barri-table"></div>
     </section>
   </main>
   <footer class="site-footer">
-    <p>Font: <a href="https://opendata-ajuntament.barcelona.cat/" target="_blank" rel="noopener">Open Data BCN</a> · Bicing (B:SM)</p>
+    <p id="footer-meta">Font: <a href="https://opendata-ajuntament.barcelona.cat/" target="_blank" rel="noopener">Open Data BCN</a> · Bicing (B:SM)</p>
   </footer>
 `;
 
@@ -151,7 +166,7 @@ function updateLegend(): void {
 
 function tableNote(): string {
   if (selectedBarri) {
-    return `Filtrat per ${selectedBarri.barri_nom}.`;
+    return `Estacions de ${selectedBarri.barri_nom}. Clica una fila per centrar-la al mapa.`;
   }
   if (isHistoricalView(timeView)) {
     return `Mitjana per barri · ${timeViewLabel(timeView, historyIndex)}${heatScale === "absolute" ? " · valors en nombre" : ""}.`;
@@ -164,6 +179,11 @@ function tableNote(): string {
 function mapStations(): Station[] | null {
   if (!displayStations) return null;
   if (!selectedBarri) return displayStations;
+  return displayStations.filter((s) => s.barri_codi === selectedBarri!.barri_codi);
+}
+
+function barriStations(): Station[] {
+  if (!displayStations || !selectedBarri) return [];
   return displayStations.filter((s) => s.barri_codi === selectedBarri!.barri_codi);
 }
 
@@ -228,12 +248,33 @@ function updateTimelineStatus() {
   }
 
   const n = sampleCountForView(historyIndex, timeView);
-
   const agg = barrisToLatestData(displayBarris, latestData!.last_updated).totals;
+  const pctOos = agg.pct_bikes_out_of_service ?? 0;
   setTimelineStatus(
     timelineEl,
-    `${label}: ${agg.pct_bikes.toFixed(1)}% bicicletes · ${agg.pct_mechanical.toFixed(1)}% mecàniques · ${agg.pct_ebike.toFixed(1)}% elèctriques · ${n} mostra${n === 1 ? "" : "es"}.`
+    `${label}: ${agg.pct_bikes.toFixed(1)}% bicicletes · ${agg.pct_mechanical.toFixed(1)}% mecàniques · ${agg.pct_ebike.toFixed(1)}% elèctriques · ${pctOos.toFixed(1)}% FS · ${n} mostra${n === 1 ? "" : "es"}.`
   );
+}
+
+function renderTableSection() {
+  const tableContainer = document.getElementById("barri-table")!;
+  const tableTitle = document.getElementById("table-title")!;
+
+  if (selectedBarri && displayStations) {
+    tableTitle.textContent = `Estacions · ${selectedBarri.barri_nom}`;
+    renderStationTable(tableContainer, barriStations(), mode, timeView, {
+      onSelect: (station) => mapView?.focusStation(station.station_id),
+      heatScale,
+    });
+    return;
+  }
+
+  tableTitle.textContent = "Barris";
+  renderBarriTable(tableContainer, displayBarris, mode, timeView, {
+    selectedCodi: selectedBarri?.barri_codi ?? null,
+    onSelect: selectBarri,
+    heatScale,
+  });
 }
 
 async function refresh() {
@@ -243,6 +284,8 @@ async function refresh() {
   if (!kpiData) return;
 
   const isHistorical = isHistoricalView(timeView);
+  const hour = isHistorical && timeView.kind === "hour" ? timeView.hour : currentMadridHour();
+
   const sparklines =
     !isHistorical && historyIndex
       ? selectedBarri
@@ -250,13 +293,42 @@ async function refresh() {
         : await loadCitySparklineSeries(historyIndex)
       : null;
 
+  const barriHistAverages =
+    !isHistorical && selectedBarri && historyIndex
+      ? await barriHistAveragesAtHour(historyIndex, selectedBarri.barri_codi, hour)
+      : null;
+
+  const weeklyTrendKeys: SparklineMetricKey[] = [
+    "pct_bikes",
+    "pct_mechanical",
+    "pct_ebike",
+    "pct_oos_anchors",
+  ];
+  const weeklyTrend = isHistorical
+    ? Object.fromEntries(
+        await Promise.all(
+          weeklyTrendKeys.map(async (key) => [key, await dailyTrendValues(key)] as const)
+        )
+      )
+    : undefined;
+
+  const sampleCount =
+    isHistorical && timeView.kind === "hour"
+      ? sampleCountForView(historyIndex, timeView)
+      : 0;
+
   renderKpis(
     document.getElementById("kpis")!,
     kpiData,
     summaryData,
     kpiScopeLabel(),
     isHistorical,
-    sparklines
+    sparklines,
+    {
+      sampleCount,
+      weeklyTrend,
+      barriHistAverages,
+    }
   );
   mapView.update(
     mode,
@@ -266,11 +338,7 @@ async function refresh() {
     selectedBarri?.barri_codi ?? null,
     heatScale
   );
-  renderBarriTable(document.getElementById("barri-table")!, displayBarris, mode, timeView, {
-    selectedCodi: selectedBarri?.barri_codi ?? null,
-    onSelect: selectBarri,
-    heatScale,
-  });
+  renderTableSection();
 
   updateBarriFilterBar();
   updateLegend();
@@ -317,7 +385,6 @@ async function applyTimeView(view: TimeView) {
     if (requestId !== timeViewRequest) return;
     displayBarris = barris;
     displayStations = stations;
-    selectedBarri = null;
   }
 
   updateTimeSelector(timelineEl, {
@@ -332,13 +399,14 @@ async function applyTimeView(view: TimeView) {
 
 async function init() {
   try {
-    const [latest, barris, geo, summary, index, stationIds] = await Promise.all([
+    const [latest, barris, geo, summary, index, stationIds, meta] = await Promise.all([
       loadLatest(),
       loadBarris(),
       loadBarrisGeo(),
       loadSummary7d(),
       loadHistoryIndex(),
       loadStationIds(),
+      loadMeta().catch(() => null),
     ]);
     latestData = {
       ...latest,
@@ -353,6 +421,16 @@ async function init() {
     stationIdOrder = stationIds?.ids ?? null;
     displayBarris = enrichBarrisWithFleetOos(barris.barris, latest.stations);
     displayStations = latest.stations;
+
+    if (meta) {
+      const footer = document.getElementById("footer-meta")!;
+      footer.innerHTML = `Font: <a href="https://opendata-ajuntament.barcelona.cat/" target="_blank" rel="noopener">Open Data BCN</a> · ${meta.source}<br/><small>${meta.disclaimer} · ${meta.station_count} estacions · ${meta.barri_count} barris · ${formatRelativeTime(meta.last_updated)}</small>`;
+    }
+
+    setStationDonutSparklineLoader(async (b) => {
+      if (!b.station_id || !historyIndex) return [];
+      return loadStationSparklinePct(historyIndex, b.station_id, b.capacity, stationIdOrder);
+    });
 
     mapView = createMap(document.getElementById("map")!, geo);
     void refresh();

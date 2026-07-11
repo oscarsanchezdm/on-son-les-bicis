@@ -384,6 +384,78 @@ body.kpi-chart-open {
   background: #f1f5f9;
 }
 
+.barri-table th.col-active,
+.barri-table td.col-active {
+  background: #f0fdfa;
+}
+
+.barri-table th.col-active {
+  color: var(--teal);
+  font-weight: 600;
+}
+
+.station-offline-badge {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0.1rem 0.35rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #475569;
+  background: #e2e8f0;
+  border-radius: 4px;
+  vertical-align: middle;
+}
+
+.station-row--offline {
+  opacity: 0.85;
+}
+
+.station-row--offline .barri-name {
+  color: var(--muted);
+}
+
+.station-popup__meta {
+  margin: 0 0 0.35rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.station-dot--offline {
+  pointer-events: auto;
+}
+
+.station-donut-modal__spark {
+  margin-top: 0.75rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--border);
+}
+
+.station-donut-modal__spark-label {
+  margin: 0 0 0.35rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.kpi-weekly-trend {
+  margin-top: 0.35rem;
+}
+
+.kpi-weekly-trend small {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-bottom: 0.15rem;
+}
+
+.site-footer small {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
 .map-section {
   display: grid;
   grid-template-columns: 1fr 220px;

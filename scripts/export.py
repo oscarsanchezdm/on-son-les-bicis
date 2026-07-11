@@ -36,14 +36,16 @@ def _bikes_out_of_service(
     docks_available: int,
     bikes_available: int | None = None,
     bikes_disabled: int | None = None,
+    docks_disabled: int | None = None,
 ) -> int:
     """FS bikes: GBFS num_vehicles_disabled when present, else residual inference."""
-    if bikes_disabled is not None:
+    if bikes_disabled is not None and bikes_disabled > 0:
         return max(0, bikes_disabled)
     available = bikes_available if bikes_available is not None else mechanical + ebike
     if available <= 0:
         return 0
-    return max(0, capacity - mechanical - ebike - docks_available)
+    disabled_docks = max(0, docks_disabled or 0)
+    return max(0, capacity - mechanical - ebike - docks_available - disabled_docks)
 
 
 def _latest_ts(conn: sqlite3.Connection) -> str | None:
@@ -60,7 +62,8 @@ def _export_latest(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
         SELECT s.station_id, s.name, s.lat, s.lon, s.capacity, s.config,
                s.barri_codi, s.barri_nom, s.district, s.status,
                sn.mechanical, sn.ebike, sn.total, sn.docks_available,
-               COALESCE(sn.bikes_disabled, 0), sn.pct_bikes, sn.pct_docks_free
+               COALESCE(sn.bikes_disabled, 0), COALESCE(sn.docks_disabled, 0),
+               sn.pct_bikes, sn.pct_docks_free
         FROM stations s
         JOIN snapshots sn ON sn.station_id = s.station_id AND sn.ts = ?
         ORDER BY s.station_id
@@ -101,6 +104,7 @@ def _export_latest(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
             total,
             docks,
             bikes_disabled,
+            docks_disabled,
             pct_bikes,
             pct_docks,
         ) = row
@@ -120,6 +124,7 @@ def _export_latest(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
             "total": total,
             "docks_available": docks,
             "bikes_disabled": bikes_disabled,
+            "docks_disabled": docks_disabled,
             "pct_bikes": pct_bikes,
             "pct_docks_free": pct_docks,
         }
@@ -133,7 +138,7 @@ def _export_latest(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
         )
         if is_station_active(status):
             station_oos = _bikes_out_of_service(
-                capacity, mechanical, ebike, docks, total, bikes_disabled
+                capacity, mechanical, ebike, docks, total, bikes_disabled, docks_disabled
             )
             total_oos += station_oos
             if barri_codi:
@@ -299,14 +304,14 @@ def _export_history(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
         for row in conn.execute(
             """
             SELECT station_id, mechanical, ebike, total, docks_available,
-                   COALESCE(bikes_disabled, 0)
+                   COALESCE(bikes_disabled, 0), COALESCE(docks_disabled, 0)
             FROM snapshots WHERE ts = ?
             """,
             (ts,),
         ).fetchall()
     }
     station_values = [
-        list(snapshot_by_id.get(sid, (0, 0, 0, 0, 0)))
+        list(snapshot_by_id.get(sid, (0, 0, 0, 0, 0, 0)))
         for sid in station_ids
     ]
 

@@ -1,5 +1,10 @@
 import type { Barri, LatestData, Station } from "./data";
-import { bikesOutOfService, pctBikesOutOfService, pctOosOfAnchors } from "./data";
+import {
+  bikesOutOfService,
+  loadDailyHistory,
+  pctBikesOutOfService,
+  pctOosOfAnchors,
+} from "./data";
 import { formatDateTime, formatHour, historyFileLocalLabel } from "./format";
 
 const BASE = import.meta.env.BASE_URL;
@@ -68,8 +73,8 @@ type HourlyBarriSnapshot = {
   stations_zero_mechanical?: number;
 };
 
-/** Compact metrics per station: [mechanical, ebike, total, docks, bikes_disabled]. */
-export type StationTuple = [number, number, number, number, number];
+/** Compact metrics per station: [mechanical, ebike, total, docks, bikes_disabled, docks_disabled?]. */
+export type StationTuple = [number, number, number, number, number, number?];
 
 type HourlySnapshot = {
   ts: string;
@@ -214,13 +219,14 @@ function averageBarriSnapshots(samples: HourlyBarriSnapshot[]): Barri {
 
 function averageStationTuples(samples: StationTuple[]): StationTuple {
   const n = samples.length;
-  const avg = (i: number) => samples.reduce((sum, t) => sum + t[i]!, 0) / n;
+  const avg = (i: number) => samples.reduce((sum, t) => sum + (t[i] ?? 0), 0) / n;
   return [
     Math.round(avg(0)),
     Math.round(avg(1)),
     Math.round(avg(2)),
     Math.round(avg(3)),
     Math.round(avg(4)),
+    Math.round(avg(5)),
   ];
 }
 
@@ -236,7 +242,7 @@ export function stationsFromAverages(
     const tuple = averages.get(sid);
     const s = byId.get(sid);
     if (!tuple || !s) continue;
-    const [mechanical, ebike, total, docks, bikes_disabled] = tuple;
+    const [mechanical, ebike, total, docks, bikes_disabled, docks_disabled] = tuple;
     const cap = s.capacity;
     out.push({
       ...s,
@@ -245,6 +251,7 @@ export function stationsFromAverages(
       total,
       docks_available: docks,
       bikes_disabled,
+      docks_disabled: docks_disabled ?? 0,
       pct_bikes: cap > 0 ? Math.round((100 * total) / cap * 100) / 100 : 0,
       pct_docks_free: cap > 0 ? Math.round((100 * docks) / cap * 100) / 100 : 0,
     });
@@ -449,13 +456,24 @@ export function labeledChartPoints(
 export function hourlyAverage(
   summary: Summary7d | null,
   hour: number,
-  key: keyof Pick<HistoryPoint, "pct_bikes" | "pct_mechanical" | "pct_ebike">
+  key: SparklineMetricKey
 ): number | null {
   const bucket = summary?.hourly.find((h) => h.hour === hour);
   if (!bucket) return null;
   if (key === "pct_bikes") return bucket.avg_pct_bikes;
   if (key === "pct_mechanical") return bucket.avg_pct_mechanical;
-  return bucket.avg_pct_ebike;
+  if (key === "pct_ebike") return bucket.avg_pct_ebike;
+  if (key === "pct_oos_anchors") {
+    const samples = bucket.samples.filter(
+      (s) => s.pct_oos_anchors !== undefined || s.pct_oos_fleet !== undefined
+    );
+    if (!samples.length) return null;
+    return (
+      samples.reduce((sum, s) => sum + (s.pct_oos_anchors ?? s.pct_oos_fleet ?? 0), 0) /
+      samples.length
+    );
+  }
+  return null;
 }
 
 export function isHistoricalView(view: TimeView): view is Extract<TimeView, { kind: "hour" }> {
@@ -568,4 +586,125 @@ export async function loadCitySparklineSeries(
 
   if (!pct_bikes.length) return null;
   return { labels, keys, pct_bikes, pct_mechanical, pct_ebike, pct_oos_anchors };
+}
+
+function filesForHourLastDays(
+  index: HistoryIndex | null,
+  hour: number,
+  days: number
+): HistoryFile[] {
+  if (!index?.files?.length) return [];
+  const cutoffDates = new Set<string>();
+  for (let d = 0; d < days; d++) cutoffDates.add(madridDateKey(d));
+  return index.files.filter((f) => f.localHour === hour && cutoffDates.has(f.localDate));
+}
+
+/** 7-day averages at a given local hour for one barri (KPI comparison). */
+export async function barriHistAveragesAtHour(
+  index: HistoryIndex | null,
+  barriCodi: string,
+  hour: number
+): Promise<Partial<Record<SparklineMetricKey, number>> | null> {
+  const matches = filesForHourLastDays(index, hour, 7);
+  if (!matches.length) return null;
+
+  const pct_bikes: number[] = [];
+  const pct_mechanical: number[] = [];
+  const pct_ebike: number[] = [];
+  const pct_oos_anchors: number[] = [];
+
+  for (const file of matches) {
+    const snapshot = await loadHourlySnapshot(file.key);
+    const b = snapshot?.barris?.find((x) => x.barri_codi === barriCodi);
+    if (!b || b.capacity_total <= 0) continue;
+    const oos = bikesOutOfService(
+      b.capacity_total,
+      b.bikes_mechanical,
+      b.bikes_ebike,
+      b.docks_available_total,
+      b.bikes_total
+    );
+    pct_bikes.push(b.pct_bikes);
+    pct_mechanical.push((100 * b.bikes_mechanical) / b.capacity_total);
+    pct_ebike.push(b.pct_ebike);
+    pct_oos_anchors.push(pctOosOfAnchors(b.capacity_total, oos));
+  }
+
+  if (!pct_bikes.length) return null;
+  const avg = (vals: number[]) => vals.reduce((s, v) => s + v, 0) / vals.length;
+  return {
+    pct_bikes: avg(pct_bikes),
+    pct_mechanical: avg(pct_mechanical),
+    pct_ebike: avg(pct_ebike),
+    pct_oos_anchors: avg(pct_oos_anchors),
+  };
+}
+
+/** Recent % bikes for one station (modal sparkline, last 24 h). */
+export async function loadStationSparklinePct(
+  index: HistoryIndex | null,
+  stationId: string,
+  capacity: number,
+  stationIdOrder: string[] | null,
+  hours = CHART_DETAIL_HOURS
+): Promise<number[]> {
+  if (!index?.files?.length || !stationIdOrder?.length || capacity <= 0) return [];
+  const idx = stationIdOrder.indexOf(stationId);
+  if (idx < 0) return [];
+
+  const cutoffKey = historyCutoffKeyUtc(hours);
+  const values: number[] = [];
+
+  for (const file of [...index.files].sort((a, b) => a.key.localeCompare(b.key))) {
+    if (file.key < cutoffKey) continue;
+    const snapshot = await loadHourlySnapshot(file.key);
+    const tuple = snapshot?.v?.[idx];
+    if (!tuple) continue;
+    const total = tuple[2] ?? 0;
+    values.push(Math.round((100 * total) / capacity * 100) / 100);
+  }
+
+  return values;
+}
+
+/** City-level daily trend (last N days) from history/daily snapshots. */
+export async function dailyTrendValues(
+  key: SparklineMetricKey = "pct_bikes",
+  days = 7
+): Promise<number[]> {
+  const values: number[] = [];
+
+  for (let d = days - 1; d >= 0; d--) {
+    const dayKey = madridDateKey(d);
+    const entries = await loadDailyHistory(dayKey);
+    if (!entries.length) continue;
+
+    const last = entries[entries.length - 1] as {
+      pct_bikes?: number;
+      pct_mechanical?: number;
+      pct_ebike?: number;
+      bikes_total?: number;
+      capacity_total?: number;
+      bikes_mechanical?: number;
+      bikes_ebike?: number;
+      docks_available_total?: number;
+    };
+
+    let value = 0;
+    if (key === "pct_bikes") value = last.pct_bikes ?? 0;
+    else if (key === "pct_mechanical") value = last.pct_mechanical ?? 0;
+    else if (key === "pct_ebike") value = last.pct_ebike ?? 0;
+    else if (key === "pct_oos_anchors") {
+      const cap = last.capacity_total ?? 0;
+      const bikes = last.bikes_total ?? 0;
+      const mech = last.bikes_mechanical ?? 0;
+      const ebike = last.bikes_ebike ?? 0;
+      const docks = last.docks_available_total ?? 0;
+      const oos = bikesOutOfService(cap, mech, ebike, docks, bikes);
+      value = pctOosOfAnchors(cap, oos);
+    }
+    values.push(value);
+  }
+
+  return values;
 }
