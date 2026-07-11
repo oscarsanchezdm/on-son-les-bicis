@@ -62,14 +62,14 @@ const SEGMENTS: SegmentDef[] = [
   {
     key: "docks",
     label: "Ancoratges lliures",
-    short: "Anc.",
+    short: "Ancoratges",
     color: METRIC_ABSOLUTE_COLORS.docks,
     icon: "dock",
     value: (b) => b.docks,
   },
   {
     key: "oos",
-    label: "Fora de servei",
+    label: "Bicicletes fora de servei",
     short: "FS",
     color: METRIC_ABSOLUTE_COLORS.out_of_service,
     icon: "maintenance",
@@ -218,7 +218,7 @@ function renderDonutSvg(
   b: StationBreakdown,
   size: number,
   className = "station-donut",
-  showUnit = true
+  options: { showCenterTotal?: boolean; showUnit?: boolean } = {}
 ): string {
   const cx = size / 2;
   const cy = size / 2;
@@ -244,12 +244,19 @@ function renderDonutSvg(
     }
   }
 
-  const unitText = showUnit
-    ? `<text x="${cx}" y="${cy + 10}" text-anchor="middle" class="station-donut__unit">anc.</text>`
-    : "";
-  const totalY = showUnit ? cy - 2 : cy + 4;
+  const showCenterTotal =
+    options.showCenterTotal ?? (b.capacity > 0 && b.capacity < 1000);
+  const showUnit = options.showUnit ?? showCenterTotal;
+  let centerText = "";
+  if (showCenterTotal) {
+    const unitText = showUnit
+      ? `<text x="${cx}" y="${cy + 10}" text-anchor="middle" class="station-donut__unit">anc.</text>`
+      : "";
+    const totalY = showUnit ? cy - 2 : cy + 4;
+    centerText = `<text x="${cx}" y="${totalY}" text-anchor="middle" class="station-donut__total">${b.capacity.toLocaleString("ca-ES")}</text>${unitText}`;
+  }
 
-  return `<svg class="${className}" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true">${paths.join("")}<text x="${cx}" y="${totalY}" text-anchor="middle" class="station-donut__total">${b.capacity}</text>${unitText}</svg>`;
+  return `<svg class="${className}" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true">${paths.join("")}${centerText}</svg>`;
 }
 
 function legendRow(
@@ -294,7 +301,7 @@ function metaLine(b: StationBreakdown): string {
 function compositionHistoricalNote(b: StationBreakdown): string {
   if (!b.historical) return "";
   const label = b.historicalLabel ?? "aquesta franja horària";
-  return `<p class="station-popup__note timeline-composition__note">Dades mitjana històrica: ${label} (30 dies)</p>`;
+  return `<p class="composition-card__note">Dades mitjana històrica: ${label} (30 dies)</p>`;
 }
 
 export type CompositionPanelOptions = {
@@ -303,30 +310,46 @@ export type CompositionPanelOptions = {
   clickable?: boolean;
 };
 
-/** Donut + compact legend for the timeline composition row. */
+/** Donut + legend for the composition card. */
 export function renderCompositionPanel(
   b: StationBreakdown,
   options: CompositionPanelOptions
 ): string {
   const clickable = options.clickable !== false && !b.historical;
   const payload = clickable ? encodeBreakdown(b) : "";
-  const donutInner = renderDonutSvg(b, 64, "station-donut", false);
+  const donutInner = renderDonutSvg(b, 128, "station-donut station-donut--card", {
+    showCenterTotal: false,
+  });
   const chartHtml = clickable
-    ? `<button type="button" class="timeline-composition__donut-btn" data-station-breakdown="${payload}" aria-label="Composició detallada: ${b.name}">${donutInner}</button>`
-    : `<div class="timeline-composition__donut" aria-hidden="true">${donutInner}</div>`;
+    ? `<button type="button" class="composition-card__donut-btn" data-station-breakdown="${payload}" aria-label="Composició detallada: ${b.name}">${donutInner}</button>`
+    : `<div class="composition-card__donut" aria-hidden="true">${donutInner}</div>`;
   const clearBtn = options.showClearStation
-    ? `<button type="button" class="timeline-composition__clear" id="composition-clear-station" aria-label="Tornar al barri">×</button>`
+    ? `<button type="button" class="composition-card__clear" id="composition-clear-station" aria-label="Tornar al barri">×</button>`
     : "";
 
-  return `<div class="timeline-composition">
-    <div class="timeline-composition__chart">${chartHtml}</div>
-    <div class="timeline-composition__body">
-      <p class="timeline-composition__title"><span>${options.scopeLabel}</span>${clearBtn}</p>
-      <p class="timeline-composition__subtitle">${b.capacity.toLocaleString("ca-ES")} ancoratges</p>
+  return `<div class="composition-card__inner">
+    <div class="composition-card__chart">${chartHtml}</div>
+    <div class="composition-card__body">
+      <div class="composition-card__head">
+        <p class="composition-card__title"><span>${options.scopeLabel}</span>${clearBtn}</p>
+        <p class="composition-card__total"><strong>${b.capacity.toLocaleString("ca-ES")}</strong> ancoratges totals</p>
+      </div>
       ${compositionHistoricalNote(b)}
-      ${renderLegend(b, true)}
+      ${renderLegend(b, false)}
     </div>
   </div>`;
+}
+
+function popupStatsLine(b: StationBreakdown): string {
+  const items = activeSegments(b);
+  if (!items.length) return "";
+  return items
+    .map((seg) => {
+      const icon =
+        seg.key === "docks_disabled" ? countIconHtml("dock") : countIconHtml(seg.icon);
+      return `<span class="station-popup__stat">${icon}${seg.label}: <strong>${seg.count.toLocaleString("ca-ES")}</strong></span>`;
+    })
+    .join("");
 }
 
 function historicalNotePopup(b: StationBreakdown): string {
@@ -339,25 +362,11 @@ export function renderStationPopupContent(
   b: StationBreakdown,
   _options: StationPopupContext = {}
 ): string {
-  const canExpand = !b.historical && (b.station_id || b.barri_codi);
-  const payload = encodeBreakdown(b);
-  const hint = canExpand
-    ? `<span class="station-donut-trigger__hint"><span class="station-donut-trigger__chevron" aria-hidden="true">›</span> Prem per més info</span>`
-    : "";
-  return `<div class="station-popup">
+  return `<div class="station-popup station-popup--simple">
     <p class="station-popup__title"><strong>${b.name}</strong></p>
     ${metaLine(b)}
     ${historicalNotePopup(b)}
-    <div class="station-popup__chart">
-      <div class="station-donut-col">
-        <button type="button" class="station-donut-trigger" data-station-breakdown="${payload}" aria-label="Prem per més info: distribució i gràfic de 24 hores">
-          ${renderDonutSvg(b, 76, "station-donut", false)}
-          <span class="station-donut-caption">${b.capacity.toLocaleString("ca-ES")} ancoratges</span>
-          ${hint}
-        </button>
-      </div>
-      ${renderLegend(b, true)}
-    </div>
+    <p class="station-popup__stats">${popupStatsLine(b)}</p>
   </div>`;
 }
 
@@ -389,7 +398,7 @@ function renderModalPanel(b: StationBreakdown, sparklineHtml = ""): string {
     ${metaLine(b)}
     ${historicalNotePopup(b)}
     <p class="station-donut-modal__subtitle">${b.capacity.toLocaleString("ca-ES")} ancoratges totals</p>
-    <div class="station-donut-modal__chart">${renderDonutSvg(b, 200, "station-donut station-donut--large")}</div>
+    <div class="station-donut-modal__chart">${renderDonutSvg(b, 200, "station-donut station-donut--large", { showCenterTotal: b.capacity < 1000 })}</div>
     ${renderLegend(b, false)}
     ${sparklineHtml}
   </div>`;
