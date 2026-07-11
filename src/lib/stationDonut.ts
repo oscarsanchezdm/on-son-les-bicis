@@ -3,7 +3,7 @@ import { bikesOutOfService, stationDocksDisabled, stationOosCount } from "./data
 import { METRIC_ABSOLUTE_COLORS } from "./colors";
 import { formatPct } from "./format";
 import { asyncLoadingHtml } from "./asyncLoading";
-import { countIconHtml } from "./icons";
+import { countIconHtml, iconBack } from "./icons";
 import type { ChartPoint } from "./history";
 import { renderSparklineChart } from "./sparkline";
 
@@ -308,7 +308,7 @@ function compositionHistoricalNote(b: StationBreakdown): string {
 
 export type CompositionPanelOptions = {
   scopeLabel: string;
-  showClearStation?: boolean;
+  backLabel?: string;
   clickable?: boolean;
 };
 
@@ -325,13 +325,13 @@ export function renderCompositionPanel(
   const chartHtml = clickable
     ? `<button type="button" class="composition-card__donut-btn" data-station-breakdown="${payload}" aria-label="Composició detallada: ${b.name}">${donutInner}</button>`
     : `<div class="composition-card__donut" aria-hidden="true">${donutInner}</div>`;
-  const clearBtn = options.showClearStation
-    ? `<button type="button" class="composition-card__clear" id="composition-clear-station" aria-label="Tornar al barri">×</button>`
+  const clearBtn = options.backLabel
+    ? `<button type="button" class="composition-card__back" id="composition-back" aria-label="Tornar a ${options.backLabel}"><span class="composition-card__back-icon" aria-hidden="true">${iconBack(14)}</span><span class="composition-card__back-label">${options.backLabel}</span></button>`
     : "";
 
   return `<div class="composition-card__inner">
     <div class="composition-card__head">
-      <p class="composition-card__title"><span>${options.scopeLabel}</span>${clearBtn}</p>
+      <p class="composition-card__title">${clearBtn}<span class="composition-card__scope">${options.scopeLabel}</span></p>
       <p class="composition-card__total"><strong>${b.capacity.toLocaleString("ca-ES")}</strong> ancoratges totals</p>
       ${compositionHistoricalNote(b)}
     </div>

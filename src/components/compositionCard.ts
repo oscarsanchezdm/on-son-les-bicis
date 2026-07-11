@@ -7,19 +7,19 @@ import {
 export type CompositionCardOptions = {
   breakdown: StationBreakdown | null;
   scopeLabel: string;
-  showClearStation?: boolean;
-  onClearStation?: () => void;
+  backLabel?: string;
+  onBack?: () => void;
 };
 
-function bindClearStation(container: HTMLElement, onClearStation?: () => void): void {
-  const btn = container.querySelector<HTMLButtonElement>("#composition-clear-station");
+function bindBack(container: HTMLElement, onBack?: () => void): void {
+  const btn = container.querySelector<HTMLButtonElement>("#composition-back");
   if (!btn || btn.dataset.bound === "1") return;
   btn.dataset.bound = "1";
-  btn.addEventListener("click", () => onClearStation?.());
+  btn.addEventListener("click", () => onBack?.());
 }
 
 export function renderCompositionCard(container: HTMLElement, options: CompositionCardOptions): void {
-  const { breakdown, scopeLabel, showClearStation } = options;
+  const { breakdown, scopeLabel, backLabel } = options;
 
   if (!breakdown || breakdown.capacity <= 0) {
     container.innerHTML = `<article class="composition-card composition-card--empty">
@@ -31,11 +31,11 @@ export function renderCompositionCard(container: HTMLElement, options: Compositi
   container.innerHTML = `<article class="composition-card">
     ${renderCompositionPanel(breakdown, {
       scopeLabel,
-      showClearStation,
+      backLabel,
       clickable: !breakdown.historical,
     })}
   </article>`;
 
   bindStationDonutInPopup(container);
-  bindClearStation(container, options.onClearStation);
+  bindBack(container, options.onBack);
 }
