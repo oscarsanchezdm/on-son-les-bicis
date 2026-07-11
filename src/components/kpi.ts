@@ -122,9 +122,6 @@ export function renderKpis(
   const hour = currentMadridHour();
   const pctMechOfBikes = t.bikes_total ? (100 * t.bikes_mechanical) / t.bikes_total : 0;
   const pctEbikeOfBikes = t.bikes_total ? (100 * t.bikes_ebike) / t.bikes_total : 0;
-  const pctMech =
-    t.pct_mechanical ?? (t.capacity ? (100 * t.bikes_mechanical) / t.capacity : 0);
-  const pctEbike = t.pct_ebike ?? (t.capacity ? (100 * t.bikes_ebike) / t.capacity : 0);
   const outOfService =
     t.bikes_out_of_service ??
     bikesOutOfService(t.capacity, t.bikes_mechanical, t.bikes_ebike, t.docks_available, t.bikes_total);
@@ -180,8 +177,12 @@ export function renderKpis(
 
   const showHist = !isHistorical && (scopeLabel !== "ciutat" ? !!barriHist : !!summary);
   const histBikes = showHist ? histNote(summary, hour, "pct_bikes", t.pct_bikes, barriHist) : "";
-  const histMech = showHist ? histNote(summary, hour, "pct_mechanical", pctMech, barriHist) : "";
-  const histEbike = showHist ? histNote(summary, hour, "pct_ebike", pctEbike, barriHist) : "";
+  const histMech = showHist
+    ? histNote(summary, hour, "pct_mechanical_fleet", pctMechOfBikes, barriHist)
+    : "";
+  const histEbike = showHist
+    ? histNote(summary, hour, "pct_ebike_fleet", pctEbikeOfBikes, barriHist)
+    : "";
   const histOos = showHist
     ? histNote(summary, hour, "pct_oos_fleet", pctOosFleet, barriHist)
     : "";
