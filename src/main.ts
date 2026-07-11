@@ -1,7 +1,6 @@
 import "./style.css";
 import { renderBarriTable } from "./components/barriTable";
-import { renderCompositionCard } from "./components/compositionCard";
-import { latestFromBarri, latestFromStation, renderKpis } from "./components/kpi";
+import { latestFromBarri, renderKpis } from "./components/kpi";
 import { createMap } from "./components/map";
 import { renderStationTable } from "./components/stationTable";
 import { renderTimeSelector, dataModeBadgeLabel, replayStatusLabel, setTimelineStatus, timeViewLabel, updateTimeSelector } from "./components/timeline";
@@ -26,7 +25,6 @@ import {
   loadBarriSparklinePct,
   loadBarriSparklineSeries,
   loadCitySparklineSeriesRecent,
-  loadStationSparklineSeries,
   loadHistoryIndex,
   loadHourlyViewData,
   nextReplayHourView,
@@ -38,14 +36,10 @@ import {
 } from "./lib/history";
 import { heatLegendGradient, pctLegendLabels, type HeatScaleMode } from "./lib/colors";
 import { formatRelativeTime } from "./lib/format";
-import { iconBack, iconEbike, metricIconHtml } from "./lib/icons";
+import { iconEbike, metricIconHtml } from "./lib/icons";
 import {
-  breakdownFromBarri,
-  breakdownFromCity,
-  breakdownFromStation,
   setStationDonutSparklineLoader,
   setStationDonutMetricMode,
-  type StationBreakdown,
 } from "./lib/stationDonut";
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
@@ -56,13 +50,13 @@ app.innerHTML = `
       <div class="site-header__row">
         <div class="site-header__brand">
           <div class="site-header__title-row">
-            <button type="button" id="header-back" class="header-back" hidden>
-              <span class="header-back__icon" aria-hidden="true">${iconBack(14)}</span>
-              <span class="header-back__label"></span>
-            </button>
             <h1>On són les <span class="title-accent"><span class="title-ebike-icon" aria-hidden="true">${iconEbike(22)}</span>bicis</span>?</h1>
             <span id="data-mode-badge" class="data-mode-badge data-mode-badge--hist" hidden></span>
           </div>
+        </div>
+        <div id="barri-filter-bar" class="barri-filter-bar hidden" hidden>
+          <span id="barri-filter-label"></span>
+          <button type="button" id="barri-filter-reset">Tornar a la ciutat</button>
         </div>
       </div>
       <div class="mode-toggle" role="group" aria-label="Mètrica del mapa">
@@ -77,7 +71,6 @@ app.innerHTML = `
   <main>
     <section id="timeline"></section>
     <section id="kpis"></section>
-    <section id="composition" class="composition-section"></section>
     <section class="map-section">
       <div id="map"></div>
       <aside class="legend">
@@ -124,9 +117,6 @@ let barriSparklineCodi: string | null = null;
 let barriSparklineLoadId = 0;
 let citySparklineCache: BarriSparklineSeries | null = null;
 let citySparklineLoadId = 0;
-let stationSparklineCache: BarriSparklineSeries | null = null;
-let stationSparklineId: string | null = null;
-let stationSparklineLoadId = 0;
 let histAveragesCache: Partial<Record<SparklineMetricKey, number>> | null = null;
 let histAveragesKey: string | null = null;
 let histAveragesLoadId = 0;
@@ -170,7 +160,7 @@ async function ensureHistoryLoaded(): Promise<void> {
 }
 
 function scheduleBarriSparklineLoad(): void {
-  if (!historyIndex || !selectedBarri || selectedStation || isHistoricalView(timeView)) return;
+  if (!historyIndex || !selectedBarri || isHistoricalView(timeView)) return;
   if (barriSparklineCodi === selectedBarri.barri_codi && barriSparklineCache) return;
 
   const codi = selectedBarri.barri_codi;
@@ -184,7 +174,7 @@ function scheduleBarriSparklineLoad(): void {
 }
 
 function scheduleCitySparklineLoad(): void {
-  if (!historyIndex || selectedBarri || selectedStation || isHistoricalView(timeView)) return;
+  if (!historyIndex || selectedBarri || isHistoricalView(timeView)) return;
   if (citySparklineCache) return;
 
   const loadId = ++citySparklineLoadId;
@@ -195,27 +185,8 @@ function scheduleCitySparklineLoad(): void {
   });
 }
 
-function scheduleStationSparklineLoad(): void {
-  if (!historyIndex || !selectedStation || !stationIdOrder || isHistoricalView(timeView)) return;
-  if (stationSparklineId === selectedStation.station_id && stationSparklineCache) return;
-
-  const station = displayStations?.find((s) => s.station_id === selectedStation.station_id);
-  if (!station) return;
-
-  const stationId = selectedStation.station_id;
-  const loadId = ++stationSparklineLoadId;
-  void loadStationSparklineSeries(historyIndex, stationId, station.capacity, stationIdOrder).then(
-    (series) => {
-      if (loadId !== stationSparklineLoadId) return;
-      stationSparklineId = stationId;
-      stationSparklineCache = series;
-      void refresh();
-    }
-  );
-}
-
 function histAveragesScopeKey(): string | null {
-  if (isHistoricalView(timeView) || selectedStation) return null;
+  if (isHistoricalView(timeView)) return null;
   const hour = currentMadridHour();
   if (selectedBarri) return `barri:${selectedBarri.barri_codi}:${hour}`;
   return `city:${hour}`;
@@ -326,48 +297,6 @@ function toggleReplaySpeed(): void {
   void refresh();
 }
 
-function compositionBackLabel(): string | undefined {
-  if (selectedStation && selectedBarri) return selectedBarri.barri_nom;
-  if (selectedBarri) return "Barcelona";
-  return undefined;
-}
-
-function compositionBack(): void {
-  if (selectedStation) {
-    clearStationSelection();
-    return;
-  }
-  if (selectedBarri) {
-    resetBarriFilter();
-  }
-}
-
-function compositionScopeLabel(): string {
-  if (selectedStation) return selectedStation.name;
-  if (selectedBarri) return selectedBarri.barri_nom;
-  if (isHistoricalView(timeView)) return `Barcelona · ${timeViewLabel(timeView, historyIndex)}`;
-  return "Barcelona";
-}
-
-function buildCompositionBreakdown(): StationBreakdown | null {
-  const stations = displayStations;
-  if (!stations?.length) return null;
-
-  const historical = isHistoricalView(timeView);
-  const historicalLabel = historical ? timeViewLabel(timeView, historyIndex) : undefined;
-  const ctx = { historical, historicalLabel };
-
-  if (selectedStation && selectedBarri) {
-    const station = stations.find((s) => s.station_id === selectedStation!.station_id);
-    if (station) return breakdownFromStation(station, ctx);
-  }
-  if (selectedBarri) {
-    const barri = displayBarris.find((b) => b.barri_codi === selectedBarri!.barri_codi);
-    if (barri) return breakdownFromBarri(barri, ctx, stations);
-  }
-  return breakdownFromCity(stations, ctx);
-}
-
 function timelineOptions() {
   return {
     index: historyIndex,
@@ -476,7 +405,6 @@ function barriStations(): Station[] {
 }
 
 function kpiScopeLabel(): string {
-  if (selectedStation) return selectedStation.name;
   if (selectedBarri) return selectedBarri.barri_nom;
   if (isHistoricalView(timeView)) {
     return timeViewLabel(timeView, historyIndex);
@@ -487,11 +415,6 @@ function kpiScopeLabel(): string {
 function buildKpiData() {
   if (!latestData) return null;
   const isHistorical = isHistoricalView(timeView);
-
-  if (selectedStation && displayStations) {
-    const station = displayStations.find((s) => s.station_id === selectedStation!.station_id);
-    if (station) return latestFromStation(station, latestData.last_updated);
-  }
 
   if (!isHistorical) {
     return selectedBarri
@@ -505,25 +428,6 @@ function buildKpiData() {
   }
 
   return barrisToLatestData(displayBarris, latestData.last_updated);
-}
-
-function updateHeaderBack(): void {
-  const btn = document.getElementById("header-back");
-  if (!btn) return;
-
-  const label = compositionBackLabel();
-  if (!label) {
-    btn.hidden = true;
-    btn.removeAttribute("aria-label");
-    const labelEl = btn.querySelector(".header-back__label");
-    if (labelEl) labelEl.textContent = "";
-    return;
-  }
-
-  btn.hidden = false;
-  btn.setAttribute("aria-label", `Tornar a ${label}`);
-  const labelEl = btn.querySelector(".header-back__label");
-  if (labelEl) labelEl.textContent = label;
 }
 
 function updateDataModeBadge(): void {
@@ -544,6 +448,19 @@ function updateDataModeBadge(): void {
   if (timeView.kind === "hour") {
     badge.title = hourViewScopeLabel(timeView.hour, timeView.dayType);
   }
+}
+
+function updateBarriFilterBar() {
+  const bar = document.getElementById("barri-filter-bar")!;
+  const label = document.getElementById("barri-filter-label")!;
+  if (!selectedBarri) {
+    bar.hidden = true;
+    bar.classList.add("hidden");
+    return;
+  }
+  bar.hidden = false;
+  bar.classList.remove("hidden");
+  label.textContent = `Filtrat: ${selectedBarri.barri_nom}`;
 }
 
 function updateTimelineStatus() {
@@ -575,7 +492,7 @@ function renderTableSection() {
     tableTitle.textContent = `Estacions · ${selectedBarri.barri_nom}`;
     renderStationTable(tableContainer, barriStations(), mode, timeView, {
       selectedId: selectedStation?.station_id ?? null,
-      onSelect: (station) => selectStation(station, false),
+      onSelect: selectStation,
       heatScale,
     });
     return;
@@ -609,9 +526,6 @@ function statsPending(): boolean {
   if (isHistoricalView(timeView)) return false;
   if (historyLoading) return true;
   if (!historyIndex) return false;
-  if (selectedStation) {
-    return stationSparklineId !== selectedStation.station_id;
-  }
   if (selectedBarri) {
     return barriSparklineCodi !== selectedBarri.barri_codi;
   }
@@ -629,13 +543,11 @@ async function refresh() {
   const isHistorical = isHistoricalView(timeView);
 
   const sparklines = !isHistorical
-    ? selectedStation && stationSparklineId === selectedStation.station_id
-      ? stationSparklineCache
-      : selectedBarri && barriSparklineCodi === selectedBarri.barri_codi
-        ? barriSparklineCache
-        : !selectedBarri && !selectedStation
-          ? citySparklineCache
-          : null
+    ? selectedBarri && barriSparklineCodi === selectedBarri.barri_codi
+      ? barriSparklineCache
+      : !selectedBarri
+        ? citySparklineCache
+        : null
     : null;
 
   const sampleCount =
@@ -652,15 +564,10 @@ async function refresh() {
     sparklines,
     {
       sampleCount,
-      barriHistAverages: selectedStation ? null : histAveragesCache,
+      barriHistAverages: histAveragesCache,
       statsPending: statsPending(),
-      stationScope: Boolean(selectedStation),
     }
   );
-  renderCompositionCard(document.getElementById("composition")!, {
-    breakdown: buildCompositionBreakdown(),
-    scopeLabel: compositionScopeLabel(),
-  });
   mapView.update(
     mode,
     displayBarris,
@@ -671,7 +578,7 @@ async function refresh() {
   );
   renderTableSection();
 
-  updateHeaderBack();
+  updateBarriFilterBar();
   updateDataModeBadge();
   updateLegend();
   const note = document.getElementById("legend-note")!;
@@ -682,69 +589,17 @@ async function refresh() {
   updateTimelineUi();
 
   scheduleBarriSparklineLoad();
-  scheduleStationSparklineLoad();
   scheduleCitySparklineLoad();
   scheduleHistAveragesLoad();
 }
 
-function applyBarriFilter(barri: Barri): void {
-  if (selectedBarri?.barri_codi === barri.barri_codi) return;
-  barriSparklineLoadId++;
-  barriSparklineCodi = null;
-  barriSparklineCache = null;
-  resetHistAveragesCache();
-  selectedStation = null;
-  stationSparklineLoadId++;
-  stationSparklineId = null;
-  stationSparklineCache = null;
-  selectedBarri = barri;
-}
-
-function findBarriByCodi(codi: string): Barri | null {
-  return (
-    displayBarris.find((b) => b.barri_codi === codi) ??
-    barrisData?.barris.find((b) => b.barri_codi === codi) ??
-    null
-  );
-}
-
-function selectStation(station: Station, fromMap = false) {
-  const barri = findBarriByCodi(station.barri_codi);
-  if (barri && (!selectedBarri || selectedBarri.barri_codi !== barri.barri_codi)) {
-    applyBarriFilter(barri);
-  }
+function selectStation(station: Station) {
   if (!selectedBarri) return;
-
   const next =
     selectedStation?.station_id === station.station_id ? null : station;
-  if (next?.station_id !== selectedStation?.station_id) {
-    stationSparklineLoadId++;
-    stationSparklineId = null;
-    stationSparklineCache = null;
-  }
   selectedStation = next;
-  if (fromMap && next) {
-    mapView?.setPendingPopup({ stationId: next.station_id });
-  }
   void refresh();
-  if (!fromMap) {
-    mapView?.focusStation(selectedStation?.station_id ?? null);
-  }
-}
-
-function clearStationSelection() {
-  stationSparklineLoadId++;
-  stationSparklineId = null;
-  stationSparklineCache = null;
-  selectedStation = null;
-  void refresh();
-}
-
-function selectBarriFromMap(barri: Barri) {
-  if (selectedBarri?.barri_codi === barri.barri_codi) return;
-  applyBarriFilter(barri);
-  mapView?.setPendingPopup({ barriCodi: barri.barri_codi });
-  void refresh();
+  mapView?.focusStation(selectedStation?.station_id ?? null);
 }
 
 function selectBarri(barri: Barri) {
@@ -755,9 +610,6 @@ function selectBarri(barri: Barri) {
     barriSparklineCache = null;
     resetHistAveragesCache();
     selectedStation = null;
-    stationSparklineLoadId++;
-    stationSparklineId = null;
-    stationSparklineCache = null;
   }
   selectedBarri = next;
   void refresh();
@@ -770,9 +622,6 @@ function resetBarriFilter() {
   barriSparklineCache = null;
   resetHistAveragesCache();
   selectedStation = null;
-  stationSparklineLoadId++;
-  stationSparklineId = null;
-  stationSparklineCache = null;
   selectedBarri = null;
   void refresh();
   mapView?.focusBarri(null, null);
@@ -847,14 +696,15 @@ async function init() {
 
     mapView = createMap(document.getElementById("map")!, geo, {
       onBarriFilter: selectBarri,
-      onBarriMapClick: selectBarriFromMap,
-      onStationSelect: (station) => selectStation(station, true),
+      onStationSelect: (station) => {
+        if (selectedBarri) selectStation(station);
+      },
     });
     void refresh();
 
     renderTimeSelector(document.getElementById("timeline")!, timelineOptions());
 
-    document.getElementById("header-back")!.addEventListener("click", compositionBack);
+    document.getElementById("barri-filter-reset")!.addEventListener("click", resetBarriFilter);
 
     scheduleHistoryLoad();
   } catch (err) {

@@ -9,44 +9,24 @@ export type KpiChartSpec = {
   valueFormat?: "pct" | "count";
 };
 
-type ChartSize = {
-  width: number;
-  height: number;
-  margin: { top: number; right: number; bottom: number; left: number };
-  dotRadius: number;
-};
+const CHART_WIDTH = 640;
+const CHART_HEIGHT = 280;
+const MARGIN = { top: 20, right: 16, bottom: 52, left: 48 };
 
-const CHART_SIZES = {
-  full: {
-    width: 640,
-    height: 280,
-    margin: { top: 20, right: 16, bottom: 52, left: 48 },
-    dotRadius: 3.5,
-  },
-  compact: {
-    width: 320,
-    height: 168,
-    margin: { top: 14, right: 10, bottom: 34, left: 38 },
-    dotRadius: 2.5,
-  },
-} as const satisfies Record<string, ChartSize>;
-
-function plotSize(size: ChartSize) {
-  const { margin, width, height } = size;
+function plotSize() {
   return {
-    w: width - margin.left - margin.right,
-    h: height - margin.top - margin.bottom,
+    w: CHART_WIDTH - MARGIN.left - MARGIN.right,
+    h: CHART_HEIGHT - MARGIN.top - MARGIN.bottom,
   };
 }
 
-function yScale(min: number, max: number, height: number, marginTop: number) {
+function yScale(min: number, max: number, height: number) {
   const range = max - min || 1;
-  return (value: number) => marginTop + height - ((value - min) / range) * height;
+  return (value: number) => MARGIN.top + height - ((value - min) / range) * height;
 }
 
-function xScale(count: number, width: number, marginLeft: number) {
-  return (index: number) =>
-    marginLeft + (count <= 1 ? width / 2 : (index / (count - 1)) * width);
+function xScale(count: number, width: number) {
+  return (index: number) => MARGIN.left + (count <= 1 ? width / 2 : (index / (count - 1)) * width);
 }
 
 function yBoundsPct(values: number[]): { min: number; max: number } {
@@ -84,8 +64,8 @@ function yTickValuesCount(min: number, max: number): number[] {
   const rough = span / 3;
   const magnitude = Math.pow(10, Math.floor(Math.log10(rough)));
   const step = Math.max(1, Math.ceil(rough / magnitude) * magnitude);
-  const lo = Math.floor(min / step) * step;
-  const hi = Math.ceil(max / step) * step;
+  let lo = Math.floor(min / step) * step;
+  let hi = Math.ceil(max / step) * step;
   const ticks: number[] = [];
   for (let v = lo; v <= hi + 0.001; v += step) ticks.push(v);
   while (ticks.length > 4) {
@@ -100,12 +80,7 @@ function formatValue(value: number, format: "pct" | "count"): string {
   return format === "pct" ? formatPct(value) : formatCount(value);
 }
 
-function labelStep(count: number, compact: boolean): number {
-  if (compact) {
-    if (count <= 6) return 1;
-    if (count <= 12) return 2;
-    return Math.max(1, Math.ceil(count / 4));
-  }
+function labelStep(count: number): number {
   if (count <= 8) return 1;
   if (count <= 16) return 2;
   if (count <= 32) return 4;
@@ -120,31 +95,22 @@ function escapeHtml(text: string): string {
     .replaceAll('"', "&quot;");
 }
 
-function renderChartSvg(
-  points: ChartPoint[],
-  valueFormat: "pct" | "count",
-  sizeKey: keyof typeof CHART_SIZES = "full"
-): string {
-  const size = CHART_SIZES[sizeKey];
-  const compact = sizeKey === "compact";
-  const { w, h } = plotSize(size);
-  const { margin, width, height, dotRadius } = size;
+function renderChartSvg(points: ChartPoint[], valueFormat: "pct" | "count"): string {
+  const { w, h } = plotSize();
   const values = points.map((p) => p.value);
   const { min, max } =
     valueFormat === "pct" ? yBoundsPct(values) : yBoundsCount(values);
-  const y = yScale(min, max, h, margin.top);
-  const x = xScale(points.length, w, margin.left);
+  const y = yScale(min, max, h);
+  const x = xScale(points.length, w);
   const ticks =
     valueFormat === "pct" ? yTickValuesPct(min, max) : yTickValuesCount(min, max);
-  const step = labelStep(points.length, compact);
-  const xLabelY = height - (compact ? 10 : 14);
-  const xRotate = compact ? -28 : -32;
+  const step = labelStep(points.length);
 
   const grid = ticks
     .map((tick) => {
       const py = y(tick);
-      return `<line class="kpi-chart-grid" x1="${margin.left}" y1="${py}" x2="${margin.left + w}" y2="${py}" />
-        <text class="kpi-chart-axis" x="${margin.left - (compact ? 6 : 8)}" y="${py + 4}" text-anchor="end">${formatValue(tick, valueFormat)}</text>`;
+      return `<line class="kpi-chart-grid" x1="${MARGIN.left}" y1="${py}" x2="${MARGIN.left + w}" y2="${py}" />
+        <text class="kpi-chart-axis" x="${MARGIN.left - 8}" y="${py + 4}" text-anchor="end">${formatValue(tick, valueFormat)}</text>`;
     })
     .join("");
 
@@ -155,7 +121,7 @@ function renderChartSvg(
   const dots = points
     .map(
       (p, i) =>
-        `<circle class="kpi-chart-dot" cx="${x(i)}" cy="${y(p.value)}" r="${dotRadius}">
+        `<circle class="kpi-chart-dot" cx="${x(i)}" cy="${y(p.value)}" r="3.5">
           <title>${escapeHtml(p.label)}: ${formatValue(p.value, valueFormat)}</title>
         </circle>`
     )
@@ -165,16 +131,14 @@ function renderChartSvg(
     .map((p, i) => {
       if (i % step !== 0 && i !== points.length - 1) return "";
       const px = x(i);
-      return `<text class="kpi-chart-axis kpi-chart-axis--x" x="${px}" y="${xLabelY}" text-anchor="middle" transform="rotate(${xRotate} ${px} ${xLabelY})">${escapeHtml(p.label)}</text>`;
+      return `<text class="kpi-chart-axis kpi-chart-axis--x" x="${px}" y="${CHART_HEIGHT - 14}" text-anchor="middle" transform="rotate(-32 ${px} ${CHART_HEIGHT - 14})">${escapeHtml(p.label)}</text>`;
     })
     .join("");
 
-  const svgClass = compact ? "kpi-chart-svg kpi-chart-svg--compact" : "kpi-chart-svg";
-
-  return `<svg class="${svgClass}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(points[0]?.label ?? "")} – ${escapeHtml(points.at(-1)?.label ?? "")}">
+  return `<svg class="kpi-chart-svg" viewBox="0 0 ${CHART_WIDTH} ${CHART_HEIGHT}" role="img" aria-label="${escapeHtml(points[0]?.label ?? "")} – ${escapeHtml(points.at(-1)?.label ?? "")}">
     ${grid}
-    <line class="kpi-chart-axis-line" x1="${margin.left}" y1="${margin.top}" x2="${margin.left}" y2="${margin.top + h}" />
-    <line class="kpi-chart-axis-line" x1="${margin.left}" y1="${margin.top + h}" x2="${margin.left + w}" y2="${margin.top + h}" />
+    <line class="kpi-chart-axis-line" x1="${MARGIN.left}" y1="${MARGIN.top}" x2="${MARGIN.left}" y2="${MARGIN.top + h}" />
+    <line class="kpi-chart-axis-line" x1="${MARGIN.left}" y1="${MARGIN.top + h}" x2="${MARGIN.left + w}" y2="${MARGIN.top + h}" />
     <polyline class="kpi-chart-line" fill="none" points="${polyline}" />
     ${dots}
     ${xLabels}
@@ -215,10 +179,9 @@ function ensureModal(): HTMLElement {
 
 export function renderKpiChartSvg(
   points: ChartPoint[],
-  valueFormat: "pct" | "count" = "count",
-  compact = false
+  valueFormat: "pct" | "count" = "count"
 ): string {
-  return renderChartSvg(points, valueFormat, compact ? "compact" : "full");
+  return renderChartSvg(points, valueFormat);
 }
 
 export function openKpiChart(spec: KpiChartSpec): void {
@@ -236,7 +199,7 @@ export function openKpiChart(spec: KpiChartSpec): void {
     subtitle.textContent = "";
     subtitle.hidden = true;
   }
-  body.innerHTML = renderChartSvg(spec.points, spec.valueFormat ?? "pct", "full");
+  body.innerHTML = renderChartSvg(spec.points, spec.valueFormat ?? "pct");
   modal.hidden = false;
   document.body.classList.add("kpi-chart-open");
   (modal.querySelector(".kpi-chart-close") as HTMLButtonElement)?.focus();
@@ -248,96 +211,27 @@ export function closeKpiChart(): void {
   document.body.classList.remove("kpi-chart-open");
 }
 
-const KPI_CHART_ORDER = ["bikes", "mechanical", "ebike", "oos"] as const;
-
-function defaultChartKey(charts: Record<string, KpiChartSpec | undefined>): string {
-  for (const key of KPI_CHART_ORDER) {
-    if (charts[key]?.points.length) return key;
-  }
-  return "bikes";
-}
-
-/** Bind metric selection + embedded line chart + modal expand. */
-export function bindKpiSummary(
+export function bindKpiCharts(
   container: HTMLElement,
   charts: Record<string, KpiChartSpec | undefined>
 ): void {
-  const chartHost = container.querySelector<HTMLElement>(".kpi-summary__chart-inner");
-  const chartBtn = container.querySelector<HTMLButtonElement>(".kpi-summary__chart-btn");
-  const chartLabel = container.querySelector<HTMLElement>(".kpi-summary__chart-label");
-  const chartSubtitle = container.querySelector<HTMLElement>(".kpi-summary__chart-subtitle");
-  if (!chartHost) return;
-
-  let activeKey = defaultChartKey(charts);
-
-  const renderActiveChart = () => {
-    const spec = charts[activeKey];
-    container.querySelectorAll<HTMLElement>("[data-kpi-chart]").forEach((row) => {
-      const key = row.dataset.kpiChart;
-      const selectable = Boolean(key && charts[key]?.points.length);
-      row.classList.toggle("kpi-summary__metric--active", key === activeKey);
-      row.classList.toggle("kpi-summary__metric--selectable", selectable);
-      if (selectable) {
-        row.setAttribute("role", "button");
-        row.setAttribute("tabindex", "0");
-        row.setAttribute("aria-pressed", key === activeKey ? "true" : "false");
-      } else {
-        row.removeAttribute("role");
-        row.removeAttribute("tabindex");
-        row.removeAttribute("aria-pressed");
-      }
-    });
-
-    if (!spec?.points.length) {
-      chartHost.innerHTML = `<p class="kpi-summary__chart-empty">Sense prou dades recents.</p>`;
-      if (chartLabel) chartLabel.textContent = "Últimes 24 h";
-      if (chartSubtitle) chartSubtitle.textContent = "";
-      if (chartBtn) {
-        chartBtn.disabled = true;
-        chartBtn.removeAttribute("aria-label");
-      }
-      return;
-    }
-
-    chartHost.innerHTML = renderKpiChartSvg(
-      spec.points,
-      spec.valueFormat ?? "count",
-      true
-    );
-    if (chartLabel) chartLabel.textContent = spec.title;
-    if (chartSubtitle) chartSubtitle.textContent = spec.subtitle ?? "";
-    if (chartBtn) {
-      chartBtn.disabled = false;
-      chartBtn.setAttribute("aria-label", `${spec.title}: ampliar gràfic`);
-    }
-  };
-
-  container.querySelectorAll<HTMLElement>("[data-kpi-chart]").forEach((row) => {
-    const key = row.dataset.kpiChart;
+  container.querySelectorAll<HTMLElement>("[data-kpi-chart]").forEach((card) => {
+    const key = card.dataset.kpiChart;
     if (!key) return;
+    const spec = charts[key];
+    if (!spec?.points.length) return;
 
-    const select = () => {
-      if (!charts[key]?.points.length) return;
-      activeKey = key;
-      renderActiveChart();
-    };
+    card.setAttribute("role", "button");
+    card.setAttribute("tabindex", "0");
+    card.setAttribute("aria-label", `${spec.title}: obrir gràfic detallat`);
 
-    row.addEventListener("click", select);
-    row.addEventListener("keydown", (e) => {
+    const open = () => openKpiChart(spec);
+    card.addEventListener("click", open);
+    card.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
-        select();
+        open();
       }
     });
   });
-
-  if (chartBtn) {
-    const open = () => {
-      const spec = charts[activeKey];
-      if (spec?.points.length) openKpiChart(spec);
-    };
-    chartBtn.addEventListener("click", open);
-  }
-
-  renderActiveChart();
 }

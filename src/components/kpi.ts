@@ -1,14 +1,11 @@
-import type { Barri, LatestData, Station } from "../lib/data";
+import type { Barri, LatestData } from "../lib/data";
 import {
   bikesOutOfService,
   pctBikesOutOfService,
   pctOfStations,
   pctOosOfAnchors,
   pctOosOfBikeFleet,
-  stationOosAnchorPct,
-  stationOosCount,
 } from "../lib/data";
-import { METRIC_ABSOLUTE_COLORS } from "../lib/colors";
 import type { BarriSparklineSeries, SparklineMetricKey, Summary7d } from "../lib/history";
 import {
   currentMadridHour,
@@ -16,11 +13,13 @@ import {
   hourlyAverage,
   labeledChartPoints,
   sparklineChartPoints,
+  sparklineValuesLast24h,
 } from "../lib/history";
 import { formatCount, formatPct, formatRelativeDeltaPct } from "../lib/format";
 import { asyncLoadingHtml } from "../lib/asyncLoading";
+import { renderSparkline } from "../lib/sparkline";
 import { kpiIconHtml, metricIconHtml } from "../lib/icons";
-import { bindKpiSummary, type KpiChartSpec } from "./kpiChart";
+import { bindKpiCharts, type KpiChartSpec } from "./kpiChart";
 
 /** Build KPI-shaped data for a single barri filter. */
 export function latestFromBarri(barri: Barri, lastUpdated: string): LatestData {
@@ -59,38 +58,6 @@ export function latestFromBarri(barri: Barri, lastUpdated: string): LatestData {
       pct_docks_free: barri.pct_docks_free,
       pct_mechanical: barri.pct_mechanical,
       pct_ebike: barri.pct_ebike,
-      bikes_out_of_service: oos,
-      pct_bikes_out_of_service: pctOos,
-      worst_barri: null,
-    },
-    stations: [],
-  };
-}
-
-/** Build KPI-shaped data for a single station. */
-export function latestFromStation(station: Station, lastUpdated: string): LatestData {
-  const oos = stationOosCount(station);
-  const pctOos = stationOosAnchorPct(station);
-  const zeroMech = station.mechanical <= 0 ? 1 : 0;
-  const zeroEbike = station.ebike <= 0 ? 1 : 0;
-  const zeroAny = station.total <= 0 ? 1 : 0;
-
-  return {
-    last_updated: lastUpdated,
-    totals: {
-      capacity: station.capacity,
-      bikes_total: station.total,
-      bikes_mechanical: station.mechanical,
-      bikes_ebike: station.ebike,
-      docks_available: station.docks_available,
-      stations_active: 1,
-      stations_zero_ebike: zeroEbike,
-      stations_zero_mechanical: zeroMech,
-      stations_zero_any: zeroAny,
-      pct_bikes: station.pct_bikes,
-      pct_docks_free: station.pct_docks_free,
-      pct_mechanical: station.capacity ? (100 * station.mechanical) / station.capacity : 0,
-      pct_ebike: station.capacity ? (100 * station.ebike) / station.capacity : 0,
       bikes_out_of_service: oos,
       pct_bikes_out_of_service: pctOos,
       worst_barri: null,
@@ -144,42 +111,26 @@ function chartPoints(
   return filterChartPointsLast24h(points);
 }
 
+function kpiCard(
+  chartKey: string,
+  chartable: boolean,
+  inner: string
+): string {
+  const attrs = chartable ? ` data-kpi-chart="${chartKey}"` : "";
+  return `<article class="kpi-card${chartable ? " kpi-card--chartable" : ""}"${attrs}>${inner}</article>`;
+}
+
 export type KpiRenderOptions = {
   sampleCount?: number;
   barriHistAverages?: Partial<Record<SparklineMetricKey, number>> | null;
   /** Sparklines o mitjana 7d encara no disponibles (càrrega diferida). */
   statsPending?: boolean;
-  /** Vista d'una sola estació: amaga notes agregades d'estacions sense bicis. */
-  stationScope?: boolean;
 };
 
-type MetricRow = {
-  chartKey: string;
-  icon: string;
-  label: string;
-  count: number;
-  detail: string;
-  notes: string[];
-  hist?: string;
-  color: string;
-};
-
-function metricRowHtml(row: MetricRow): string {
-  const attrs = ` data-kpi-chart="${row.chartKey}"`;
-  const notes = row.notes.map((n) => `<small class="kpi-summary__note">${n}</small>`).join("");
-  const hist = row.hist ? `<small class="kpi-hist">${row.hist}</small>` : "";
-  return `<li class="kpi-summary__metric"${attrs}>
-    <span class="kpi-summary__swatch" style="background:${row.color}"></span>
-    <div class="kpi-summary__metric-body">
-      <p class="kpi-summary__metric-head">
-        <span class="kpi-summary__metric-label">${row.icon}${row.label}</span>
-        <strong class="kpi-summary__metric-value">${formatCount(row.count)}</strong>
-      </p>
-      <small class="kpi-summary__metric-detail">${row.detail}</small>
-      ${notes}
-      ${hist}
-    </div>
-  </li>`;
+function sparklineSlot(values: number[], pending: boolean): string {
+  if (values.length) return renderSparkline(values);
+  if (pending) return asyncLoadingHtml("kpi-async-loading");
+  return "";
 }
 
 export function renderKpis(
@@ -210,7 +161,23 @@ export function renderKpis(
   const showSpark = !isHistorical;
   const histAvg = options.barriHistAverages ?? null;
   const statsPending = showSpark && (options.statsPending ?? false);
-  const showHist = !isHistorical && !options.stationScope && (!!histAvg || !!summary);
+
+  const bikesValues = showSpark
+    ? sparklines?.bikes_total ??
+      sparklineValuesLast24h(summary?.series ?? [], "bikes_total")
+    : [];
+  const mechValues = showSpark
+    ? sparklines?.bikes_mechanical ??
+      sparklineValuesLast24h(summary?.series ?? [], "bikes_mechanical")
+    : [];
+  const ebikeValues = showSpark
+    ? sparklines?.bikes_ebike ??
+      sparklineValuesLast24h(summary?.series ?? [], "bikes_ebike")
+    : [];
+  const oosValues = showSpark
+    ? sparklines?.pct_oos_fleet ??
+      sparklineValuesLast24h(summary?.series ?? [], "pct_oos_fleet")
+    : [];
 
   const bikesPoints = showSpark ? chartPoints("bikes_total", sparklines, summary) : [];
   const mechPoints = showSpark ? chartPoints("bikes_mechanical", sparklines, summary) : [];
@@ -255,114 +222,104 @@ export function renderKpis(
       }
     : {};
 
+  const showHist = !isHistorical && (!!histAvg || !!summary);
+  const histBikes = showHist
+    ? histNoteCount(summary, hour, "bikes_total", t.bikes_total, t.capacity, histAvg)
+    : "";
+  const histMech = showHist
+    ? histNoteCount(summary, hour, "bikes_mechanical", t.bikes_mechanical, t.capacity, histAvg)
+    : "";
+  const histEbike = showHist
+    ? histNoteCount(summary, hour, "bikes_ebike", t.bikes_ebike, t.capacity, histAvg)
+    : "";
+  const histOos = showHist
+    ? histNotePct(summary, hour, "pct_oos_fleet", pctOosFleet, histAvg)
+    : "";
+
   const zeroMech = t.stations_zero_mechanical ?? 0;
   const zeroEbike = t.stations_zero_ebike;
+  const zeroMechNote =
+    zeroMech > 0
+      ? `<small class="kpi-station-gap kpi-station-gap--warn">${zeroMech} est. sense mecàniques (${formatPct(pctZeroMech)})</small>`
+      : "";
+  const zeroEbikeNote =
+    zeroEbike > 0
+      ? `<small class="kpi-station-gap kpi-station-gap--warn">${zeroEbike} est. sense elèctriques (${formatPct(pctZeroEbike)})</small>`
+      : "";
+  const zeroAnyNote =
+    t.stations_zero_any > 0
+      ? `<small class="kpi-station-gap kpi-station-gap--warn">${t.stations_zero_any} est. sense bicicletes (${formatPct(pctZeroAny)})</small>`
+      : "";
 
-  const bikesNotes: string[] = [];
-  if (t.bikes_total > 0) {
-    bikesNotes.push(`${formatPct(pctMechOfBikes)} mecà. · ${formatPct(pctEbikeOfBikes)} elè.`);
-  }
-  if (!options.stationScope && t.stations_zero_any > 0) {
-    bikesNotes.push(
-      `${t.stations_zero_any} est. sense bicicletes (${formatPct(pctZeroAny)})`
-    );
-  }
-
-  const mechNotes: string[] = [];
-  if (!options.stationScope && zeroMech > 0) {
-    mechNotes.push(`${zeroMech} est. sense mecàniques (${formatPct(pctZeroMech)})`);
-  }
-
-  const ebikeNotes: string[] = [];
-  if (!options.stationScope && zeroEbike > 0) {
-    ebikeNotes.push(`${zeroEbike} est. sense elèctriques (${formatPct(pctZeroEbike)})`);
-  }
-
-  const scopeTitle =
-    scopeLabel === "ciutat" && !isHistorical
-      ? "Barcelona"
-      : scopeLabel;
-
-  const rows: MetricRow[] = [
-    {
-      chartKey: "bikes",
-      icon: kpiIconHtml("total"),
-      label: "Bicicletes disponibles",
-      count: t.bikes_total,
-      detail: `${formatPct(t.pct_bikes)} de ${formatCount(t.capacity)} ancoratges`,
-      notes: bikesNotes,
-      hist: showHist
-        ? histNoteCount(summary, hour, "bikes_total", t.bikes_total, t.capacity, histAvg)
-        : undefined,
-      color: METRIC_ABSOLUTE_COLORS.total,
-    },
-    {
-      chartKey: "mechanical",
-      icon: kpiIconHtml("mechanical"),
-      label: "Mecàniques",
-      count: t.bikes_mechanical,
-      detail: `${formatPct(pctMech)} dels ancoratges`,
-      notes: mechNotes,
-      hist: showHist
-        ? histNoteCount(summary, hour, "bikes_mechanical", t.bikes_mechanical, t.capacity, histAvg)
-        : undefined,
-      color: METRIC_ABSOLUTE_COLORS.mechanical,
-    },
-    {
-      chartKey: "ebike",
-      icon: kpiIconHtml("ebike"),
-      label: "Elèctriques",
-      count: t.bikes_ebike,
-      detail: `${formatPct(pctEbike)} dels ancoratges`,
-      notes: ebikeNotes,
-      hist: showHist
-        ? histNoteCount(summary, hour, "bikes_ebike", t.bikes_ebike, t.capacity, histAvg)
-        : undefined,
-      color: METRIC_ABSOLUTE_COLORS.ebike,
-    },
-    {
-      chartKey: "oos",
-      icon: metricIconHtml("out_of_service", "kpi-icon"),
-      label: "Fora de servei",
-      count: outOfService,
-      detail: `${formatPct(pctOosFleet)} de bicicletes aparcades · ${formatPct(pctOosAnchors)} dels ancoratges`,
-      notes: [],
-      hist: showHist ? histNotePct(summary, hour, "pct_oos_fleet", pctOosFleet, histAvg) : undefined,
-      color: METRIC_ABSOLUTE_COLORS.out_of_service,
-    },
-  ];
-
-  const chartInner = statsPending
-    ? asyncLoadingHtml("kpi-async-loading kpi-summary__chart-loading")
+  const sparkHint = showSpark
+    ? `<small class="kpi-chart-hint">Clica per veure el detall</small>`
     : "";
 
-  const hint = showSpark
-    ? `<small class="kpi-chart-hint">Clica una mètrica per canviar la gràfica · clica la gràfica per ampliar</small>`
-    : "";
-
-  const chartBlock = showSpark
-    ? `<div class="kpi-summary__chart-head">
-        <p class="kpi-summary__chart-label">Últimes 24 h</p>
-        <p class="kpi-summary__chart-subtitle"></p>
-      </div>
-      <button type="button" class="kpi-summary__chart-btn" disabled>
-        <span class="kpi-summary__chart-inner">${chartInner}</span>
-      </button>`
-    : `<p class="kpi-summary__chart-empty">Dades mitjana històrica (sense tendència 24 h).</p>`;
+  const bikesLabelScope =
+    !isHistorical && scopeLabel !== "ciutat" ? ` (${scopeLabel})` : "";
+  const fleetMixNote =
+    t.bikes_total > 0
+      ? `<small class="kpi-fleet-mix">${formatPct(pctMechOfBikes)} mecà. · ${formatPct(pctEbikeOfBikes)} elè.</small>`
+      : "";
 
   container.innerHTML = `
-    <article class="kpi-summary-card">
-      <header class="kpi-summary__head">
-        <p class="kpi-summary__title">${scopeTitle}</p>
-        <p class="kpi-summary__meta"><strong>${formatCount(t.capacity)}</strong> ancoratges totals · ${formatPct(t.pct_bikes)} amb bicicletes</p>
-      </header>
-      <div class="kpi-summary__row">
-        <div class="kpi-summary__chart">${chartBlock}</div>
-        <ul class="kpi-summary__metrics">${rows.map(metricRowHtml).join("")}</ul>
+    <div class="kpi-panel">
+      <div class="kpi-grid">
+      ${kpiCard(
+        "bikes",
+        bikesPoints.length > 1,
+        `
+        <span class="kpi-label">${kpiIconHtml("total")} Bicicletes disponibles${bikesLabelScope}</span>
+        <strong>${t.bikes_total.toLocaleString("ca-ES")}</strong>
+        <small>${formatPct(t.pct_bikes)} de ${t.capacity.toLocaleString("ca-ES")} ancoratges</small>
+        ${fleetMixNote}
+        ${zeroAnyNote}
+        ${sparklineSlot(bikesValues, statsPending)}
+        ${bikesPoints.length > 1 ? sparkHint : ""}
+        ${histBikes ? `<small class="kpi-hist">${histBikes}</small>` : ""}
+      `
+      )}
+      ${kpiCard(
+        "mechanical",
+        mechPoints.length > 1,
+        `
+        <span class="kpi-label">${kpiIconHtml("mechanical")} Mecàniques</span>
+        <strong>${t.bikes_mechanical.toLocaleString("ca-ES")}</strong>
+        <small>${formatPct(pctMech)} dels ancoratges</small>
+        ${zeroMechNote}
+        ${sparklineSlot(mechValues, statsPending)}
+        ${mechPoints.length > 1 ? sparkHint : ""}
+        ${histMech ? `<small class="kpi-hist">${histMech}</small>` : ""}
+      `
+      )}
+      ${kpiCard(
+        "ebike",
+        ebikePoints.length > 1,
+        `
+        <span class="kpi-label">${kpiIconHtml("ebike")} Elèctriques</span>
+        <strong>${t.bikes_ebike.toLocaleString("ca-ES")}</strong>
+        <small>${formatPct(pctEbike)} dels ancoratges</small>
+        ${zeroEbikeNote}
+        ${sparklineSlot(ebikeValues, statsPending)}
+        ${ebikePoints.length > 1 ? sparkHint : ""}
+        ${histEbike ? `<small class="kpi-hist">${histEbike}</small>` : ""}
+      `
+      )}
+      ${kpiCard(
+        "oos",
+        oosPoints.length > 1,
+        `
+        <span class="kpi-label">${metricIconHtml("out_of_service", "kpi-icon")} Bicicletes fora de servei</span>
+        <strong>${outOfService.toLocaleString("ca-ES")}</strong>
+        <small>${formatPct(pctOosFleet)} de bicicletes aparcades · ${formatPct(pctOosAnchors)} dels ancoratges</small>
+        ${sparklineSlot(oosValues, statsPending)}
+        ${oosPoints.length > 1 ? sparkHint : ""}
+        ${histOos ? `<small class="kpi-hist">${histOos}</small>` : ""}
+      `
+      )}
       </div>
-      ${hint}
-    </article>
+    </div>
   `;
 
-  if (showSpark && !statsPending) bindKpiSummary(container, charts);
+  if (showSpark) bindKpiCharts(container, charts);
 }
