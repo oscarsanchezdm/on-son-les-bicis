@@ -1,5 +1,5 @@
 import type { Barri, LatestData, Station } from "./data";
-import { bikesOutOfService, pctBikesOutOfService, pctOosOfBikeFleet } from "./data";
+import { bikesOutOfService, pctBikesOutOfService, pctOosOfAnchors } from "./data";
 import { formatDateTime, formatHour, historyFileLocalLabel } from "./format";
 
 const BASE = import.meta.env.BASE_URL;
@@ -13,6 +13,8 @@ export type HistoryPoint = {
   pct_bikes: number;
   pct_mechanical: number;
   pct_ebike: number;
+  pct_oos_anchors?: number;
+  /** Clau històrica (abans era % del parc de bicis). */
   pct_oos_fleet?: number;
 };
 
@@ -358,7 +360,7 @@ export function hourViewScopeLabel(hour: number, dayType: DayType): string {
   return `mitjana ${dayTypeLabel(dayType)} a les ${formatHour(hour)}`;
 }
 
-export type SparklineMetricKey = "pct_bikes" | "pct_mechanical" | "pct_ebike" | "pct_oos_fleet";
+export type SparklineMetricKey = "pct_bikes" | "pct_mechanical" | "pct_ebike" | "pct_oos_anchors";
 
 export type ChartPoint = { label: string; value: number; ts?: string; key?: string };
 
@@ -412,7 +414,12 @@ export function sparklineChartPoints(
   maxPoints = 96
 ): ChartPoint[] {
   return series.slice(-maxPoints).flatMap((p) => {
-    const value = p[key];
+    let value: number | undefined;
+    if (key === "pct_oos_anchors") {
+      value = p.pct_oos_anchors ?? p.pct_oos_fleet;
+    } else {
+      value = p[key];
+    }
     if (value === undefined) return [];
     const label = p.ts ? formatDateTime(p.ts) : `${p.date} ${formatHour(p.hour)}`;
     return [{ label, value, ts: p.ts }];
@@ -477,7 +484,7 @@ export type BarriSparklineSeries = {
   pct_bikes: number[];
   pct_mechanical: number[];
   pct_ebike: number[];
-  pct_oos_fleet: number[];
+  pct_oos_anchors: number[];
 };
 
 /** Recent hourly snapshots for one barri (for KPI sparklines). */
@@ -490,7 +497,7 @@ export async function loadBarriSparklineSeries(
   const pct_bikes: number[] = [];
   const pct_mechanical: number[] = [];
   const pct_ebike: number[] = [];
-  const pct_oos_fleet: number[] = [];
+  const pct_oos_anchors: number[] = [];
   const labels: string[] = [];
   const keys: string[] = [];
 
@@ -511,11 +518,11 @@ export async function loadBarriSparklineSeries(
     pct_bikes.push(b.pct_bikes);
     pct_mechanical.push((100 * b.bikes_mechanical) / b.capacity_total);
     pct_ebike.push(b.pct_ebike);
-    pct_oos_fleet.push(pctOosOfBikeFleet(b.bikes_total, oos));
+    pct_oos_anchors.push(pctOosOfAnchors(b.capacity_total, oos));
   }
 
   if (!pct_bikes.length) return null;
-  return { labels, keys, pct_bikes, pct_mechanical, pct_ebike, pct_oos_fleet };
+  return { labels, keys, pct_bikes, pct_mechanical, pct_ebike, pct_oos_anchors };
 }
 
 /** Recent hourly city totals (for KPI sparklines when no barri is selected). */
@@ -527,7 +534,7 @@ export async function loadCitySparklineSeries(
   const pct_bikes: number[] = [];
   const pct_mechanical: number[] = [];
   const pct_ebike: number[] = [];
-  const pct_oos_fleet: number[] = [];
+  const pct_oos_anchors: number[] = [];
   const labels: string[] = [];
   const keys: string[] = [];
 
@@ -556,9 +563,9 @@ export async function loadCitySparklineSeries(
     pct_bikes.push((100 * bikes) / capacity);
     pct_mechanical.push((100 * mechanical) / capacity);
     pct_ebike.push((100 * ebike) / capacity);
-    pct_oos_fleet.push(pctOosOfBikeFleet(bikes, oos));
+    pct_oos_anchors.push(pctOosOfAnchors(capacity, oos));
   }
 
   if (!pct_bikes.length) return null;
-  return { labels, keys, pct_bikes, pct_mechanical, pct_ebike, pct_oos_fleet };
+  return { labels, keys, pct_bikes, pct_mechanical, pct_ebike, pct_oos_anchors };
 }

@@ -104,22 +104,29 @@ function metricLabel(): string {
 }
 
 function legendText(): string {
-  const metric = metricLabel();
-  const scalePart =
-    heatScale === "absolute"
-      ? "Mode quantitat: color del filtre, intensitat segons el nombre o el %."
-      : mode === "out_of_service"
-        ? "Mode percentatge: verd (poc FS) → vermell (molt FS), sense saturació blava."
-        : "Mode percentatge: escala difuminada (vermell <10%, verd abundant, blau = saturació).";
-  if (selectedBarri) {
-    return `${scalePart} Barri: ${selectedBarri.barri_nom}. Mètrica: ${metric}.`;
+  const scope = selectedBarri
+    ? ` Àmbit: ${selectedBarri.barri_nom}.`
+    : isHistoricalView(timeView)
+      ? ` Dades mitjana històrica (${timeViewLabel(timeView, historyIndex)}).`
+      : "";
+
+  if (heatScale === "absolute") {
+    const base =
+      mode === "out_of_service"
+        ? "Nombre de bicicletes fora de servei."
+        : mode === "docks"
+          ? "Nombre d'ancoratges lliures."
+          : `Nombre de bicicletes ${metricLabel()}.`;
+    return `${base} Les estacions amb zero no es mostren.${scope}`;
   }
-  if (isHistoricalView(timeView)) {
-    return `${scalePart} Mitjana històrica de ${metric} (${timeViewLabel(timeView, historyIndex)}).`;
+
+  if (mode === "out_of_service") {
+    return `Percentatge de bicicletes fora de servei sobre el total d'ancoratges. Mapa, barris, estacions i taula.${scope}`;
   }
-  return heatScale === "absolute"
-    ? `${scalePart} Estacions sense ${metric} s'oculten.`
-    : `${scalePart} Mapa, barris, estacions i taula.`;
+  if (mode === "docks") {
+    return `Percentatge d'ancoratges lliures sobre el total d'ancoratges.${scope}`;
+  }
+  return `Percentatge de bicicletes ${metricLabel()} sobre el total d'ancoratges.${scope}`;
 }
 
 function updateLegend(): void {

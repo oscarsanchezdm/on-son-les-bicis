@@ -1,5 +1,5 @@
 import type { Barri, MetricMode } from "../lib/data";
-import { barriMetric, barriMetricCount, barriOosFleetPct } from "../lib/data";
+import { barriMetric, barriMetricCount, barriOosAnchorPct } from "../lib/data";
 import type { TimeView } from "../lib/history";
 import { metricAbsoluteColor, metricPctColor, type HeatScaleMode } from "../lib/colors";
 import { formatPct } from "../lib/format";
@@ -46,7 +46,7 @@ function sortValue(barri: Barri, key: BarriSortKey, heatScale: HeatScaleMode): s
     case "pct_docks_free":
       return barri.pct_docks_free;
     case "pct_bikes_out_of_service":
-      return barriOosFleetPct(barri);
+      return barriOosAnchorPct(barri);
   }
 }
 
@@ -137,7 +137,7 @@ export function renderBarriTable(
                     return countCell(barriMetricCount(b, metric), maxByColumn[key], metric);
                   }
                   if (key === "pct_bikes_out_of_service") {
-                    return pctCell(barriOosFleetPct(b), "out_of_service");
+                    return pctCell(barriOosAnchorPct(b), "out_of_service");
                   }
                   const pct =
                     key === "pct_bikes"
