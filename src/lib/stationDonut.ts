@@ -3,7 +3,7 @@ import { bikesOutOfService, stationDocksDisabled, stationOosCount } from "./data
 import { METRIC_ABSOLUTE_COLORS } from "./colors";
 import { formatPct } from "./format";
 import { countIconHtml } from "./icons";
-import { renderSparkline } from "./sparkline";
+import { renderSparklineChart } from "./sparkline";
 
 export type StationBreakdown = {
   name: string;
@@ -17,6 +17,13 @@ export type StationBreakdown = {
   barri_nom?: string;
   district?: string;
   status?: string;
+  historical?: boolean;
+  historicalLabel?: string;
+};
+
+export type StationPopupContext = {
+  historical?: boolean;
+  historicalLabel?: string;
 };
 
 type SegmentKey = "ebike" | "mechanical" | "docks" | "oos" | "docks_disabled";
@@ -118,7 +125,10 @@ function activeSegments(b: StationBreakdown) {
   })).filter((s) => s.count > 0);
 }
 
-export function breakdownFromStation(station: Station): StationBreakdown {
+export function breakdownFromStation(
+  station: Station,
+  context: StationPopupContext = {}
+): StationBreakdown {
   return {
     name: station.name,
     station_id: station.station_id,
@@ -131,10 +141,12 @@ export function breakdownFromStation(station: Station): StationBreakdown {
     barri_nom: station.barri_nom,
     district: station.district,
     status: station.status,
+    historical: context.historical,
+    historicalLabel: context.historicalLabel,
   };
 }
 
-export function breakdownFromBarri(barri: Barri): StationBreakdown {
+export function breakdownFromBarri(barri: Barri, context: StationPopupContext = {}): StationBreakdown {
   const oos =
     barri.bikes_out_of_service ??
     bikesOutOfService(
@@ -152,6 +164,8 @@ export function breakdownFromBarri(barri: Barri): StationBreakdown {
     docks: barri.docks_available_total,
     oos,
     docks_disabled: 0,
+    historical: context.historical,
+    historicalLabel: context.historicalLabel,
   };
 }
 
@@ -222,18 +236,21 @@ function metaLine(b: StationBreakdown): string {
   return `<p class="station-popup__meta">${parts.join(" · ")}${offline}</p>`;
 }
 
+function historicalNote(b: StationBreakdown): string {
+  if (!b.historical) return "";
+  const label = b.historicalLabel ?? "aquesta franja horària";
+  return `<p class="station-popup__note">Dades mitjana històrica: ${label} (30 dies)</p>`;
+}
+
 export function renderStationPopupContent(
   b: StationBreakdown,
-  options: { historical?: boolean } = {}
+  _options: StationPopupContext = {}
 ): string {
-  const hist = options.historical
-    ? `<p class="station-popup__note">Mitjana històrica a aquesta franja</p>`
-    : "";
   const payload = encodeBreakdown(b);
   return `<div class="station-popup">
     <p class="station-popup__title"><strong>${b.name}</strong></p>
     ${metaLine(b)}
-    ${hist}
+    ${historicalNote(b)}
     <div class="station-popup__chart">
       <button type="button" class="station-donut-trigger" data-station-breakdown="${payload}" aria-label="Amplia el gràfic de distribució d'ancoratges">
         ${renderDonutSvg(b, 76)}
@@ -249,6 +266,7 @@ function renderModalPanel(b: StationBreakdown, sparklineHtml = ""): string {
     <button type="button" class="station-donut-modal__close" aria-label="Tanca">×</button>
     <p class="station-donut-modal__title"><strong>${b.name}</strong></p>
     ${metaLine(b)}
+    ${historicalNote(b)}
     <p class="station-donut-modal__subtitle">${b.capacity.toLocaleString("ca-ES")} ancoratges totals</p>
     <div class="station-donut-modal__chart">${renderDonutSvg(b, 200, "station-donut station-donut--large")}</div>
     ${renderLegend(b, false)}
@@ -294,12 +312,12 @@ export function openStationDonutModal(b: StationBreakdown): void {
   const closeBtn = host.querySelector<HTMLButtonElement>(".station-donut-modal__close");
   closeBtn?.focus();
 
-  if (sparklineLoader) {
+  if (sparklineLoader && !b.historical) {
     void sparklineLoader(b).then((values) => {
       if (root.hidden) return;
       const spark =
         values.length > 1
-          ? `<div class="station-donut-modal__spark"><p class="station-donut-modal__spark-label">Bicicletes (% ancoratges) · últimes 24 h</p>${renderSparkline(values, 280, 56)}</div>`
+          ? `<div class="station-donut-modal__spark"><p class="station-donut-modal__spark-label">Bicicletes (% ancoratges) · últimes 24 h</p>${renderSparklineChart(values)}</div>`
           : "";
       host.innerHTML = renderModalPanel(b, spark);
       host.querySelector<HTMLButtonElement>(".station-donut-modal__close")?.focus();

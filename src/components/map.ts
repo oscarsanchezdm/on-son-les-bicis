@@ -10,6 +10,7 @@ import {
   type ColorHeatLayer,
 } from "../lib/colorHeatLayer";
 import type { TimeView } from "../lib/history";
+import { hourViewScopeLabel } from "../lib/history";
 import { isStationMappable } from "../lib/status";
 import {
   absoluteStationRadius,
@@ -25,6 +26,7 @@ import {
   breakdownFromBarri,
   breakdownFromStation,
   renderStationPopupContent,
+  type StationPopupContext,
 } from "../lib/stationDonut";
 
 function stationCountsShort(s: Station): string {
@@ -32,8 +34,19 @@ function stationCountsShort(s: Station): string {
   return `${countIconHtml("ebike")} ${s.ebike} ${countIconHtml("mechanical")} ${s.mechanical} ${countIconHtml("dock")} ${s.docks_available} ${countIconHtml("maintenance")} ${fs}`;
 }
 
-function stationPopupHtml(s: Station, historical = false): string {
-  return renderStationPopupContent(breakdownFromStation(s), { historical });
+function popupContext(timeView: TimeView): StationPopupContext {
+  if (timeView.kind === "hour") {
+    return {
+      historical: true,
+      historicalLabel: hourViewScopeLabel(timeView.hour, timeView.dayType),
+    };
+  }
+  return {};
+}
+
+function stationPopupHtml(s: Station, timeView: TimeView): string {
+  const ctx = popupContext(timeView);
+  return renderStationPopupContent(breakdownFromStation(s, ctx), ctx);
 }
 
 function stationTooltipHtml(s: Station): string {
@@ -111,7 +124,6 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
   ) {
     const byCode = new Map(barris.map((b) => [b.barri_codi, b]));
     const showStations = stations !== null;
-    const isHistorical = timeView.kind === "hour";
 
     if (barriLayer) {
       map.removeLayer(barriLayer);
@@ -153,9 +165,9 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
         const codi = String(feature?.properties?.codi_barri ?? "");
         const barri = byCode.get(codi);
         if (!barri) return;
-        const isHistoricalBarri = timeView.kind === "hour";
+        const barriCtx = popupContext(timeView);
         layer.bindPopup(
-          renderStationPopupContent(breakdownFromBarri(barri), { historical: isHistoricalBarri }) +
+          renderStationPopupContent(breakdownFromBarri(barri, barriCtx), barriCtx) +
             `<p class="station-popup__extra">Estacions sense elèctriques: ${formatPct(pctOfStations(barri.stations_zero_ebike, barri.stations_active))} · Sense mecàniques: ${formatPct(pctOfStations(barri.stations_zero_mechanical ?? 0, barri.stations_active))}</p>`
         );
       },
@@ -177,7 +189,7 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
 
       for (const s of offlineStations) {
         if (!s.lat || !s.lon) continue;
-        const popup = stationPopupHtml(s, isHistorical);
+        const popup = stationPopupHtml(s, timeView);
         const tooltip = stationTooltipHtml(s);
         const marker = L.circleMarker([s.lat, s.lon], {
           pane: "stationOfflinePane",
@@ -213,7 +225,7 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
 
         const fillColor = isAbsolute ? metricAbsoluteColor(mode) : metricPctColor(value, mode);
         const fillOpacity = isAbsolute ? 0.55 + 0.4 * Math.pow(count / maxCount, 0.65) : 0.92;
-        const popup = stationPopupHtml(s, isHistorical);
+        const popup = stationPopupHtml(s, timeView);
         const tooltip = stationTooltipHtml(s);
 
         const bindStationUi = (layer: L.CircleMarker) => {
