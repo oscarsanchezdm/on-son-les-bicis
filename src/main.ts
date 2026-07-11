@@ -27,6 +27,8 @@ import {
   loadCitySparklineSeriesRecent,
   loadHistoryIndex,
   loadHourlyViewData,
+  nextReplayHourView,
+  prevReplayHourView,
   loadStationIds,
   loadStationSparklinePct,
   loadSummary7d,
@@ -243,14 +245,13 @@ function advanceReplayHour(): void {
   if (timeViewLoading || !replayPlaying || timeView.kind !== "hour" || !historyIndex) {
     return;
   }
-  const hours = hoursForDayType(historyIndex, timeView.dayType);
-  if (!hours.length) {
+  const next = nextReplayHourView(historyIndex, timeView);
+  if (!next) {
     stopReplay();
+    void refresh();
     return;
   }
-  const idx = hours.indexOf(timeView.hour);
-  const nextHour = idx < 0 || idx >= hours.length - 1 ? hours[0]! : hours[idx + 1]!;
-  void applyTimeView({ kind: "hour", hour: nextHour, dayType: timeView.dayType }, true);
+  void applyTimeView(next, true);
 }
 
 function startReplay(): void {
@@ -281,12 +282,12 @@ async function toggleReplay(): Promise<void> {
 function stepReplayHour(delta: -1 | 1): void {
   stopReplay();
   if (timeView.kind !== "hour" || !historyIndex) return;
-  const hours = hoursForDayType(historyIndex, timeView.dayType);
-  if (!hours.length) return;
-  const idx = hours.indexOf(timeView.hour);
-  const base = idx < 0 ? 0 : idx;
-  const nextIdx = (base + delta + hours.length) % hours.length;
-  void applyTimeView({ kind: "hour", hour: hours[nextIdx]!, dayType: timeView.dayType });
+  const next =
+    delta === 1
+      ? nextReplayHourView(historyIndex, timeView)
+      : prevReplayHourView(historyIndex, timeView);
+  if (!next) return;
+  void applyTimeView(next);
 }
 
 function toggleReplaySpeed(): void {

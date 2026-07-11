@@ -63,9 +63,9 @@ function replayControlsHtml(isLatest: boolean, playing: boolean, speed: 1 | 2): 
   const playLabel = playing ? "Pausa el replay" : "Reprodueix hora a hora";
   const playIcon = playing ? "❚❚" : "▶";
   return `<div class="replay-controls" role="group" aria-label="Replay de franja horària">
-    <button type="button" id="replay-prev" class="replay-btn" aria-label="Hora anterior">◀</button>
+    <button type="button" id="replay-prev" class="replay-btn replay-btn--skip" aria-label="Hora anterior"><span class="replay-skip replay-skip--back" aria-hidden="true"><span class="replay-skip__bar"></span><span class="replay-skip__tri">◀</span></span></button>
     <button type="button" id="replay-play" class="replay-btn replay-btn--play ${playing ? "active" : ""}" aria-label="${playLabel}" aria-pressed="${playing}">${playIcon}</button>
-    <button type="button" id="replay-next" class="replay-btn" aria-label="Hora següent">▶</button>
+    <button type="button" id="replay-next" class="replay-btn replay-btn--skip" aria-label="Hora següent"><span class="replay-skip replay-skip--fwd" aria-hidden="true"><span class="replay-skip__tri">▶</span><span class="replay-skip__bar"></span></span></button>
     <button type="button" id="replay-speed" class="replay-btn replay-btn--speed" aria-label="Velocitat de reproducció">${speed}×</button>
   </div>`;
 }

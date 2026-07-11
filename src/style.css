@@ -1434,6 +1434,30 @@ body.station-donut-modal-open {
   font-size: 0.72rem;
 }
 
+.replay-btn--skip {
+  min-width: 2.35rem;
+  padding: 0 0.35rem;
+}
+
+.replay-skip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.1rem;
+  line-height: 1;
+}
+
+.replay-skip__tri {
+  font-size: 0.72rem;
+}
+
+.replay-skip__bar {
+  display: inline-block;
+  width: 2px;
+  height: 0.72rem;
+  border-radius: 1px;
+  background: currentColor;
+}
+
 .hour-picker {
   display: flex;
   align-items: center;
