@@ -1,5 +1,6 @@
 import "./style.css";
 import { renderBarriTable } from "./components/barriTable";
+import { renderCompositionCard } from "./components/compositionCard";
 import { latestFromBarri, renderKpis } from "./components/kpi";
 import { createMap } from "./components/map";
 import { renderStationTable } from "./components/stationTable";
@@ -69,6 +70,7 @@ app.innerHTML = `
   <main>
     <section id="timeline"></section>
     <section id="kpis"></section>
+    <section id="composition" class="composition-section"></section>
     <section class="map-section">
       <div id="map"></div>
       <aside class="legend">
@@ -329,9 +331,6 @@ function timelineOptions() {
     onChange: (view: TimeView) => {
       void applyTimeView(view);
     },
-    composition: buildCompositionBreakdown(),
-    compositionScope: compositionScopeLabel(),
-    showClearStation: Boolean(selectedStation && selectedBarri),
     replayPlaying,
     replaySpeed,
     onReplayToggle: () => {
@@ -339,7 +338,6 @@ function timelineOptions() {
     },
     onReplayStep: stepReplayHour,
     onReplaySpeedToggle: toggleReplaySpeed,
-    onClearStation: clearStationSelection,
   };
 }
 
@@ -577,6 +575,12 @@ async function refresh() {
       statsPending: statsPending(),
     }
   );
+  renderCompositionCard(document.getElementById("composition")!, {
+    breakdown: buildCompositionBreakdown(),
+    scopeLabel: compositionScopeLabel(),
+    showClearStation: Boolean(selectedStation && selectedBarri),
+    onClearStation: clearStationSelection,
+  });
   mapView.update(
     mode,
     displayBarris,

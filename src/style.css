@@ -156,7 +156,132 @@ h1 {
 }
 
 .kpi-panel {
-  margin: 0.75rem 0 1rem;
+  margin: 0.75rem 0 0.5rem;
+}
+
+.composition-section {
+  margin: 0 0 1rem;
+}
+
+.composition-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+}
+
+.composition-card--empty {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.composition-card__inner {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+}
+
+.composition-card__chart {
+  flex-shrink: 0;
+}
+
+.composition-card__donut-btn {
+  display: block;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.composition-card__donut-btn:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+
+.composition-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.composition-card__head {
+  margin-bottom: 0.5rem;
+}
+
+.composition-card__title {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1.25;
+}
+
+.composition-card__total {
+  margin: 0.2rem 0 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.composition-card__total strong {
+  color: var(--text);
+  font-size: 1.05rem;
+}
+
+.composition-card__note {
+  margin: 0 0 0.5rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.composition-card__clear {
+  flex-shrink: 0;
+  width: 1.35rem;
+  height: 1.35rem;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: white;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.composition-card__clear:hover {
+  color: var(--teal);
+  border-color: var(--teal);
+}
+
+.composition-card .station-donut-legend {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.4rem 1.25rem;
+}
+
+.composition-card .station-donut-legend__item--full {
+  font-size: 0.84rem;
+}
+
+.station-popup--simple .station-popup__stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  margin: 0.4rem 0 0;
+}
+
+.station-popup__stat {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  line-height: 1.3;
+  color: var(--text);
+}
+
+.station-popup__stat strong {
+  font-weight: 700;
 }
 
 .async-loading {
@@ -1309,91 +1434,6 @@ body.station-donut-modal-open {
   font-size: 0.72rem;
 }
 
-.timeline-composition {
-  display: flex;
-  gap: 0.75rem;
-  align-items: flex-start;
-  margin-top: 0.65rem;
-  padding-top: 0.65rem;
-  border-top: 1px solid var(--border);
-}
-
-.timeline-composition--empty {
-  color: var(--muted);
-  font-size: 0.82rem;
-}
-
-.timeline-composition__chart {
-  flex-shrink: 0;
-}
-
-.timeline-composition__donut-btn {
-  display: block;
-  padding: 0;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  border-radius: 50%;
-}
-
-.timeline-composition__donut-btn:focus-visible {
-  outline: 2px solid var(--teal);
-  outline-offset: 2px;
-}
-
-.timeline-composition__body {
-  flex: 1;
-  min-width: 0;
-}
-
-.timeline-composition__title {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  margin: 0 0 0.15rem;
-  font-weight: 700;
-  font-size: 0.9rem;
-  line-height: 1.25;
-}
-
-.timeline-composition__subtitle {
-  margin: 0 0 0.35rem;
-  font-size: 0.78rem;
-  color: var(--muted);
-}
-
-.timeline-composition__note {
-  margin: 0 0 0.35rem;
-  font-size: 0.75rem;
-}
-
-.timeline-composition__clear {
-  flex-shrink: 0;
-  width: 1.35rem;
-  height: 1.35rem;
-  padding: 0;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: white;
-  color: var(--muted);
-  font-size: 1rem;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.timeline-composition__clear:hover {
-  color: var(--teal);
-  border-color: var(--teal);
-}
-
-.timeline-composition .station-donut-legend {
-  margin: 0;
-}
-
-.timeline-composition .station-donut-legend__item {
-  font-size: 0.74rem;
-}
-
 .hour-picker {
   display: flex;
   align-items: center;
@@ -1466,12 +1506,17 @@ body.station-donut-modal-open {
     max-height: min(22rem, 45vh);
   }
 
-  .timeline-composition {
-    gap: 0.5rem;
+  .composition-card__inner {
+    flex-direction: column;
+    align-items: stretch;
   }
 
-  .timeline-composition .station-donut-legend__item {
-    font-size: 0.68rem;
+  .composition-card__chart {
+    align-self: center;
+  }
+
+  .composition-card .station-donut-legend {
+    grid-template-columns: 1fr;
   }
 
   .hour-select-label {
