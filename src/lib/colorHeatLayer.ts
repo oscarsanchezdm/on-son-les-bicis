@@ -9,8 +9,18 @@ import { metricAbsoluteColor, metricPctColor } from "./colors";
 import type { MetricMode, Station } from "./data";
 import { stationCount, stationMetric } from "./data";
 
-export function stationMarkerRadius(capacity: number): number {
-  return Math.min(8, Math.max(4, 3.2 + capacity * 0.07));
+/** Scale marker/heat splats down at city-wide zoom so overlays do not oversaturate. */
+export function mapZoomVisualScale(zoom: number): number {
+  if (zoom >= 15) return 1;
+  if (zoom >= 13) return 0.9;
+  if (zoom >= 12) return 0.75;
+  if (zoom >= 11) return 0.65;
+  return 0.55;
+}
+
+export function stationMarkerRadius(capacity: number, zoom = 12): number {
+  const base = Math.min(8, Math.max(4, 3.2 + capacity * 0.07));
+  return Math.max(3, base * mapZoomVisualScale(zoom));
 }
 
 /** ~44px touch target on coarse pointers; unchanged on mouse/trackpad. */
@@ -36,10 +46,15 @@ function capacityWeight(capacity: number, maxCapacity: number): number {
 }
 
 function splatRadius(zoom: number): number {
-  if (zoom >= 15) return 22;
-  if (zoom >= 13) return 28;
-  if (zoom >= 11) return 36;
-  return 44;
+  const base =
+    zoom >= 15 ? 18 : zoom >= 13 ? 22 : zoom >= 12 ? 24 : zoom >= 11 ? 28 : 32;
+  return Math.max(14, base * mapZoomVisualScale(zoom));
+}
+
+function splatAlphaScale(zoom: number): number {
+  if (zoom >= 14) return 1;
+  if (zoom >= 12) return 0.72;
+  return 0.58;
 }
 
 export type ColorHeatLayer = L.Renderer & {
@@ -129,7 +144,9 @@ const ColorHeatLayerImpl = L.Renderer.extend({
     const maxCapacity = Math.max(...active.map((s) => s.capacity));
     const mode = this._mode as MetricMode;
     const heatScale = this._heatScale as HeatScaleMode;
-    const radius = splatRadius(map.getZoom());
+    const zoom = map.getZoom();
+    const radius = splatRadius(zoom);
+    const alphaScale = splatAlphaScale(zoom);
 
     const maxCount =
       heatScale === "absolute"
@@ -157,12 +174,12 @@ const ColorHeatLayerImpl = L.Renderer.extend({
         if (count <= 0) continue;
         [r, g, b] = hexToRgb(metricAbsoluteColor(mode));
         const intensity = Math.pow(count / maxCount, 0.8);
-        alpha = 0.08 + 0.42 * intensity;
+        alpha = (0.08 + 0.42 * intensity) * alphaScale;
       } else {
         const availability = stationMetric(s, mode);
         [r, g, b] = hexToRgb(metricPctColor(availability, mode));
         const weight = capacityWeight(s.capacity, maxCapacity);
-        alpha = 0.1 + 0.32 * weight;
+        alpha = (0.1 + 0.32 * weight) * alphaScale;
       }
 
       const grad = ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, radius);

@@ -4,6 +4,7 @@ import type { Barri, MetricMode, Station } from "../lib/data";
 import { barriMetric, pctOfStations, stationCount, stationMetric, stationOosCount } from "../lib/data";
 import {
   createColorHeatLayer,
+  mapZoomVisualScale,
   stationHitRadius,
   stationMarkerRadius,
   stationNeedsExpandedHitTarget,
@@ -104,6 +105,20 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
   let heatLayer: ColorHeatLayer | null = null;
   let heatMode: MetricMode | null = null;
   let heatScaleMode: HeatScaleMode = "percent";
+  type UpdateArgs = [
+    MetricMode,
+    Barri[],
+    Station[] | null,
+    TimeView,
+    string | null | undefined,
+    HeatScaleMode | undefined,
+  ];
+  let lastUpdateArgs: UpdateArgs | null = null;
+
+  map.on("zoomend", () => {
+    if (!lastUpdateArgs) return;
+    update(...lastUpdateArgs);
+  });
 
   map.on("popupopen", (e) => {
     for (const layer of [stationLayer, offlineStationLayer]) {
@@ -122,6 +137,9 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
     selectedBarriCodi: string | null = null,
     heatScale: HeatScaleMode = "percent"
   ) {
+    lastUpdateArgs = [mode, barris, stations, timeView, selectedBarriCodi, heatScale];
+    const zoom = map.getZoom();
+    const zoomScale = mapZoomVisualScale(zoom);
     const byCode = new Map(barris.map((b) => [b.barri_codi, b]));
     const showStations = stations !== null;
 
@@ -193,7 +211,7 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
         const tooltip = stationTooltipHtml(s);
         const marker = L.circleMarker([s.lat, s.lon], {
           pane: "stationOfflinePane",
-          radius: 4,
+          radius: Math.max(3, 4 * zoomScale),
           fillColor: "#94a3b8",
           fillOpacity: 0.55,
           color: "#94a3b8",
@@ -219,8 +237,8 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
         if (isAbsolute && count <= 0) continue;
 
         const visualRadius = isAbsolute
-          ? absoluteStationRadius(count, maxCount, s.capacity)
-          : stationMarkerRadius(s.capacity);
+          ? Math.max(3, absoluteStationRadius(count, maxCount, s.capacity) * zoomScale)
+          : stationMarkerRadius(s.capacity, zoom);
         if (visualRadius <= 0) continue;
 
         const fillColor = isAbsolute ? metricAbsoluteColor(mode) : metricPctColor(value, mode);

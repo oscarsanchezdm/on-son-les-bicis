@@ -716,7 +716,23 @@ body.kpi-chart-open {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 0.45rem 0.55rem;
+  align-items: start;
+}
+
+.station-donut-col {
+  display: flex;
+  flex-direction: column;
   align-items: center;
+  gap: 0.15rem;
+  min-width: 4.75rem;
+}
+
+.station-donut-caption {
+  margin: 0;
+  font-size: 0.68rem;
+  color: var(--muted);
+  line-height: 1.2;
+  text-align: center;
 }
 
 .station-popup__extra {
@@ -729,7 +745,6 @@ body.kpi-chart-open {
 }
 
 .station-donut-trigger {
-  position: relative;
   display: grid;
   place-items: center;
   padding: 0;
@@ -740,26 +755,33 @@ body.kpi-chart-open {
   touch-action: manipulation;
 }
 
+.station-donut-trigger:disabled {
+  cursor: default;
+}
+
 .station-donut-trigger:focus-visible {
   outline: 2px solid #0f766e;
   outline-offset: 2px;
 }
 
 .station-donut-trigger__hint {
-  position: absolute;
-  bottom: -0.1rem;
-  font-size: 0.58rem;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  font-size: 0.68rem;
   color: #0f766e;
   font-weight: 600;
-  background: rgba(255, 255, 255, 0.92);
-  padding: 0.05rem 0.25rem;
-  border-radius: 3px;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.station-donut-trigger__chevron {
+  font-size: 0.85rem;
+  line-height: 1;
 }
 
 .station-donut__total {
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 700;
   fill: var(--text);
 }
@@ -944,16 +966,7 @@ body.station-donut-modal-open {
   }
 
   .station-donut-trigger__hint {
-    font-size: 0;
-  }
-
-  .station-donut-trigger__hint::after {
-    content: "Toca";
-    font-size: 0.58rem;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    color: #0f766e;
-    font-weight: 600;
+    font-size: 0.64rem;
   }
 }
 
