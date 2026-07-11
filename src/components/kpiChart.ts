@@ -184,6 +184,63 @@ export function renderKpiChartSvg(
   return renderChartSvg(points, valueFormat);
 }
 
+export type HourlyChartPoint = { hour: number; value: number };
+
+function renderHourlyPolyline(
+  points: HourlyChartPoint[],
+  y: (v: number) => number,
+  xForHour: (h: number) => number,
+  className: string
+): string {
+  if (!points.length) return "";
+  const sorted = [...points].sort((a, b) => a.hour - b.hour);
+  const polyline = sorted.map((p) => `${xForHour(p.hour)},${y(p.value)}`).join(" ");
+  return `<polyline class="${className}" fill="none" points="${polyline}" />`;
+}
+
+/** Gràfic horari amb dues sèries alineades (0–23 h). */
+export function renderDualKpiChartSvg(
+  today: HourlyChartPoint[],
+  avg: HourlyChartPoint[],
+  valueFormat: "count" = "count"
+): string {
+  const { w, h } = plotSize();
+  const allValues = [...today, ...avg].map((p) => p.value);
+  const { min, max } = valueFormat === "pct" ? yBoundsPct(allValues) : yBoundsCount(allValues);
+  const y = yScale(min, max, h);
+  const xForHour = (hour: number) => MARGIN.left + (hour / 23) * w;
+  const ticks =
+    valueFormat === "pct" ? yTickValuesPct(min, max) : yTickValuesCount(min, max);
+
+  const grid = ticks
+    .map((tick) => {
+      const py = y(tick);
+      return `<line class="kpi-chart-grid" x1="${MARGIN.left}" y1="${py}" x2="${MARGIN.left + w}" y2="${py}" />
+        <text class="kpi-chart-axis" x="${MARGIN.left - 8}" y="${py + 4}" text-anchor="end">${formatValue(tick, valueFormat)}</text>`;
+    })
+    .join("");
+
+  const xLabels = [0, 6, 12, 18, 23]
+    .map((hour) => {
+      const px = xForHour(hour);
+      const label = `${String(hour).padStart(2, "0")}:00`;
+      return `<text class="kpi-chart-axis kpi-chart-axis--x" x="${px}" y="${CHART_HEIGHT - 14}" text-anchor="middle">${label}</text>`;
+    })
+    .join("");
+
+  const avgLine = renderHourlyPolyline(avg, y, xForHour, "kpi-chart-line kpi-chart-line--muted");
+  const todayLine = renderHourlyPolyline(today, y, xForHour, "kpi-chart-line");
+
+  return `<svg class="kpi-chart-svg" viewBox="0 0 ${CHART_WIDTH} ${CHART_HEIGHT}" role="img" aria-label="Ús estimat per hora">
+    ${grid}
+    <line class="kpi-chart-axis-line" x1="${MARGIN.left}" y1="${MARGIN.top}" x2="${MARGIN.left}" y2="${MARGIN.top + h}" />
+    <line class="kpi-chart-axis-line" x1="${MARGIN.left}" y1="${MARGIN.top + h}" x2="${MARGIN.left + w}" y2="${MARGIN.top + h}" />
+    ${avgLine}
+    ${todayLine}
+    ${xLabels}
+  </svg>`;
+}
+
 export function openKpiChart(spec: KpiChartSpec): void {
   if (!spec.points.length) return;
   const modal = ensureModal();
