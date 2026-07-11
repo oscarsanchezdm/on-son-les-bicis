@@ -603,6 +603,7 @@ body.kpi-chart-open {
   margin: 0 0 0.35rem;
   font-size: 0.78rem;
   color: var(--muted);
+  overflow-wrap: anywhere;
 }
 
 .station-dot--offline {
@@ -887,14 +888,15 @@ body.kpi-chart-open {
 }
 
 .station-popup {
-  min-width: 13.5rem;
-  max-width: 18rem;
+  min-width: 20rem;
+  max-width: 24rem;
 }
 
 .station-popup__title {
   margin: 0 0 0.35rem;
   font-size: 0.92rem;
   line-height: 1.25;
+  overflow-wrap: anywhere;
 }
 
 .station-popup__note {
@@ -903,6 +905,7 @@ body.kpi-chart-open {
   color: #0f766e;
   font-weight: 500;
   line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .station-popup__chart {
@@ -1030,7 +1033,7 @@ body.kpi-chart-open {
 
 .station-donut-legend__item {
   display: grid;
-  grid-template-columns: 0.45rem auto 1.6rem 1fr;
+  grid-template-columns: 0.45rem auto 1fr auto;
   gap: 0.15rem 0.25rem;
   align-items: center;
   font-size: 0.68rem;

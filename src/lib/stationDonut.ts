@@ -503,6 +503,8 @@ export function closeStationDonutModal(): void {
 export function bindStationDonutInPopup(popupEl: HTMLElement | null | undefined): void {
   if (!popupEl) return;
   popupEl.querySelectorAll<HTMLButtonElement>("[data-station-breakdown]").forEach((btn) => {
+    if (btn.dataset.bound === "1") return;
+    btn.dataset.bound = "1";
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
       const raw = btn.getAttribute("data-station-breakdown");
