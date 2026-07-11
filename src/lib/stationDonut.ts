@@ -2,6 +2,7 @@ import type { Barri, MetricMode, Station } from "./data";
 import { bikesOutOfService, stationDocksDisabled, stationOosCount } from "./data";
 import { METRIC_ABSOLUTE_COLORS } from "./colors";
 import { formatPct } from "./format";
+import { asyncLoadingHtml } from "./asyncLoading";
 import { countIconHtml } from "./icons";
 import type { ChartPoint } from "./history";
 import { renderSparklineChart } from "./sparkline";
@@ -290,6 +291,14 @@ export function renderStationPopupContent(
   </div>`;
 }
 
+function renderSparklineLoading(b: StationBreakdown): string {
+  return `<div class="station-donut-modal__spark station-donut-modal__spark--pending"><p class="station-donut-modal__spark-label">${sparklineLabel(b)}</p>${asyncLoadingHtml("station-donut-modal__spark-status")}</div>`;
+}
+
+function renderSparklineEmpty(b: StationBreakdown): string {
+  return `<div class="station-donut-modal__spark station-donut-modal__spark--empty"><p class="station-donut-modal__spark-label">${sparklineLabel(b)}</p><p class="station-donut-empty">Sense prou dades recents.</p></div>`;
+}
+
 function sparklineLabel(b: StationBreakdown): string {
   const scope = b.barri_codi && !b.station_id ? "barri" : "estació";
   const metric = SPARKLINE_METRIC_LABEL[sparklineMetricMode];
@@ -316,6 +325,7 @@ function renderModalPanel(b: StationBreakdown, sparklineHtml = ""): string {
   </div>`;
 }
 
+let modalSparklineRequest = 0;
 let modalRoot: HTMLElement | null = null;
 let sparklineLoader: ((b: StationBreakdown) => Promise<ChartPoint[]>) | null = null;
 let sparklineMetricMode: MetricMode = "total";
@@ -361,16 +371,22 @@ function ensureModal(): HTMLElement {
 export function openStationDonutModal(b: StationBreakdown): void {
   const root = ensureModal();
   const host = root.querySelector(".station-donut-modal__host")!;
-  host.innerHTML = renderModalPanel(b);
+  const requestId = ++modalSparklineRequest;
+  const showSparkline = Boolean(sparklineLoader && !b.historical);
+  host.innerHTML = renderModalPanel(
+    b,
+    showSparkline ? renderSparklineLoading(b) : ""
+  );
   root.hidden = false;
   document.body.classList.add("station-donut-modal-open");
-  const closeBtn = host.querySelector<HTMLButtonElement>(".station-donut-modal__close");
-  closeBtn?.focus();
+  host.querySelector<HTMLButtonElement>(".station-donut-modal__close")?.focus();
 
-  if (sparklineLoader && !b.historical) {
+  if (showSparkline && sparklineLoader) {
     void sparklineLoader(b).then((points) => {
-      if (root.hidden) return;
-      host.innerHTML = renderModalPanel(b, renderSparklineBlock(b, points));
+      if (root.hidden || requestId !== modalSparklineRequest) return;
+      const sparkHtml =
+        points.length > 1 ? renderSparklineBlock(b, points) : renderSparklineEmpty(b);
+      host.innerHTML = renderModalPanel(b, sparkHtml);
       host.querySelector<HTMLButtonElement>(".station-donut-modal__close")?.focus();
     });
   }
@@ -378,6 +394,7 @@ export function openStationDonutModal(b: StationBreakdown): void {
 
 export function closeStationDonutModal(): void {
   if (!modalRoot) return;
+  modalSparklineRequest++;
   modalRoot.hidden = true;
   document.body.classList.remove("station-donut-modal-open");
 }

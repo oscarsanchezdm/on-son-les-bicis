@@ -96,12 +96,15 @@ let mapView: ReturnType<typeof createMap> | null = null;
 let displayBarris: Barri[] = [];
 let displayStations: Station[] | null = null;
 let historyLoadPromise: Promise<void> | null = null;
+let historyLoading = false;
 let barriSparklineCache: BarriSparklineSeries | null = null;
 let barriSparklineCodi: string | null = null;
 let barriSparklineLoadId = 0;
 
 function scheduleHistoryLoad(): void {
   if (historyLoadPromise) return;
+  historyLoading = true;
+  void refresh();
   historyLoadPromise = (async () => {
     const [summary, index, stationIds] = await Promise.all([
       loadSummary7d(),
@@ -122,10 +125,14 @@ function scheduleHistoryLoad(): void {
         },
       });
     }
-    void refresh();
-  })().catch(() => {
-    historyLoadPromise = null;
-  });
+  })()
+    .catch(() => {
+      historyLoadPromise = null;
+    })
+    .finally(() => {
+      historyLoading = false;
+      void refresh();
+    });
 }
 
 async function ensureHistoryLoaded(): Promise<void> {
@@ -275,6 +282,10 @@ function updateTimelineStatus() {
   if (!timelineEl || !latestData) return;
 
   if (timeView.kind === "latest") {
+    if (historyLoading) {
+      setTimelineStatus(timelineEl, "Carregant dades…");
+      return;
+    }
     setTimelineStatus(timelineEl, formatRelativeTime(latestData.last_updated));
     return;
   }
@@ -306,7 +317,9 @@ function renderTableSection() {
 function setupSparklineLoader() {
   setStationDonutMetricMode(mode);
   setStationDonutSparklineLoader(async (b) => {
-    if (!historyIndex || b.historical) return [];
+    if (b.historical) return [];
+    await ensureHistoryLoaded();
+    if (!historyIndex) return [];
     if (b.station_id) {
       return loadStationSparklinePct(historyIndex, b.station_id, b.capacity, stationIdOrder, mode);
     }
@@ -315,6 +328,19 @@ function setupSparklineLoader() {
     }
     return [];
   });
+}
+
+function statsPending(): boolean {
+  if (isHistoricalView(timeView)) return false;
+  if (historyLoading) return true;
+  if (
+    selectedBarri &&
+    historyIndex &&
+    barriSparklineCodi !== selectedBarri.barri_codi
+  ) {
+    return true;
+  }
+  return false;
 }
 
 async function refresh() {
@@ -347,6 +373,7 @@ async function refresh() {
     {
       sampleCount,
       barriHistAverages: null,
+      statsPending: statsPending(),
     }
   );
   mapView.update(
@@ -404,8 +431,8 @@ async function applyTimeView(view: TimeView) {
     displayBarris = enrichBarrisWithFleetOos(barrisData.barris, latestData.stations);
     displayStations = latestData.stations;
   } else {
+    setTimelineStatus(timelineEl, "Carregant dades…");
     await ensureHistoryLoaded();
-    setTimelineStatus(timelineEl, "");
     const { barris, stations } = await loadHourlyViewData(
       historyIndex,
       view.hour,
@@ -414,6 +441,7 @@ async function applyTimeView(view: TimeView) {
       stationIdOrder
     );
     if (requestId !== timeViewRequest) return;
+    setTimelineStatus(timelineEl, "");
     displayBarris = stations
       ? enrichBarrisWithFleetOos(barris, stations)
       : barris;
