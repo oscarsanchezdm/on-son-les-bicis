@@ -265,54 +265,78 @@ h1 {
 
 .kpi-summary__chart {
   flex-shrink: 0;
-  min-width: 10.5rem;
+  min-width: 11rem;
+  max-width: 20rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.kpi-summary__chart-head {
+  margin: 0;
+}
+
+.kpi-summary__chart-label {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.25;
+}
+
+.kpi-summary__chart-subtitle {
+  margin: 0.08rem 0 0;
+  font-size: 0.68rem;
+  color: var(--muted);
+  line-height: 1.25;
+}
+
+.kpi-summary__chart-btn {
+  display: block;
+  width: 100%;
+  padding: 0.2rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.kpi-summary__chart-btn:not(:disabled):hover,
+.kpi-summary__chart-btn:not(:disabled):focus-visible {
+  border-color: #94a3b8;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+  outline: none;
+}
+
+.kpi-summary__chart-btn:disabled {
+  cursor: default;
+}
+
+.kpi-summary__chart-inner {
+  display: block;
+  min-height: 6.5rem;
 }
 
 .kpi-summary__chart-loading {
-  min-height: 8.5rem;
+  min-height: 6.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.kpi-bar-chart {
+.kpi-summary__chart-empty {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.kpi-chart-svg--compact {
   display: block;
   width: 100%;
-  max-width: 20rem;
   height: auto;
-  color: #64748b;
-}
-
-.kpi-bar-chart__grid {
-  stroke: #e2e8f0;
-  stroke-width: 1;
-}
-
-.kpi-bar-chart__axis-line {
-  stroke: #cbd5e1;
-  stroke-width: 1;
-}
-
-.kpi-bar-chart__axis,
-.kpi-bar-chart__label,
-.kpi-bar-chart__value {
-  fill: currentColor;
-  font-family: inherit;
-}
-
-.kpi-bar-chart__axis,
-.kpi-bar-chart__value {
-  font-size: 9px;
-}
-
-.kpi-bar-chart__label {
-  font-size: 8px;
-  fill: #64748b;
-}
-
-.kpi-bar-chart__value {
-  font-weight: 700;
-  fill: #334155;
+  color: #0d9488;
 }
 
 .kpi-summary__metrics {
@@ -335,16 +359,21 @@ h1 {
   border-radius: 8px;
 }
 
-.kpi-summary__metric--chartable {
+.kpi-summary__metric--selectable {
   cursor: pointer;
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 
-.kpi-summary__metric--chartable:hover,
-.kpi-summary__metric--chartable:focus-visible {
+.kpi-summary__metric--selectable:hover,
+.kpi-summary__metric--selectable:focus-visible {
   border-color: #cbd5e1;
   background: #f8fafc;
   outline: none;
+}
+
+.kpi-summary__metric--active {
+  border-color: #99f6e4;
+  background: #f0fdfa;
 }
 
 .kpi-summary__swatch {
@@ -1687,10 +1716,11 @@ body.station-donut-modal-open {
   .kpi-summary__chart {
     width: 100%;
     min-width: 0;
+    max-width: none;
   }
 
-  .kpi-bar-chart {
-    max-width: none;
+  .kpi-summary__chart-inner {
+    min-height: 5.5rem;
   }
 
   .kpi-summary__metric {

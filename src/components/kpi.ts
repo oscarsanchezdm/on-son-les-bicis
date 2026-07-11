@@ -16,13 +16,11 @@ import {
   hourlyAverage,
   labeledChartPoints,
   sparklineChartPoints,
-  sparklineValuesLast24h,
 } from "../lib/history";
 import { formatCount, formatPct, formatRelativeDeltaPct } from "../lib/format";
 import { asyncLoadingHtml } from "../lib/asyncLoading";
 import { kpiIconHtml, metricIconHtml } from "../lib/icons";
-import { bindKpiCharts, type KpiChartSpec } from "./kpiChart";
-import { renderKpiBarChart, type KpiBarItem } from "./kpiBarChart";
+import { bindKpiSummary, type KpiChartSpec } from "./kpiChart";
 
 /** Build KPI-shaped data for a single barri filter. */
 export function latestFromBarri(barri: Barri, lastUpdated: string): LatestData {
@@ -156,25 +154,22 @@ export type KpiRenderOptions = {
 };
 
 type MetricRow = {
-  key: string;
   chartKey: string;
-  chartable: boolean;
   icon: string;
   label: string;
   count: number;
   detail: string;
   notes: string[];
   hist?: string;
-  bar: KpiBarItem;
+  color: string;
 };
 
 function metricRowHtml(row: MetricRow): string {
-  const chartable = row.chartable ? " kpi-summary__metric--chartable" : "";
-  const attrs = row.chartable ? ` data-kpi-chart="${row.chartKey}"` : "";
+  const attrs = ` data-kpi-chart="${row.chartKey}"`;
   const notes = row.notes.map((n) => `<small class="kpi-summary__note">${n}</small>`).join("");
   const hist = row.hist ? `<small class="kpi-hist">${row.hist}</small>` : "";
-  return `<li class="kpi-summary__metric${chartable}"${attrs}>
-    <span class="kpi-summary__swatch" style="background:${row.bar.color}"></span>
+  return `<li class="kpi-summary__metric"${attrs}>
+    <span class="kpi-summary__swatch" style="background:${row.color}"></span>
     <div class="kpi-summary__metric-body">
       <p class="kpi-summary__metric-head">
         <span class="kpi-summary__metric-label">${row.icon}${row.label}</span>
@@ -290,9 +285,7 @@ export function renderKpis(
 
   const rows: MetricRow[] = [
     {
-      key: "bikes",
       chartKey: "bikes",
-      chartable: bikesPoints.length > 1,
       icon: kpiIconHtml("total"),
       label: "Bicicletes disponibles",
       count: t.bikes_total,
@@ -301,17 +294,10 @@ export function renderKpis(
       hist: showHist
         ? histNoteCount(summary, hour, "bikes_total", t.bikes_total, t.capacity, histAvg)
         : undefined,
-      bar: {
-        key: "bikes",
-        label: "Bicis",
-        count: t.bikes_total,
-        color: METRIC_ABSOLUTE_COLORS.total,
-      },
+      color: METRIC_ABSOLUTE_COLORS.total,
     },
     {
-      key: "mechanical",
       chartKey: "mechanical",
-      chartable: mechPoints.length > 1,
       icon: kpiIconHtml("mechanical"),
       label: "Mecàniques",
       count: t.bikes_mechanical,
@@ -320,17 +306,10 @@ export function renderKpis(
       hist: showHist
         ? histNoteCount(summary, hour, "bikes_mechanical", t.bikes_mechanical, t.capacity, histAvg)
         : undefined,
-      bar: {
-        key: "mechanical",
-        label: "Mec.",
-        count: t.bikes_mechanical,
-        color: METRIC_ABSOLUTE_COLORS.mechanical,
-      },
+      color: METRIC_ABSOLUTE_COLORS.mechanical,
     },
     {
-      key: "ebike",
       chartKey: "ebike",
-      chartable: ebikePoints.length > 1,
       icon: kpiIconHtml("ebike"),
       label: "Elèctriques",
       count: t.bikes_ebike,
@@ -339,40 +318,37 @@ export function renderKpis(
       hist: showHist
         ? histNoteCount(summary, hour, "bikes_ebike", t.bikes_ebike, t.capacity, histAvg)
         : undefined,
-      bar: {
-        key: "ebike",
-        label: "Elèct.",
-        count: t.bikes_ebike,
-        color: METRIC_ABSOLUTE_COLORS.ebike,
-      },
+      color: METRIC_ABSOLUTE_COLORS.ebike,
     },
     {
-      key: "oos",
       chartKey: "oos",
-      chartable: oosPoints.length > 1,
       icon: metricIconHtml("out_of_service", "kpi-icon"),
       label: "Fora de servei",
       count: outOfService,
       detail: `${formatPct(pctOosFleet)} de bicicletes aparcades · ${formatPct(pctOosAnchors)} dels ancoratges`,
       notes: [],
       hist: showHist ? histNotePct(summary, hour, "pct_oos_fleet", pctOosFleet, histAvg) : undefined,
-      bar: {
-        key: "oos",
-        label: "FS",
-        count: outOfService,
-        color: METRIC_ABSOLUTE_COLORS.out_of_service,
-      },
+      color: METRIC_ABSOLUTE_COLORS.out_of_service,
     },
   ];
 
-  const chartHtml = statsPending
+  const chartInner = statsPending
     ? asyncLoadingHtml("kpi-async-loading kpi-summary__chart-loading")
-    : renderKpiBarChart(rows.map((row) => row.bar));
+    : "";
 
-  const hint =
-    showSpark && rows.some((row) => row.chartable)
-      ? `<small class="kpi-chart-hint">Clica una mètrica per veure el detall · últimes 24 h</small>`
-      : "";
+  const hint = showSpark
+    ? `<small class="kpi-chart-hint">Clica una mètrica per canviar la gràfica · clica la gràfica per ampliar</small>`
+    : "";
+
+  const chartBlock = showSpark
+    ? `<div class="kpi-summary__chart-head">
+        <p class="kpi-summary__chart-label">Últimes 24 h</p>
+        <p class="kpi-summary__chart-subtitle"></p>
+      </div>
+      <button type="button" class="kpi-summary__chart-btn" disabled>
+        <span class="kpi-summary__chart-inner">${chartInner}</span>
+      </button>`
+    : `<p class="kpi-summary__chart-empty">Dades mitjana històrica (sense tendència 24 h).</p>`;
 
   container.innerHTML = `
     <article class="kpi-summary-card">
@@ -381,12 +357,12 @@ export function renderKpis(
         <p class="kpi-summary__meta"><strong>${formatCount(t.capacity)}</strong> ancoratges totals · ${formatPct(t.pct_bikes)} amb bicicletes</p>
       </header>
       <div class="kpi-summary__row">
-        <div class="kpi-summary__chart">${chartHtml}</div>
+        <div class="kpi-summary__chart">${chartBlock}</div>
         <ul class="kpi-summary__metrics">${rows.map(metricRowHtml).join("")}</ul>
       </div>
       ${hint}
     </article>
   `;
 
-  if (showSpark) bindKpiCharts(container, charts);
+  if (showSpark && !statsPending) bindKpiSummary(container, charts);
 }
