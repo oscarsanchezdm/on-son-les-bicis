@@ -1,7 +1,7 @@
 import L from "leaflet";
 import "leaflet-rotate";
 import type { Barri, MetricMode, Station } from "../lib/data";
-import { barriMetric, bikesOutOfService, pctOfStations, pctOosOfAnchors, pctOosOfAvailableBikes, stationCount, stationOosCount, stationMetric } from "../lib/data";
+import { barriMetric, pctOfStations, stationCount, stationMetric, stationOosCount } from "../lib/data";
 import {
   createColorHeatLayer,
   stationHitRadius,
@@ -20,27 +20,20 @@ import {
 } from "../lib/colors";
 import { formatPct } from "../lib/format";
 import { countIconHtml } from "../lib/icons";
+import {
+  bindStationDonutInPopup,
+  breakdownFromBarri,
+  breakdownFromStation,
+  renderStationPopupContent,
+} from "../lib/stationDonut";
 
 function stationCountsShort(s: Station): string {
   const fs = stationOosCount(s);
   return `${countIconHtml("ebike")} ${s.ebike} ${countIconHtml("mechanical")} ${s.mechanical} ${countIconHtml("dock")} ${s.docks_available} ${countIconHtml("maintenance")} ${fs}`;
 }
 
-function oosDetailLine(oos: number, capacity: number, bikesAvailable: number): string {
-  const anchorPct = pctOosOfAnchors(capacity, oos);
-  const availPct = pctOosOfAvailableBikes(bikesAvailable, oos);
-  return `${countIconHtml("maintenance")} ${oos} fora de servei (${formatPct(anchorPct)} ancoratges · ${formatPct(availPct)} bicis disponibles)`;
-}
-
 function stationPopupHtml(s: Station, historical = false): string {
-  const fs = stationOosCount(s);
-  const suffix = historical ? "<br/><em>Mitjana històrica a aquesta franja</em>" : "";
-  return `<strong>${s.name}</strong>${suffix}<br/>
-${countIconHtml("dock")} ${s.capacity} ancoratges totals<br/>
-${countIconHtml("ebike")} ${s.ebike} elèctriques<br/>
-${countIconHtml("mechanical")} ${s.mechanical} mecàniques<br/>
-${countIconHtml("dock")} ${s.docks_available} ancoratges lliures<br/>
-${oosDetailLine(fs, s.capacity, s.total)}`;
+  return renderStationPopupContent(breakdownFromStation(s), { historical });
 }
 
 function stationTooltipHtml(s: Station): string {
@@ -94,10 +87,11 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
   let heatMode: MetricMode | null = null;
   let heatScaleMode: HeatScaleMode = "percent";
 
-  map.on("popupopen", () => {
+  map.on("popupopen", (e) => {
     stationLayer.eachLayer((layer) => {
       (layer as L.CircleMarker).closeTooltip();
     });
+    bindStationDonutInPopup(e.popup.getElement() ?? undefined);
   });
 
   function update(
@@ -152,29 +146,10 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
         const codi = String(feature?.properties?.codi_barri ?? "");
         const barri = byCode.get(codi);
         if (!barri) return;
-        const oos =
-          barri.bikes_out_of_service ??
-          bikesOutOfService(
-            barri.capacity_total,
-            barri.bikes_mechanical,
-            barri.bikes_ebike,
-            barri.docks_available_total,
-            barri.bikes_total
-          );
-        const pctAnchor = pctOosOfAnchors(barri.capacity_total, oos);
-        const pctAvail = pctOosOfAvailableBikes(barri.bikes_total, oos);
-        const suffix =
-          timeView.kind === "hour"
-            ? "<br/><em>Mitjana històrica a aquesta franja</em>"
-            : "";
+        const isHistoricalBarri = timeView.kind === "hour";
         layer.bindPopup(
-          `<strong>${barri.barri_nom}</strong>${suffix}<br/>
-          ${barri.capacity_total.toLocaleString("ca-ES")} ancoratges totals<br/>
-          Bicicletes: ${formatPct(barri.pct_bikes)} (${barri.bikes_total}/${barri.capacity_total})<br/>
-          Elèctriques: ${formatPct(barri.pct_ebike)} · Mecàniques: ${formatPct(barri.pct_mechanical)}<br/>
-          Ancoratges lliures: ${formatPct(barri.pct_docks_free)}<br/>
-          Fora de servei: ${oos.toLocaleString("ca-ES")} (${formatPct(pctAnchor)} ancoratges · ${formatPct(pctAvail)} bicis disponibles)<br/>
-          Estacions sense elèctriques: ${formatPct(pctOfStations(barri.stations_zero_ebike, barri.stations_active))} · Sense mecàniques: ${formatPct(pctOfStations(barri.stations_zero_mechanical ?? 0, barri.stations_active))}`
+          renderStationPopupContent(breakdownFromBarri(barri), { historical: isHistoricalBarri }) +
+            `<p class="station-popup__extra">Estacions sense elèctriques: ${formatPct(pctOfStations(barri.stations_zero_ebike, barri.stations_active))} · Sense mecàniques: ${formatPct(pctOfStations(barri.stations_zero_mechanical ?? 0, barri.stations_active))}</p>`
         );
       },
     });
