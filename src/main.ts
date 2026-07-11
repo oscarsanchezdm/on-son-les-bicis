@@ -13,24 +13,18 @@ import {
   loadLatest,
   loadMeta,
 } from "./lib/data";
+import type { BarriSparklineSeries, HistoryIndex, TimeView } from "./lib/history";
 import {
   barrisToLatestData,
-  barriHistAveragesAtHour,
-  cityHistAveragesAtHour,
-  currentMadridHour,
-  hourViewScopeLabel,
   isHistoricalView,
   loadBarriSparklinePct,
   loadBarriSparklineSeries,
-  loadCitySparklineSeries,
   loadHistoryIndex,
   loadHourlyViewData,
   loadStationIds,
   loadStationSparklinePct,
   loadSummary7d,
   sampleCountForView,
-  type HistoryIndex,
-  type TimeView,
 } from "./lib/history";
 import { heatLegendGradient, pctLegendLabels, type HeatScaleMode } from "./lib/colors";
 import { formatRelativeTime } from "./lib/format";
@@ -101,6 +95,57 @@ let stationIdOrder: string[] | null = null;
 let mapView: ReturnType<typeof createMap> | null = null;
 let displayBarris: Barri[] = [];
 let displayStations: Station[] | null = null;
+let historyLoadPromise: Promise<void> | null = null;
+let barriSparklineCache: BarriSparklineSeries | null = null;
+let barriSparklineCodi: string | null = null;
+let barriSparklineLoadId = 0;
+
+function scheduleHistoryLoad(): void {
+  if (historyLoadPromise) return;
+  historyLoadPromise = (async () => {
+    const [summary, index, stationIds] = await Promise.all([
+      loadSummary7d(),
+      loadHistoryIndex(),
+      loadStationIds(),
+    ]);
+    summaryData = summary;
+    historyIndex = index;
+    stationIdOrder = stationIds?.ids ?? null;
+
+    const timelineEl = document.getElementById("timeline");
+    if (timelineEl) {
+      updateTimeSelector(timelineEl, {
+        index: historyIndex,
+        timeView,
+        onChange: (view) => {
+          void applyTimeView(view);
+        },
+      });
+    }
+    void refresh();
+  })().catch(() => {
+    historyLoadPromise = null;
+  });
+}
+
+async function ensureHistoryLoaded(): Promise<void> {
+  scheduleHistoryLoad();
+  if (historyLoadPromise) await historyLoadPromise;
+}
+
+function scheduleBarriSparklineLoad(): void {
+  if (!historyIndex || !selectedBarri || isHistoricalView(timeView)) return;
+  if (barriSparklineCodi === selectedBarri.barri_codi && barriSparklineCache) return;
+
+  const codi = selectedBarri.barri_codi;
+  const loadId = ++barriSparklineLoadId;
+  void loadBarriSparklineSeries(historyIndex, codi).then((series) => {
+    if (loadId !== barriSparklineLoadId) return;
+    barriSparklineCodi = codi;
+    barriSparklineCache = series;
+    void refresh();
+  });
+}
 
 function metricLabel(): string {
   switch (mode) {
@@ -281,20 +326,10 @@ async function refresh() {
   if (!kpiData) return;
 
   const isHistorical = isHistoricalView(timeView);
-  const hour = isHistorical && timeView.kind === "hour" ? timeView.hour : currentMadridHour();
 
   const sparklines =
-    !isHistorical && historyIndex
-      ? selectedBarri
-        ? await loadBarriSparklineSeries(historyIndex, selectedBarri.barri_codi)
-        : await loadCitySparklineSeries(historyIndex)
-      : null;
-
-  const histAverages =
-    !isHistorical && historyIndex
-      ? selectedBarri
-        ? await barriHistAveragesAtHour(historyIndex, selectedBarri.barri_codi, hour)
-        : await cityHistAveragesAtHour(historyIndex, hour)
+    !isHistorical && selectedBarri && barriSparklineCodi === selectedBarri.barri_codi
+      ? barriSparklineCache
       : null;
 
   const sampleCount =
@@ -311,7 +346,7 @@ async function refresh() {
     sparklines,
     {
       sampleCount,
-      barriHistAverages: histAverages,
+      barriHistAverages: null,
     }
   );
   mapView.update(
@@ -331,15 +366,26 @@ async function refresh() {
   const tnote = document.getElementById("table-note")!;
   tnote.textContent = tableNote();
   updateTimelineStatus();
+
+  scheduleBarriSparklineLoad();
 }
 
 function selectBarri(barri: Barri) {
-  selectedBarri = selectedBarri?.barri_codi === barri.barri_codi ? null : barri;
+  const next = selectedBarri?.barri_codi === barri.barri_codi ? null : barri;
+  if (next?.barri_codi !== selectedBarri?.barri_codi) {
+    barriSparklineLoadId++;
+    barriSparklineCodi = null;
+    barriSparklineCache = null;
+  }
+  selectedBarri = next;
   void refresh();
   mapView?.focusBarri(selectedBarri?.barri_codi ?? null, displayStations);
 }
 
 function resetBarriFilter() {
+  barriSparklineLoadId++;
+  barriSparklineCodi = null;
+  barriSparklineCache = null;
   selectedBarri = null;
   void refresh();
   mapView?.focusBarri(null, null);
@@ -358,6 +404,7 @@ async function applyTimeView(view: TimeView) {
     displayBarris = enrichBarrisWithFleetOos(barrisData.barris, latestData.stations);
     displayStations = latestData.stations;
   } else {
+    await ensureHistoryLoaded();
     setTimelineStatus(timelineEl, "");
     const { barris, stations } = await loadHourlyViewData(
       historyIndex,
@@ -385,13 +432,10 @@ async function applyTimeView(view: TimeView) {
 
 async function init() {
   try {
-    const [latest, barris, geo, summary, index, stationIds, meta] = await Promise.all([
+    const [latest, barris, geo, meta] = await Promise.all([
       loadLatest(),
       loadBarris(),
       loadBarrisGeo(),
-      loadSummary7d(),
-      loadHistoryIndex(),
-      loadStationIds(),
       loadMeta().catch(() => null),
     ]);
     latestData = {
@@ -402,9 +446,6 @@ async function init() {
       },
     };
     barrisData = barris;
-    summaryData = summary;
-    historyIndex = index;
-    stationIdOrder = stationIds?.ids ?? null;
     displayBarris = enrichBarrisWithFleetOos(barris.barris, latest.stations);
     displayStations = latest.stations;
 
@@ -419,7 +460,7 @@ async function init() {
     void refresh();
 
     renderTimeSelector(document.getElementById("timeline")!, {
-      index,
+      index: null,
       timeView,
       onChange: (view) => {
         void applyTimeView(view);
@@ -427,6 +468,8 @@ async function init() {
     });
 
     document.getElementById("barri-filter-reset")!.addEventListener("click", resetBarriFilter);
+
+    scheduleHistoryLoad();
   } catch (err) {
     app.innerHTML = `<div class="error">Error carregant dades: ${(err as Error).message}</div>`;
   }
