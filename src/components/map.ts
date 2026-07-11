@@ -26,7 +26,6 @@ import {
   bindStationDonutInPopup,
   breakdownFromBarri,
   breakdownFromStation,
-  hydratePopupSparkline,
   renderStationPopupContent,
   type StationPopupContext,
 } from "../lib/stationDonut";
@@ -67,7 +66,6 @@ export type MapView = {
   ) => void;
   focusBarri: (codi: string | null, stations: Station[] | null) => void;
   focusStation: (stationId: string | null) => void;
-  setPendingPopup: (target: { stationId?: string; barriCodi?: string } | null) => void;
 };
 
 const CITY_CENTER: L.LatLngExpression = [41.387, 2.17];
@@ -78,11 +76,7 @@ const MAP_BEARING = 45;
 export function createMap(
   container: HTMLElement,
   geo: GeoJSON.FeatureCollection,
-  options?: {
-    onBarriFilter?: (barri: Barri) => void;
-    onBarriMapClick?: (barri: Barri) => void;
-    onStationSelect?: (station: Station) => void;
-  }
+  options?: { onBarriFilter?: (barri: Barri) => void; onStationSelect?: (station: Station) => void }
 ): MapView {
   const map = L.map(container, {
     scrollWheelZoom: true,
@@ -111,15 +105,11 @@ export function createMap(
   const stationLayer = L.layerGroup().addTo(map);
   const offlineStationLayer = L.layerGroup().addTo(map);
   const stationMarkers = new Map<string, L.CircleMarker>();
-  const barriLayersByCodi = new Map<string, L.Layer>();
-  let pendingPopupStationId: string | null = null;
-  let pendingPopupBarriCodi: string | null = null;
   let barriLayer: L.GeoJSON | null = null;
   let heatLayer: ColorHeatLayer | null = null;
   let heatMode: MetricMode | null = null;
   let heatScaleMode: HeatScaleMode = "percent";
   const onBarriFilter = options?.onBarriFilter ?? null;
-  const onBarriMapClick = options?.onBarriMapClick ?? null;
   const onStationSelect = options?.onStationSelect ?? null;
   let barrisByCode = new Map<string, Barri>();
   type UpdateArgs = [
@@ -144,7 +134,6 @@ export function createMap(
       });
     }
     bindStationDonutInPopup(e.popup.getElement() ?? undefined);
-    hydratePopupSparkline(e.popup.getElement() ?? undefined);
     bindBarriFilterInPopup(e.popup.getElement() ?? undefined);
   });
 
@@ -179,7 +168,6 @@ export function createMap(
     barrisByCode = byCode;
     const showStations = stations !== null;
 
-    barriLayersByCodi.clear();
     if (barriLayer) {
       map.removeLayer(barriLayer);
       barriLayer = null;
@@ -227,10 +215,6 @@ export function createMap(
             `<button type="button" class="station-popup__filter" data-barri-filter="${barri.barri_codi}">Filtrar per barri</button>` +
             `<p class="station-popup__extra">Estacions sense elèctriques: ${formatPct(pctOfStations(barri.stations_zero_ebike, barri.stations_active))} · Sense mecàniques: ${formatPct(pctOfStations(barri.stations_zero_mechanical ?? 0, barri.stations_active))}</p>`
         );
-        barriLayersByCodi.set(codi, layer);
-        layer.on("click", () => {
-          onBarriMapClick?.(barri);
-        });
       },
     });
 
@@ -377,23 +361,6 @@ export function createMap(
     }
 
     barriLayer.addTo(map);
-
-    if (pendingPopupStationId) {
-      const marker = stationMarkers.get(pendingPopupStationId);
-      pendingPopupStationId = null;
-      marker?.openPopup();
-    } else if (pendingPopupBarriCodi) {
-      const layer = barriLayersByCodi.get(pendingPopupBarriCodi);
-      pendingPopupBarriCodi = null;
-      if (layer && "openPopup" in layer) {
-        (layer as L.Layer & { openPopup: () => void }).openPopup();
-      }
-    }
-  }
-
-  function setPendingPopup(target: { stationId?: string; barriCodi?: string } | null): void {
-    pendingPopupStationId = target?.stationId ?? null;
-    pendingPopupBarriCodi = target?.barriCodi ?? null;
   }
 
   function focusBarri(codi: string | null, stations: Station[] | null) {
@@ -420,5 +387,5 @@ export function createMap(
     window.setTimeout(() => marker.openPopup(), 400);
   }
 
-  return { map, update, focusBarri, focusStation, setPendingPopup };
+  return { map, update, focusBarri, focusStation };
 }

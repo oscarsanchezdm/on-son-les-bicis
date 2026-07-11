@@ -365,12 +365,25 @@ export function renderStationPopupContent(
   b: StationBreakdown,
   _options: StationPopupContext = {}
 ): string {
-  return `<div class="station-popup station-popup--simple">
+  const canExpand = !b.historical && (b.station_id || b.barri_codi);
+  const payload = encodeBreakdown(b);
+  const hint = canExpand
+    ? `<span class="station-donut-trigger__hint"><span class="station-donut-trigger__chevron" aria-hidden="true">›</span> Prem per més info</span>`
+    : "";
+  return `<div class="station-popup">
     <p class="station-popup__title"><strong>${b.name}</strong></p>
     ${metaLine(b)}
     ${historicalNotePopup(b)}
-    <p class="station-popup__stats">${popupStatsLine(b)}</p>
-    ${popupSparklineSlot(b)}
+    <div class="station-popup__chart">
+      <div class="station-donut-col">
+        <button type="button" class="station-donut-trigger" data-station-breakdown="${payload}" aria-label="Prem per més info: distribució i gràfic de 24 hores">
+          ${renderDonutSvg(b, 76, "station-donut", { showCenterTotal: false, showUnit: false })}
+          <span class="station-donut-caption">${b.capacity.toLocaleString("ca-ES")} ancoratges</span>
+          ${hint}
+        </button>
+      </div>
+      ${renderLegend(b, true)}
+    </div>
   </div>`;
 }
 
