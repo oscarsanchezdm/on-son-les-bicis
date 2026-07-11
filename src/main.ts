@@ -13,9 +13,12 @@ import {
   loadLatest,
   loadMeta,
 } from "./lib/data";
-import type { BarriSparklineSeries, HistoryIndex, TimeView } from "./lib/history";
+import type { BarriSparklineSeries, HistoryIndex, SparklineMetricKey, TimeView } from "./lib/history";
 import {
+  barriHistAveragesAtHour,
   barrisToLatestData,
+  cityHistAveragesAtHour,
+  currentMadridHour,
   isHistoricalView,
   loadBarriSparklinePct,
   loadBarriSparklineSeries,
@@ -103,6 +106,9 @@ let barriSparklineCodi: string | null = null;
 let barriSparklineLoadId = 0;
 let citySparklineCache: BarriSparklineSeries | null = null;
 let citySparklineLoadId = 0;
+let histAveragesCache: Partial<Record<SparklineMetricKey, number>> | null = null;
+let histAveragesKey: string | null = null;
+let histAveragesLoadId = 0;
 
 function scheduleHistoryLoad(): void {
   if (historyLoadPromise) return;
@@ -167,6 +173,38 @@ function scheduleCitySparklineLoad(): void {
     citySparklineCache = series;
     void refresh();
   });
+}
+
+function histAveragesScopeKey(): string | null {
+  if (isHistoricalView(timeView)) return null;
+  const hour = currentMadridHour();
+  if (selectedBarri) return `barri:${selectedBarri.barri_codi}:${hour}`;
+  return `city:${hour}`;
+}
+
+function scheduleHistAveragesLoad(): void {
+  const scopeKey = histAveragesScopeKey();
+  if (!historyIndex || !scopeKey) return;
+  if (histAveragesKey === scopeKey && histAveragesCache) return;
+
+  const loadId = ++histAveragesLoadId;
+  const hour = currentMadridHour();
+  const loader = selectedBarri
+    ? barriHistAveragesAtHour(historyIndex, selectedBarri.barri_codi, hour)
+    : cityHistAveragesAtHour(historyIndex, hour);
+
+  void loader.then((averages) => {
+    if (loadId !== histAveragesLoadId) return;
+    histAveragesKey = scopeKey;
+    histAveragesCache = averages;
+    void refresh();
+  });
+}
+
+function resetHistAveragesCache(): void {
+  histAveragesLoadId++;
+  histAveragesKey = null;
+  histAveragesCache = null;
 }
 
 function metricLabel(): string {
@@ -387,7 +425,7 @@ async function refresh() {
     sparklines,
     {
       sampleCount,
-      barriHistAverages: null,
+      barriHistAverages: histAveragesCache,
       statsPending: statsPending(),
     }
   );
@@ -411,6 +449,7 @@ async function refresh() {
 
   scheduleBarriSparklineLoad();
   scheduleCitySparklineLoad();
+  scheduleHistAveragesLoad();
 }
 
 function selectBarri(barri: Barri) {
@@ -419,6 +458,7 @@ function selectBarri(barri: Barri) {
     barriSparklineLoadId++;
     barriSparklineCodi = null;
     barriSparklineCache = null;
+    resetHistAveragesCache();
   }
   selectedBarri = next;
   void refresh();
@@ -429,6 +469,7 @@ function resetBarriFilter() {
   barriSparklineLoadId++;
   barriSparklineCodi = null;
   barriSparklineCache = null;
+  resetHistAveragesCache();
   selectedBarri = null;
   void refresh();
   mapView?.focusBarri(null, null);

@@ -501,7 +501,8 @@ export function labeledChartPoints(
 export function hourlyAverage(
   summary: Summary7d | null,
   hour: number,
-  key: SparklineMetricKey
+  key: SparklineMetricKey,
+  capacity = 0
 ): number | null {
   const bucket = summary?.hourly.find((h) => h.hour === hour);
   if (!bucket) return null;
@@ -509,22 +510,34 @@ export function hourlyAverage(
   if (key === "pct_mechanical") return bucket.avg_pct_mechanical;
   if (key === "pct_ebike") return bucket.avg_pct_ebike;
   if (key === "bikes_total") {
-    if (bucket.avg_bikes_total !== undefined) return bucket.avg_bikes_total;
     const samples = bucket.samples.filter((s) => s.bikes_total !== undefined);
-    if (!samples.length) return null;
-    return samples.reduce((sum, s) => sum + (s.bikes_total ?? 0), 0) / samples.length;
+    if (samples.length) {
+      return samples.reduce((sum, s) => sum + (s.bikes_total ?? 0), 0) / samples.length;
+    }
+    if (capacity > 0 && bucket.avg_pct_bikes !== undefined) {
+      return (bucket.avg_pct_bikes / 100) * capacity;
+    }
+    return null;
   }
   if (key === "bikes_mechanical") {
-    if (bucket.avg_bikes_mechanical !== undefined) return bucket.avg_bikes_mechanical;
     const samples = bucket.samples.filter((s) => s.bikes_mechanical !== undefined);
-    if (!samples.length) return null;
-    return samples.reduce((sum, s) => sum + (s.bikes_mechanical ?? 0), 0) / samples.length;
+    if (samples.length) {
+      return samples.reduce((sum, s) => sum + (s.bikes_mechanical ?? 0), 0) / samples.length;
+    }
+    if (capacity > 0 && bucket.avg_pct_mechanical !== undefined) {
+      return (bucket.avg_pct_mechanical / 100) * capacity;
+    }
+    return null;
   }
   if (key === "bikes_ebike") {
-    if (bucket.avg_bikes_ebike !== undefined) return bucket.avg_bikes_ebike;
     const samples = bucket.samples.filter((s) => s.bikes_ebike !== undefined);
-    if (!samples.length) return null;
-    return samples.reduce((sum, s) => sum + (s.bikes_ebike ?? 0), 0) / samples.length;
+    if (samples.length) {
+      return samples.reduce((sum, s) => sum + (s.bikes_ebike ?? 0), 0) / samples.length;
+    }
+    if (capacity > 0 && bucket.avg_pct_ebike !== undefined) {
+      return (bucket.avg_pct_ebike / 100) * capacity;
+    }
+    return null;
   }
   if (key === "pct_oos_anchors") {
     const samples = bucket.samples.filter((s) => s.pct_oos_anchors !== undefined);

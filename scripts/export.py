@@ -492,26 +492,24 @@ def _export_summary_7d(conn: sqlite3.Connection, ts_iso: str) -> None:
         samples = by_hour.get(hour, [])
         if not samples:
             continue
-        hourly.append(
-            {
-                "hour": hour,
-                "avg_pct_bikes": round(sum(s["pct_bikes"] for s in samples) / len(samples), 2),
-                "avg_pct_mechanical": round(
-                    sum(s["pct_mechanical"] for s in samples) / len(samples), 2
-                ),
-                "avg_pct_ebike": round(sum(s["pct_ebike"] for s in samples) / len(samples), 2),
-                "avg_bikes_total": round(
-                    sum(s.get("bikes_total", 0) for s in samples) / len(samples)
-                ),
-                "avg_bikes_mechanical": round(
-                    sum(s.get("bikes_mechanical", 0) for s in samples) / len(samples)
-                ),
-                "avg_bikes_ebike": round(
-                    sum(s.get("bikes_ebike", 0) for s in samples) / len(samples)
-                ),
-                "samples": samples,
-            }
-        )
+        bucket: dict = {
+            "hour": hour,
+            "avg_pct_bikes": round(sum(s["pct_bikes"] for s in samples) / len(samples), 2),
+            "avg_pct_mechanical": round(
+                sum(s["pct_mechanical"] for s in samples) / len(samples), 2
+            ),
+            "avg_pct_ebike": round(sum(s["pct_ebike"] for s in samples) / len(samples), 2),
+            "samples": samples,
+        }
+        for field, avg_key in (
+            ("bikes_total", "avg_bikes_total"),
+            ("bikes_mechanical", "avg_bikes_mechanical"),
+            ("bikes_ebike", "avg_bikes_ebike"),
+        ):
+            vals = [s[field] for s in samples if field in s]
+            if vals:
+                bucket[avg_key] = round(sum(vals) / len(vals))
+        hourly.append(bucket)
 
     history_dir = DATA_DIR / "history"
     history_dir.mkdir(parents=True, exist_ok=True)

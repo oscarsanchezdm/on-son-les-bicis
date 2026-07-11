@@ -71,9 +71,10 @@ function histNoteCount(
   hour: number,
   key: Extract<SparklineMetricKey, "bikes_total" | "bikes_mechanical" | "bikes_ebike">,
   current: number,
+  capacity: number,
   histAvg?: Partial<Record<SparklineMetricKey, number>> | null
 ): string {
-  const avg = histAvg?.[key] ?? hourlyAverage(summary, hour, key);
+  const avg = histAvg?.[key] ?? hourlyAverage(summary, hour, key, capacity);
   if (avg === null || avg === undefined) return "";
   const avgShown = Math.round(avg);
   const currentShown = Math.round(current);
@@ -223,13 +224,13 @@ export function renderKpis(
 
   const showHist = !isHistorical && (!!histAvg || !!summary);
   const histBikes = showHist
-    ? histNoteCount(summary, hour, "bikes_total", t.bikes_total, histAvg)
+    ? histNoteCount(summary, hour, "bikes_total", t.bikes_total, t.capacity, histAvg)
     : "";
   const histMech = showHist
-    ? histNoteCount(summary, hour, "bikes_mechanical", t.bikes_mechanical, histAvg)
+    ? histNoteCount(summary, hour, "bikes_mechanical", t.bikes_mechanical, t.capacity, histAvg)
     : "";
   const histEbike = showHist
-    ? histNoteCount(summary, hour, "bikes_ebike", t.bikes_ebike, histAvg)
+    ? histNoteCount(summary, hour, "bikes_ebike", t.bikes_ebike, t.capacity, histAvg)
     : "";
   const histOos = showHist
     ? histNotePct(summary, hour, "pct_oos_fleet", pctOosFleet, histAvg)
