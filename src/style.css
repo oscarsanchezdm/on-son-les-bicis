@@ -159,6 +159,27 @@ h1 {
   margin: 0.75rem 0 1rem;
 }
 
+.async-loading {
+  margin: 0.35rem 0 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.kpi-async-loading {
+  min-height: 1.75rem;
+  display: flex;
+  align-items: center;
+}
+
+.station-donut-modal__spark-status {
+  margin: 0.15rem 0 0;
+}
+
+.station-donut-modal__spark--pending {
+  min-height: 5.5rem;
+}
+
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));

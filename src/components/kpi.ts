@@ -16,6 +16,7 @@ import {
   sparklineValues,
 } from "../lib/history";
 import { formatCount, formatPct, formatRelativeDeltaPct } from "../lib/format";
+import { asyncLoadingHtml } from "../lib/asyncLoading";
 import { renderSparkline } from "../lib/sparkline";
 import { kpiIconHtml, metricIconHtml } from "../lib/icons";
 import { bindKpiCharts, type KpiChartSpec } from "./kpiChart";
@@ -121,7 +122,15 @@ function kpiCard(
 export type KpiRenderOptions = {
   sampleCount?: number;
   barriHistAverages?: Partial<Record<SparklineMetricKey, number>> | null;
+  /** Sparklines o mitjana 7d encara no disponibles (càrrega diferida). */
+  statsPending?: boolean;
 };
+
+function sparklineSlot(values: number[], pending: boolean): string {
+  if (values.length) return renderSparkline(values);
+  if (pending) return asyncLoadingHtml("kpi-async-loading");
+  return "";
+}
 
 export function renderKpis(
   container: HTMLElement,
@@ -150,6 +159,7 @@ export function renderKpis(
 
   const showSpark = !isHistorical;
   const histAvg = options.barriHistAverages ?? null;
+  const statsPending = showSpark && (options.statsPending ?? false);
 
   const bikesValues = showSpark
     ? sparklines?.bikes_total ?? sparklineValues(summary?.series ?? [], "bikes_total")
@@ -259,7 +269,7 @@ export function renderKpis(
         <small>${formatPct(t.pct_bikes)} de ${t.capacity.toLocaleString("ca-ES")} ancoratges</small>
         ${fleetMixNote}
         ${zeroAnyNote}
-        ${bikesValues.length ? renderSparkline(bikesValues) : ""}
+        ${sparklineSlot(bikesValues, statsPending)}
         ${bikesPoints.length > 1 ? sparkHint : ""}
         ${histBikes ? `<small class="kpi-hist">${histBikes}</small>` : ""}
       `
@@ -272,7 +282,7 @@ export function renderKpis(
         <strong>${t.bikes_mechanical.toLocaleString("ca-ES")}</strong>
         <small>${formatPct(pctMech)} dels ancoratges</small>
         ${zeroMechNote}
-        ${mechValues.length ? renderSparkline(mechValues) : ""}
+        ${sparklineSlot(mechValues, statsPending)}
         ${mechPoints.length > 1 ? sparkHint : ""}
         ${histMech ? `<small class="kpi-hist">${histMech}</small>` : ""}
       `
@@ -285,7 +295,7 @@ export function renderKpis(
         <strong>${t.bikes_ebike.toLocaleString("ca-ES")}</strong>
         <small>${formatPct(pctEbike)} dels ancoratges</small>
         ${zeroEbikeNote}
-        ${ebikeValues.length ? renderSparkline(ebikeValues) : ""}
+        ${sparklineSlot(ebikeValues, statsPending)}
         ${ebikePoints.length > 1 ? sparkHint : ""}
         ${histEbike ? `<small class="kpi-hist">${histEbike}</small>` : ""}
       `
@@ -297,7 +307,7 @@ export function renderKpis(
         <span class="kpi-label">${metricIconHtml("out_of_service", "kpi-icon")} Bicicletes fora de servei</span>
         <strong>${outOfService.toLocaleString("ca-ES")}</strong>
         <small>${formatPct(pctOosFleet)} de bicicletes aparcades · ${formatPct(pctOosAnchors)} dels ancoratges</small>
-        ${oosValues.length ? renderSparkline(oosValues) : ""}
+        ${sparklineSlot(oosValues, statsPending)}
         ${oosPoints.length > 1 ? sparkHint : ""}
         ${histOos ? `<small class="kpi-hist">${histOos}</small>` : ""}
       `
