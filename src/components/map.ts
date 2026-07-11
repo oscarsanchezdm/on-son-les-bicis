@@ -72,6 +72,8 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
   barriPane.style.zIndex = "410";
   const heatPane = map.createPane("heatPane", rotatePane);
   heatPane.style.zIndex = "420";
+  const stationOfflinePane = map.createPane("stationOfflinePane", rotatePane);
+  stationOfflinePane.style.zIndex = "430";
   const stationPane = map.createPane("stationPane", rotatePane);
   stationPane.style.zIndex = "450";
 
@@ -83,6 +85,7 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
   }).addTo(map);
 
   const stationLayer = L.layerGroup().addTo(map);
+  const offlineStationLayer = L.layerGroup().addTo(map);
   const stationMarkers = new Map<string, L.CircleMarker>();
   let barriLayer: L.GeoJSON | null = null;
   let heatLayer: ColorHeatLayer | null = null;
@@ -90,9 +93,11 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
   let heatScaleMode: HeatScaleMode = "percent";
 
   map.on("popupopen", (e) => {
-    stationLayer.eachLayer((layer) => {
-      (layer as L.CircleMarker).closeTooltip();
-    });
+    for (const layer of [stationLayer, offlineStationLayer]) {
+      layer.eachLayer((l) => {
+        (l as L.CircleMarker).closeTooltip();
+      });
+    }
     bindStationDonutInPopup(e.popup.getElement() ?? undefined);
   });
 
@@ -157,6 +162,7 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
     });
 
     stationLayer.clearLayers();
+    offlineStationLayer.clearLayers();
     stationMarkers.clear();
 
     if (showStations && stations) {
@@ -168,6 +174,32 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
         : 1;
 
       const expandedHit = stationNeedsExpandedHitTarget();
+
+      for (const s of offlineStations) {
+        if (!s.lat || !s.lon) continue;
+        const popup = stationPopupHtml(s, isHistorical);
+        const tooltip = stationTooltipHtml(s);
+        const marker = L.circleMarker([s.lat, s.lon], {
+          pane: "stationOfflinePane",
+          radius: 4,
+          fillColor: "#94a3b8",
+          fillOpacity: 0.55,
+          color: "#94a3b8",
+          weight: 1,
+          className: "station-dot station-dot--offline",
+        })
+          .bindPopup(popup)
+          .bindTooltip(tooltip, { sticky: true, className: "station-tooltip" })
+          .on("popupopen", function (this: L.CircleMarker) {
+            this.closeTooltip();
+            this.unbindTooltip();
+          })
+          .on("popupclose", function (this: L.CircleMarker) {
+            this.bindTooltip(tooltip, { sticky: true, className: "station-tooltip" });
+          });
+        marker.addTo(offlineStationLayer);
+        stationMarkers.set(s.station_id, marker);
+      }
 
       for (const s of activeStations) {
         const value = stationMetric(s, mode);
@@ -237,32 +269,6 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
         }
       }
 
-      for (const s of offlineStations) {
-        if (!s.lat || !s.lon) continue;
-        const popup = stationPopupHtml(s, isHistorical);
-        const tooltip = stationTooltipHtml(s);
-        const marker = L.circleMarker([s.lat, s.lon], {
-          pane: "stationPane",
-          radius: 6,
-          fillColor: "#94a3b8",
-          fillOpacity: 0.8,
-          color: "#64748b",
-          weight: 1,
-          className: "station-dot station-dot--offline",
-        })
-          .bindPopup(popup)
-          .bindTooltip(tooltip, { sticky: true, className: "station-tooltip" })
-          .on("popupopen", function (this: L.CircleMarker) {
-            this.closeTooltip();
-            this.unbindTooltip();
-          })
-          .on("popupclose", function (this: L.CircleMarker) {
-            this.bindTooltip(tooltip, { sticky: true, className: "station-tooltip" });
-          });
-        marker.addTo(stationLayer);
-        stationMarkers.set(s.station_id, marker);
-      }
-
       if (heatLayer && (heatMode !== mode || heatScaleMode !== heatScale)) {
         map.removeLayer(heatLayer);
         heatLayer = null;
@@ -279,6 +285,7 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
       }
 
       if (!map.hasLayer(stationLayer)) stationLayer.addTo(map);
+      if (!map.hasLayer(offlineStationLayer)) offlineStationLayer.addTo(map);
     } else {
       if (heatLayer) {
         map.removeLayer(heatLayer);
@@ -287,6 +294,7 @@ export function createMap(container: HTMLElement, geo: GeoJSON.FeatureCollection
       heatMode = null;
       heatScaleMode = "percent";
       if (map.hasLayer(stationLayer)) map.removeLayer(stationLayer);
+      if (map.hasLayer(offlineStationLayer)) map.removeLayer(offlineStationLayer);
     }
 
     barriLayer.addTo(map);
