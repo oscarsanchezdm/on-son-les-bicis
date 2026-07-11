@@ -202,6 +202,8 @@ export function renderKpis(
     ? `<small class="kpi-chart-hint">Clica per veure el detall</small>`
     : "";
 
+  const bikesLabelScope = scopeLabel === "ciutat" ? "" : ` (${scopeLabel})`;
+
   container.innerHTML = `
     <div class="kpi-panel">
       <p class="kpi-update" title="${formatDateTime(data.last_updated)}">
@@ -214,7 +216,7 @@ export function renderKpis(
         "bikes",
         bikesPoints.length > 1,
         `
-        <span class="kpi-label">${kpiIconHtml("total")} Bicicletes disponibles (${scopeLabel})</span>
+        <span class="kpi-label">${kpiIconHtml("total")} Bicicletes disponibles${bikesLabelScope}</span>
         <strong>${t.bikes_total.toLocaleString("ca-ES")}</strong>
         <small>${formatPct(t.pct_bikes)} de ${t.capacity.toLocaleString("ca-ES")} ancoratges</small>
         ${zeroAnyNote}
