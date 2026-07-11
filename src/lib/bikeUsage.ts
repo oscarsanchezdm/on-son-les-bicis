@@ -1,13 +1,20 @@
 import type { CityUsageSnapshot, DayType, HistoryPoint } from "./history";
+import { dayTypeLabel, madridDayType } from "./history";
 import { formatHour } from "./format";
 
-export type UsageChartPoint = { label: string; value: number };
+export type HourlyUsagePoint = { hour: number; value: number };
 
 export type UsageMetrics = {
   headline: number;
   headlineLabel: string;
-  byHour: UsageChartPoint[];
-  byDay: UsageChartPoint[];
+  byHour: HourlyUsagePoint[];
+  /** Només en mode dades actuals: mitjana mateix tipus de dia + avui. */
+  hourlyDual?: {
+    avgByHour: HourlyUsagePoint[];
+    todayByHour: HourlyUsagePoint[];
+    avgLegend: string;
+    todayLegend: string;
+  };
 };
 
 function parked(s: CityUsageSnapshot): number {
@@ -29,11 +36,6 @@ function madridDateFromTs(ts: string): string {
   const m = parts.find((p) => p.type === "month")!.value;
   const d = parts.find((p) => p.type === "day")!.value;
   return `${y}-${m}-${d}`;
-}
-
-function dateLabel(localDate: string): string {
-  const [, month, day] = localDate.split("-");
-  return `${day}/${month}`;
 }
 
 /** Màxim aparcades observat per dia (disponibles + FS). */
@@ -78,6 +80,40 @@ function previousDayParkedMax(snapshots: CityUsageSnapshot[], today: string): nu
   return prevDate ? (parkedMax.get(prevDate) ?? 0) : 0;
 }
 
+type SnapshotWithUsage = CityUsageSnapshot & { inUse: number };
+
+function attachUsage(
+  snapshots: CityUsageSnapshot[],
+  fleetScope: CityUsageSnapshot[]
+): SnapshotWithUsage[] {
+  const today = madridTodayKey();
+  const fleetMax = fleetMaxRefByDay(parkedMaxByDay(fleetScope), today);
+  return snapshots.map((s) => {
+    const fleetRef = fleetMax.get(s.localDate) ?? parked(s);
+    return { ...s, inUse: Math.max(0, fleetRef - parked(s)) };
+  });
+}
+
+function avgByHour(points: SnapshotWithUsage[]): HourlyUsagePoint[] {
+  const buckets = new Map<number, number[]>();
+  for (const p of points) {
+    const arr = buckets.get(p.localHour) ?? [];
+    arr.push(p.inUse);
+    buckets.set(p.localHour, arr);
+  }
+  return [...buckets.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([hour, vals]) => ({
+      hour,
+      value: Math.round(vals.reduce((sum, v) => sum + v, 0) / vals.length),
+    }));
+}
+
+/** Un punt per hora avui (mitjana si n'hi ha més d'un). */
+function todayByHour(points: SnapshotWithUsage[]): HourlyUsagePoint[] {
+  return avgByHour(points);
+}
+
 export function usageFromSummarySeries(series: HistoryPoint[]): UsageMetrics | null {
   const snapshots: CityUsageSnapshot[] = series
     .filter((p) => p.bikes_total !== undefined)
@@ -99,43 +135,8 @@ export function computeUsageMetrics(
 ): UsageMetrics | null {
   if (!snapshots.length) return null;
 
-  const today = options.today ?? madridTodayKey();
-  const fleetMax = fleetMaxRefByDay(parkedMaxByDay(snapshots), today);
-
-  const withUsage = snapshots.map((s) => {
-    const fleetRef = fleetMax.get(s.localDate) ?? parked(s);
-    const parkedNow = parked(s);
-    return {
-      ...s,
-      inUse: Math.max(0, fleetRef - parkedNow),
-    };
-  });
-
-  const hourBuckets = new Map<number, number[]>();
-  for (const p of withUsage) {
-    const arr = hourBuckets.get(p.localHour) ?? [];
-    arr.push(p.inUse);
-    hourBuckets.set(p.localHour, arr);
-  }
-
-  const byHour = [...hourBuckets.entries()]
-    .sort((a, b) => a[0] - b[0])
-    .map(([hour, vals]) => ({
-      label: formatHour(hour),
-      value: Math.round(vals.reduce((sum, v) => sum + v, 0) / vals.length),
-    }));
-
-  const dayPeak = new Map<string, number>();
-  for (const p of withUsage) {
-    dayPeak.set(p.localDate, Math.max(dayPeak.get(p.localDate) ?? 0, p.inUse));
-  }
-
-  const byDayChart = [...dayPeak.entries()]
-    .sort((a, b) => a[0].localeCompare(b[0]))
-    .map(([date, value]) => ({
-      label: dateLabel(date),
-      value: Math.round(value),
-    }));
+  const withUsage = attachUsage(snapshots, snapshots);
+  const byHour = avgByHour(withUsage);
 
   let headline = 0;
   let headlineLabel = "Ara (aprox.)";
@@ -151,7 +152,28 @@ export function computeUsageMetrics(
     headline = latest ? Math.round(latest.inUse) : 0;
   }
 
-  return { headline, headlineLabel, byHour, byDay: byDayChart };
+  return { headline, headlineLabel, byHour };
+}
+
+export function computeUsageHourlyLatest(
+  fleetScope: CityUsageSnapshot[],
+  sameDayTypeHistory: CityUsageSnapshot[],
+  today = madridTodayKey()
+): UsageMetrics["hourlyDual"] | null {
+  const todaySnaps = fleetScope.filter((s) => s.localDate === today);
+  const histSnaps = sameDayTypeHistory.filter((s) => s.localDate !== today);
+  if (!todaySnaps.length && !histSnaps.length) return null;
+
+  const todayUsage = attachUsage(todaySnaps, fleetScope);
+  const histUsage = attachUsage(histSnaps, histSnaps);
+
+  const dayType = madridDayType();
+  return {
+    avgByHour: avgByHour(histUsage),
+    todayByHour: todayByHour(todayUsage),
+    avgLegend: `Mitjana ${dayTypeLabel(dayType)}`,
+    todayLegend: "Avui",
+  };
 }
 
 /** Estimació puntual des de totals vius (ciutat). */

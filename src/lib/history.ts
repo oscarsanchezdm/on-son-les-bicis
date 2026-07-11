@@ -141,6 +141,18 @@ export function dayTypeLabel(dayType: DayType): string {
   }
 }
 
+/** Tipus de dia (Madrid) per a una data. */
+export function madridDayType(date = new Date()): DayType {
+  const weekday = new Intl.DateTimeFormat("en-GB", {
+    timeZone: MADRID_TZ,
+    weekday: "long",
+  }).format(date);
+  if (weekday === "Friday") return "friday";
+  if (weekday === "Saturday") return "saturday";
+  if (weekday === "Sunday") return "sunday";
+  return "weekday";
+}
+
 export function hoursForDayType(index: HistoryIndex | null, dayType: DayType): number[] {
   return index?.hoursByDayType?.[dayType] ?? [];
 }
