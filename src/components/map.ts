@@ -76,7 +76,7 @@ const MAP_BEARING = 45;
 export function createMap(
   container: HTMLElement,
   geo: GeoJSON.FeatureCollection,
-  options?: { onBarriFilter?: (barri: Barri) => void }
+  options?: { onBarriFilter?: (barri: Barri) => void; onStationSelect?: (station: Station) => void }
 ): MapView {
   const map = L.map(container, {
     scrollWheelZoom: true,
@@ -110,6 +110,7 @@ export function createMap(
   let heatMode: MetricMode | null = null;
   let heatScaleMode: HeatScaleMode = "percent";
   const onBarriFilter = options?.onBarriFilter ?? null;
+  const onStationSelect = options?.onStationSelect ?? null;
   let barrisByCode = new Map<string, Barri>();
   type UpdateArgs = [
     MetricMode,
@@ -246,6 +247,9 @@ export function createMap(
         })
           .bindPopup(popup)
           .bindTooltip(tooltip, { sticky: true, className: "station-tooltip" })
+          .on("click", () => {
+            onStationSelect?.(s);
+          })
           .on("popupopen", function (this: L.CircleMarker) {
             this.closeTooltip();
             this.unbindTooltip();
@@ -278,6 +282,9 @@ export function createMap(
           return layer
             .bindPopup(popup)
             .bindTooltip(tooltip, tooltipOptions)
+            .on("click", () => {
+              onStationSelect?.(s);
+            })
             .on("popupopen", () => {
               layer.closeTooltip();
               layer.unbindTooltip();
