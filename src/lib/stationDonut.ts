@@ -182,6 +182,38 @@ export function breakdownFromBarri(
   };
 }
 
+/** City-wide anchor composition from station snapshots. */
+export function breakdownFromCity(
+  stations: Station[],
+  context: StationPopupContext = {}
+): StationBreakdown {
+  let capacity = 0;
+  let mechanical = 0;
+  let ebike = 0;
+  let docks = 0;
+  let oos = 0;
+  let docks_disabled = 0;
+  for (const s of stations) {
+    capacity += s.capacity;
+    mechanical += s.mechanical;
+    ebike += s.ebike;
+    docks += s.docks_available;
+    oos += stationOosCount(s);
+    docks_disabled += stationDocksDisabled(s);
+  }
+  return {
+    name: "Barcelona",
+    capacity,
+    mechanical,
+    ebike,
+    docks,
+    oos,
+    docks_disabled,
+    historical: context.historical,
+    historicalLabel: context.historicalLabel,
+  };
+}
+
 function renderDonutSvg(
   b: StationBreakdown,
   size: number,
@@ -259,7 +291,45 @@ function metaLine(b: StationBreakdown): string {
   return `<p class="station-popup__meta">${parts.join(" · ")}${offline}</p>`;
 }
 
-function historicalNote(b: StationBreakdown): string {
+function compositionHistoricalNote(b: StationBreakdown): string {
+  if (!b.historical) return "";
+  const label = b.historicalLabel ?? "aquesta franja horària";
+  return `<p class="station-popup__note timeline-composition__note">Dades mitjana històrica: ${label} (30 dies)</p>`;
+}
+
+export type CompositionPanelOptions = {
+  scopeLabel: string;
+  showClearStation?: boolean;
+  clickable?: boolean;
+};
+
+/** Donut + compact legend for the timeline composition row. */
+export function renderCompositionPanel(
+  b: StationBreakdown,
+  options: CompositionPanelOptions
+): string {
+  const clickable = options.clickable !== false && !b.historical;
+  const payload = clickable ? encodeBreakdown(b) : "";
+  const donutInner = renderDonutSvg(b, 64, "station-donut", false);
+  const chartHtml = clickable
+    ? `<button type="button" class="timeline-composition__donut-btn" data-station-breakdown="${payload}" aria-label="Composició detallada: ${b.name}">${donutInner}</button>`
+    : `<div class="timeline-composition__donut" aria-hidden="true">${donutInner}</div>`;
+  const clearBtn = options.showClearStation
+    ? `<button type="button" class="timeline-composition__clear" id="composition-clear-station" aria-label="Tornar al barri">×</button>`
+    : "";
+
+  return `<div class="timeline-composition">
+    <div class="timeline-composition__chart">${chartHtml}</div>
+    <div class="timeline-composition__body">
+      <p class="timeline-composition__title"><span>${options.scopeLabel}</span>${clearBtn}</p>
+      <p class="timeline-composition__subtitle">${b.capacity.toLocaleString("ca-ES")} ancoratges</p>
+      ${compositionHistoricalNote(b)}
+      ${renderLegend(b, true)}
+    </div>
+  </div>`;
+}
+
+function historicalNotePopup(b: StationBreakdown): string {
   if (!b.historical) return "";
   const label = b.historicalLabel ?? "aquesta franja horària";
   return `<p class="station-popup__note">Dades mitjana històrica: ${label} (30 dies)</p>`;
@@ -277,7 +347,7 @@ export function renderStationPopupContent(
   return `<div class="station-popup">
     <p class="station-popup__title"><strong>${b.name}</strong></p>
     ${metaLine(b)}
-    ${historicalNote(b)}
+    ${historicalNotePopup(b)}
     <div class="station-popup__chart">
       <div class="station-donut-col">
         <button type="button" class="station-donut-trigger" data-station-breakdown="${payload}" aria-label="Prem per més info: distribució i gràfic de 24 hores">
@@ -317,7 +387,7 @@ function renderModalPanel(b: StationBreakdown, sparklineHtml = ""): string {
     <button type="button" class="station-donut-modal__close" aria-label="Tanca">×</button>
     <p class="station-donut-modal__title"><strong>${b.name}</strong></p>
     ${metaLine(b)}
-    ${historicalNote(b)}
+    ${historicalNotePopup(b)}
     <p class="station-donut-modal__subtitle">${b.capacity.toLocaleString("ca-ES")} ancoratges totals</p>
     <div class="station-donut-modal__chart">${renderDonutSvg(b, 200, "station-donut station-donut--large")}</div>
     ${renderLegend(b, false)}

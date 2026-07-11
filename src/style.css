@@ -1272,6 +1272,128 @@ body.station-donut-modal-open {
   color: white;
 }
 
+.replay-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.replay-btn {
+  min-width: 2.1rem;
+  height: 2.1rem;
+  padding: 0 0.45rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: white;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  color: var(--teal);
+  line-height: 1;
+}
+
+.replay-btn--play {
+  min-width: 2.5rem;
+}
+
+.replay-btn--play.active {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: white;
+}
+
+.replay-btn--speed {
+  min-width: 2.4rem;
+  font-size: 0.72rem;
+}
+
+.timeline-composition {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  margin-top: 0.65rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--border);
+}
+
+.timeline-composition--empty {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.timeline-composition__chart {
+  flex-shrink: 0;
+}
+
+.timeline-composition__donut-btn {
+  display: block;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.timeline-composition__donut-btn:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+
+.timeline-composition__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.timeline-composition__title {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0 0 0.15rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+  line-height: 1.25;
+}
+
+.timeline-composition__subtitle {
+  margin: 0 0 0.35rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.timeline-composition__note {
+  margin: 0 0 0.35rem;
+  font-size: 0.75rem;
+}
+
+.timeline-composition__clear {
+  flex-shrink: 0;
+  width: 1.35rem;
+  height: 1.35rem;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: white;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.timeline-composition__clear:hover {
+  color: var(--teal);
+  border-color: var(--teal);
+}
+
+.timeline-composition .station-donut-legend {
+  margin: 0;
+}
+
+.timeline-composition .station-donut-legend__item {
+  font-size: 0.74rem;
+}
+
 .hour-picker {
   display: flex;
   align-items: center;
@@ -1342,6 +1464,18 @@ body.station-donut-modal-open {
 
   .table-wrap {
     max-height: min(22rem, 45vh);
+  }
+
+  .timeline-composition {
+    gap: 0.5rem;
+  }
+
+  .timeline-composition .station-donut-legend__item {
+    font-size: 0.68rem;
+  }
+
+  .hour-select-label {
+    min-width: 100%;
   }
 }
 

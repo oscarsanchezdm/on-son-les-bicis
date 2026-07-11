@@ -8,11 +8,25 @@ import {
   type TimeView,
 } from "../lib/history";
 import { formatHour } from "../lib/format";
+import {
+  bindStationDonutInPopup,
+  renderCompositionPanel,
+  type StationBreakdown,
+} from "../lib/stationDonut";
 
 export type TimeSelectorOptions = {
   index: HistoryIndex | null;
   timeView: TimeView;
   onChange: (view: TimeView) => void;
+  composition?: StationBreakdown | null;
+  compositionScope?: string;
+  showClearStation?: boolean;
+  replayPlaying?: boolean;
+  replaySpeed?: 1 | 2;
+  onReplayToggle?: () => void;
+  onReplayStep?: (delta: -1 | 1) => void;
+  onReplaySpeedToggle?: () => void;
+  onClearStation?: () => void;
 };
 
 const DAY_TYPES: { id: DayType; label: string }[] = [
@@ -26,6 +40,15 @@ type TimelineState = {
   index: HistoryIndex | null;
   view: TimeView;
   onChange: (view: TimeView) => void;
+  composition: StationBreakdown | null;
+  compositionScope: string;
+  showClearStation: boolean;
+  replayPlaying: boolean;
+  replaySpeed: 1 | 2;
+  onReplayToggle: (() => void) | null;
+  onReplayStep: ((delta: -1 | 1) => void) | null;
+  onReplaySpeedToggle: (() => void) | null;
+  onClearStation: (() => void) | null;
 };
 
 let timelineState: TimelineState | null = null;
@@ -38,7 +61,6 @@ function defaultHour(index: HistoryIndex | null, dayType: DayType): number {
   return hours[hours.length - 1]!;
 }
 
-
 function hourOptions(index: HistoryIndex | null, dayType: DayType, selectedHour: number): string {
   const hours = hoursForDayType(index, dayType);
   if (!hours.length) {
@@ -49,12 +71,41 @@ function hourOptions(index: HistoryIndex | null, dayType: DayType, selectedHour:
     .join("");
 }
 
+function replayControlsHtml(isLatest: boolean, playing: boolean, speed: 1 | 2): string {
+  if (isLatest) return "";
+  const playLabel = playing ? "Pausa el replay" : "Reprodueix hora a hora";
+  const playIcon = playing ? "❚❚" : "▶";
+  return `<div class="replay-controls" role="group" aria-label="Replay de franja horària">
+    <button type="button" id="replay-prev" class="replay-btn" aria-label="Hora anterior">◀</button>
+    <button type="button" id="replay-play" class="replay-btn replay-btn--play ${playing ? "active" : ""}" aria-label="${playLabel}" aria-pressed="${playing}">${playIcon}</button>
+    <button type="button" id="replay-next" class="replay-btn" aria-label="Hora següent">▶</button>
+    <button type="button" id="replay-speed" class="replay-btn replay-btn--speed" aria-label="Velocitat de reproducció">${speed}×</button>
+  </div>`;
+}
+
+function compositionHtml(
+  breakdown: StationBreakdown | null,
+  scope: string,
+  showClearStation: boolean
+): string {
+  if (!breakdown || breakdown.capacity <= 0) {
+    return `<div class="timeline-composition timeline-composition--empty"><p>Sense dades de composició.</p></div>`;
+  }
+  return renderCompositionPanel(breakdown, {
+    scopeLabel: scope,
+    showClearStation,
+    clickable: !breakdown.historical,
+  });
+}
+
 function paintTimeline(container: HTMLElement, opts: TimeSelectorOptions) {
   const { index, timeView } = opts;
   const isLatest = timeView.kind === "latest";
   const selectedDayType = timeView.kind === "hour" ? timeView.dayType : "weekday";
   const selectedHour = timeView.kind === "hour" ? timeView.hour : defaultHour(index, selectedDayType);
   const hours = isLatest ? [] : hoursForDayType(index, selectedDayType);
+  const playing = opts.replayPlaying ?? false;
+  const speed = opts.replaySpeed ?? 1;
 
   container.innerHTML = `
     <section class="timeline">
@@ -79,8 +130,14 @@ function paintTimeline(container: HTMLElement, opts: TimeSelectorOptions) {
           </select>
         </label>
       </div>
+      ${replayControlsHtml(isLatest, playing, speed)}
+      <div id="timeline-composition-host">
+        ${compositionHtml(opts.composition ?? null, opts.compositionScope ?? "Barcelona", opts.showClearStation ?? false)}
+      </div>
     </section>
   `;
+
+  bindStationDonutInPopup(container);
 }
 
 function readHour(container: HTMLElement, dayType: DayType): number {
@@ -97,6 +154,8 @@ function syncTimelineControls(container: HTMLElement, opts: TimeSelectorOptions)
   const selectedDayType = timeView.kind === "hour" ? timeView.dayType : "weekday";
   const selectedHour = timeView.kind === "hour" ? timeView.hour : defaultHour(index, selectedDayType);
   const hours = hoursForDayType(index, selectedDayType);
+  const playing = opts.replayPlaying ?? false;
+  const speed = opts.replaySpeed ?? 1;
 
   container.querySelector("#btn-latest")?.classList.toggle("active", isLatest);
   container.querySelectorAll<HTMLButtonElement>(".day-type-btn").forEach((b) => {
@@ -112,8 +171,39 @@ function syncTimelineControls(container: HTMLElement, opts: TimeSelectorOptions)
     }
   }
 
-  const badge = container.querySelector("#timeline-badge");
-  if (badge) badge.hidden = true;
+  const replayHost = container.querySelector(".replay-controls");
+  const replayHtml = replayControlsHtml(isLatest, playing, speed);
+  if (replayHtml) {
+    if (replayHost) {
+      replayHost.outerHTML = replayHtml;
+    } else {
+      const host = container.querySelector("#timeline-composition-host");
+      host?.insertAdjacentHTML("beforebegin", replayHtml);
+    }
+  } else if (replayHost) {
+    replayHost.remove();
+  }
+
+  const playBtn = container.querySelector<HTMLButtonElement>("#replay-play");
+  if (playBtn) {
+    playBtn.textContent = playing ? "❚❚" : "▶";
+    playBtn.classList.toggle("active", playing);
+    playBtn.setAttribute("aria-pressed", String(playing));
+    playBtn.setAttribute("aria-label", playing ? "Pausa el replay" : "Reprodueix hora a hora");
+  }
+
+  const speedBtn = container.querySelector<HTMLButtonElement>("#replay-speed");
+  if (speedBtn) speedBtn.textContent = `${speed}×`;
+
+  const compositionHost = container.querySelector("#timeline-composition-host");
+  if (compositionHost) {
+    compositionHost.innerHTML = compositionHtml(
+      opts.composition ?? null,
+      opts.compositionScope ?? "Barcelona",
+      opts.showClearStation ?? false
+    );
+    bindStationDonutInPopup(container);
+  }
 }
 
 function bindTimelineEvents(container: HTMLElement) {
@@ -126,6 +216,31 @@ function bindTimelineEvents(container: HTMLElement) {
 
     if (target.closest("#btn-latest")) {
       timelineState.onChange({ kind: "latest" });
+      return;
+    }
+
+    if (target.closest("#replay-play")) {
+      timelineState.onReplayToggle?.();
+      return;
+    }
+
+    if (target.closest("#replay-prev")) {
+      timelineState.onReplayStep?.(-1);
+      return;
+    }
+
+    if (target.closest("#replay-next")) {
+      timelineState.onReplayStep?.(1);
+      return;
+    }
+
+    if (target.closest("#replay-speed")) {
+      timelineState.onReplaySpeedToggle?.();
+      return;
+    }
+
+    if (target.closest("#composition-clear-station")) {
+      timelineState.onClearStation?.();
       return;
     }
 
@@ -150,22 +265,31 @@ function bindTimelineEvents(container: HTMLElement) {
   });
 }
 
-export function renderTimeSelector(container: HTMLElement, opts: TimeSelectorOptions): void {
+function applyTimelineState(opts: TimeSelectorOptions): void {
   timelineState = {
     index: opts.index,
     view: opts.timeView,
     onChange: opts.onChange,
+    composition: opts.composition ?? null,
+    compositionScope: opts.compositionScope ?? "Barcelona",
+    showClearStation: opts.showClearStation ?? false,
+    replayPlaying: opts.replayPlaying ?? false,
+    replaySpeed: opts.replaySpeed ?? 1,
+    onReplayToggle: opts.onReplayToggle ?? null,
+    onReplayStep: opts.onReplayStep ?? null,
+    onReplaySpeedToggle: opts.onReplaySpeedToggle ?? null,
+    onClearStation: opts.onClearStation ?? null,
   };
+}
+
+export function renderTimeSelector(container: HTMLElement, opts: TimeSelectorOptions): void {
+  applyTimelineState(opts);
   bindTimelineEvents(container);
   paintTimeline(container, opts);
 }
 
 export function updateTimeSelector(container: HTMLElement, opts: TimeSelectorOptions): void {
-  if (timelineState) {
-    timelineState.index = opts.index;
-    timelineState.view = opts.timeView;
-    timelineState.onChange = opts.onChange;
-  }
+  applyTimelineState(opts);
 
   if (!container.querySelector("#btn-latest")) {
     paintTimeline(container, opts);
@@ -194,4 +318,9 @@ export function setTimelineStatus(
 export function timeViewLabel(view: TimeView, _index: HistoryIndex | null): string {
   if (view.kind === "latest") return "ciutat";
   return hourViewScopeLabel(view.hour, view.dayType);
+}
+
+export function replayStatusLabel(view: TimeView, playing: boolean): string {
+  if (!playing || view.kind !== "hour") return "";
+  return `▶ Replay · ${dayTypeLabel(view.dayType)} · ${formatHour(view.hour)}`;
 }

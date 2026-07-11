@@ -3,7 +3,7 @@ import { renderBarriTable } from "./components/barriTable";
 import { latestFromBarri, renderKpis } from "./components/kpi";
 import { createMap } from "./components/map";
 import { renderStationTable } from "./components/stationTable";
-import { renderTimeSelector, setTimelineStatus, timeViewLabel, updateTimeSelector } from "./components/timeline";
+import { renderTimeSelector, replayStatusLabel, setTimelineStatus, timeViewLabel, updateTimeSelector } from "./components/timeline";
 import type { Barri, MetricMode, Station } from "./lib/data";
 import {
   enrichBarrisWithFleetOos,
@@ -13,12 +13,13 @@ import {
   loadLatest,
   loadMeta,
 } from "./lib/data";
-import type { BarriSparklineSeries, HistoryIndex, SparklineMetricKey, TimeView } from "./lib/history";
+import type { BarriSparklineSeries, DayType, HistoryIndex, SparklineMetricKey, TimeView } from "./lib/history";
 import {
   barriHistAveragesAtHour,
   barrisToLatestData,
   cityHistAveragesAtHour,
   currentMadridHour,
+  hoursForDayType,
   isHistoricalView,
   loadBarriSparklinePct,
   loadBarriSparklineSeries,
@@ -33,7 +34,14 @@ import {
 import { heatLegendGradient, pctLegendLabels, type HeatScaleMode } from "./lib/colors";
 import { formatRelativeTime } from "./lib/format";
 import { iconEbike, metricIconHtml } from "./lib/icons";
-import { setStationDonutSparklineLoader, setStationDonutMetricMode } from "./lib/stationDonut";
+import {
+  breakdownFromBarri,
+  breakdownFromCity,
+  breakdownFromStation,
+  setStationDonutSparklineLoader,
+  setStationDonutMetricMode,
+  type StationBreakdown,
+} from "./lib/stationDonut";
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 
@@ -91,6 +99,7 @@ let mode: MetricMode = "total";
 let heatScale: HeatScaleMode = "percent";
 let timeView: TimeView = { kind: "latest" };
 let selectedBarri: Barri | null = null;
+let selectedStation: Station | null = null;
 let latestData: Awaited<ReturnType<typeof loadLatest>> | null = null;
 let barrisData: Awaited<ReturnType<typeof loadBarris>> | null = null;
 let summaryData: Awaited<ReturnType<typeof loadSummary7d>> | null = null;
@@ -109,6 +118,11 @@ let citySparklineLoadId = 0;
 let histAveragesCache: Partial<Record<SparklineMetricKey, number>> | null = null;
 let histAveragesKey: string | null = null;
 let histAveragesLoadId = 0;
+let replayPlaying = false;
+let replaySpeed: 1 | 2 = 1;
+let replayTimer: ReturnType<typeof setInterval> | null = null;
+
+const REPLAY_INTERVAL_MS = 1500;
 
 function scheduleHistoryLoad(): void {
   if (historyLoadPromise) return;
@@ -126,13 +140,7 @@ function scheduleHistoryLoad(): void {
 
     const timelineEl = document.getElementById("timeline");
     if (timelineEl) {
-      updateTimeSelector(timelineEl, {
-        index: historyIndex,
-        timeView,
-        onChange: (view) => {
-          void applyTimeView(view);
-        },
-      });
+      updateTimeSelector(timelineEl, timelineOptions());
     }
   })()
     .catch(() => {
@@ -207,6 +215,140 @@ function resetHistAveragesCache(): void {
   histAveragesCache = null;
 }
 
+function stopReplay(): void {
+  replayPlaying = false;
+  if (replayTimer) {
+    clearInterval(replayTimer);
+    replayTimer = null;
+  }
+}
+
+function defaultReplayView(): Extract<TimeView, { kind: "hour" }> | null {
+  if (!historyIndex) return null;
+  const order: DayType[] = ["weekday", "friday", "saturday", "sunday"];
+  for (const dayType of order) {
+    const hours = hoursForDayType(historyIndex, dayType);
+    if (hours.length) {
+      const now = currentMadridHour();
+      const hour = hours.includes(now) ? now : hours[0]!;
+      return { kind: "hour", hour, dayType };
+    }
+  }
+  return null;
+}
+
+function advanceReplayHour(): void {
+  if (timeViewLoading || !replayPlaying || timeView.kind !== "hour" || !historyIndex) {
+    return;
+  }
+  const hours = hoursForDayType(historyIndex, timeView.dayType);
+  if (!hours.length) {
+    stopReplay();
+    return;
+  }
+  const idx = hours.indexOf(timeView.hour);
+  const nextHour = idx < 0 || idx >= hours.length - 1 ? hours[0]! : hours[idx + 1]!;
+  void applyTimeView({ kind: "hour", hour: nextHour, dayType: timeView.dayType }, true);
+}
+
+function startReplay(): void {
+  if (timeView.kind !== "hour" || !historyIndex) return;
+  replayPlaying = true;
+  if (replayTimer) clearInterval(replayTimer);
+  replayTimer = setInterval(advanceReplayHour, REPLAY_INTERVAL_MS / replaySpeed);
+  void refresh();
+}
+
+async function toggleReplay(): Promise<void> {
+  if (replayPlaying) {
+    stopReplay();
+    void refresh();
+    return;
+  }
+  if (timeView.kind === "latest") {
+    await ensureHistoryLoaded();
+    const view = defaultReplayView();
+    if (!view) return;
+    await applyTimeView(view, true);
+    startReplay();
+    return;
+  }
+  startReplay();
+}
+
+function stepReplayHour(delta: -1 | 1): void {
+  stopReplay();
+  if (timeView.kind !== "hour" || !historyIndex) return;
+  const hours = hoursForDayType(historyIndex, timeView.dayType);
+  if (!hours.length) return;
+  const idx = hours.indexOf(timeView.hour);
+  const base = idx < 0 ? 0 : idx;
+  const nextIdx = (base + delta + hours.length) % hours.length;
+  void applyTimeView({ kind: "hour", hour: hours[nextIdx]!, dayType: timeView.dayType });
+}
+
+function toggleReplaySpeed(): void {
+  replaySpeed = replaySpeed === 1 ? 2 : 1;
+  if (replayPlaying) {
+    if (replayTimer) clearInterval(replayTimer);
+    replayTimer = setInterval(advanceReplayHour, REPLAY_INTERVAL_MS / replaySpeed);
+  }
+  void refresh();
+}
+
+function compositionScopeLabel(): string {
+  if (selectedStation) return selectedStation.name;
+  if (selectedBarri) return selectedBarri.barri_nom;
+  if (isHistoricalView(timeView)) return `Barcelona · ${timeViewLabel(timeView, historyIndex)}`;
+  return "Barcelona";
+}
+
+function buildCompositionBreakdown(): StationBreakdown | null {
+  const stations = displayStations;
+  if (!stations?.length) return null;
+
+  const historical = isHistoricalView(timeView);
+  const historicalLabel = historical ? timeViewLabel(timeView, historyIndex) : undefined;
+  const ctx = { historical, historicalLabel };
+
+  if (selectedStation && selectedBarri) {
+    const station = stations.find((s) => s.station_id === selectedStation!.station_id);
+    if (station) return breakdownFromStation(station, ctx);
+  }
+  if (selectedBarri) {
+    const barri = displayBarris.find((b) => b.barri_codi === selectedBarri!.barri_codi);
+    if (barri) return breakdownFromBarri(barri, ctx, stations);
+  }
+  return breakdownFromCity(stations, ctx);
+}
+
+function timelineOptions() {
+  return {
+    index: historyIndex,
+    timeView,
+    onChange: (view: TimeView) => {
+      void applyTimeView(view);
+    },
+    composition: buildCompositionBreakdown(),
+    compositionScope: compositionScopeLabel(),
+    showClearStation: Boolean(selectedStation && selectedBarri),
+    replayPlaying,
+    replaySpeed,
+    onReplayToggle: () => {
+      void toggleReplay();
+    },
+    onReplayStep: stepReplayHour,
+    onReplaySpeedToggle: toggleReplaySpeed,
+    onClearStation: clearStationSelection,
+  };
+}
+
+function updateTimelineUi(): void {
+  const timelineEl = document.getElementById("timeline");
+  if (!timelineEl) return;
+  updateTimeSelector(timelineEl, timelineOptions());
+}
+
 function metricLabel(): string {
   switch (mode) {
     case "docks":
@@ -270,7 +412,7 @@ function updateLegend(): void {
 
 function tableNote(): string {
   if (selectedBarri) {
-    return `Estacions de ${selectedBarri.barri_nom}. Clica una fila per centrar-la al mapa.`;
+    return `Estacions de ${selectedBarri.barri_nom}. Clica una fila o un punt del mapa per seleccionar l'estació.`;
   }
   if (isHistoricalView(timeView)) {
     return `Mitjana per barri · ${timeViewLabel(timeView, historyIndex)}${heatScale === "absolute" ? " · valors en nombre" : ""}.`;
@@ -334,6 +476,11 @@ function updateTimelineStatus() {
   const timelineEl = document.getElementById("timeline");
   if (!timelineEl || !latestData) return;
 
+  if (replayPlaying && timeView.kind === "hour") {
+    setTimelineStatus(timelineEl, replayStatusLabel(timeView, true));
+    return;
+  }
+
   if (timeView.kind === "latest") {
     if (historyLoading) {
       setTimelineStatus(timelineEl, "Carregant dades…");
@@ -353,7 +500,8 @@ function renderTableSection() {
   if (selectedBarri && displayStations) {
     tableTitle.textContent = `Estacions · ${selectedBarri.barri_nom}`;
     renderStationTable(tableContainer, barriStations(), mode, timeView, {
-      onSelect: (station) => mapView?.focusStation(station.station_id),
+      selectedId: selectedStation?.station_id ?? null,
+      onSelect: selectStation,
       heatScale,
     });
     return;
@@ -446,10 +594,25 @@ async function refresh() {
   const tnote = document.getElementById("table-note")!;
   tnote.textContent = tableNote();
   updateTimelineStatus();
+  updateTimelineUi();
 
   scheduleBarriSparklineLoad();
   scheduleCitySparklineLoad();
   scheduleHistAveragesLoad();
+}
+
+function selectStation(station: Station) {
+  if (!selectedBarri) return;
+  const next =
+    selectedStation?.station_id === station.station_id ? null : station;
+  selectedStation = next;
+  void refresh();
+  mapView?.focusStation(selectedStation?.station_id ?? null);
+}
+
+function clearStationSelection() {
+  selectedStation = null;
+  void refresh();
 }
 
 function selectBarri(barri: Barri) {
@@ -459,6 +622,7 @@ function selectBarri(barri: Barri) {
     barriSparklineCodi = null;
     barriSparklineCache = null;
     resetHistAveragesCache();
+    selectedStation = null;
   }
   selectedBarri = next;
   void refresh();
@@ -470,14 +634,17 @@ function resetBarriFilter() {
   barriSparklineCodi = null;
   barriSparklineCache = null;
   resetHistAveragesCache();
+  selectedStation = null;
   selectedBarri = null;
   void refresh();
   mapView?.focusBarri(null, null);
 }
 
 let timeViewRequest = 0;
+let timeViewLoading = false;
 
-async function applyTimeView(view: TimeView) {
+async function applyTimeView(view: TimeView, fromReplay = false) {
+  if (!fromReplay) stopReplay();
   timeView = view;
   if (!barrisData || !latestData) return;
 
@@ -488,30 +655,31 @@ async function applyTimeView(view: TimeView) {
     displayBarris = enrichBarrisWithFleetOos(barrisData.barris, latestData.stations);
     displayStations = latestData.stations;
   } else {
+    timeViewLoading = true;
     setTimelineStatus(timelineEl, "Carregant dades…");
-    await ensureHistoryLoaded();
-    const { barris, stations } = await loadHourlyViewData(
-      historyIndex,
-      view.hour,
-      view.dayType,
-      latestData.stations,
-      stationIdOrder
-    );
-    if (requestId !== timeViewRequest) return;
-    setTimelineStatus(timelineEl, "");
-    displayBarris = stations
-      ? enrichBarrisWithFleetOos(barris, stations)
-      : barris;
-    displayStations = stations;
+    try {
+      await ensureHistoryLoaded();
+      const { barris, stations } = await loadHourlyViewData(
+        historyIndex,
+        view.hour,
+        view.dayType,
+        latestData.stations,
+        stationIdOrder
+      );
+      if (requestId !== timeViewRequest) return;
+      displayBarris = stations
+        ? enrichBarrisWithFleetOos(barris, stations)
+        : barris;
+      displayStations = stations;
+    } finally {
+      if (requestId === timeViewRequest) {
+        timeViewLoading = false;
+        if (!replayPlaying) setTimelineStatus(timelineEl, "");
+      }
+    }
   }
 
-  updateTimeSelector(timelineEl, {
-    index: historyIndex,
-    timeView,
-    onChange: (v) => {
-      void applyTimeView(v);
-    },
-  });
+  updateTimeSelector(timelineEl, timelineOptions());
   void refresh();
 }
 
@@ -541,16 +709,13 @@ async function init() {
 
     mapView = createMap(document.getElementById("map")!, geo, {
       onBarriFilter: selectBarri,
+      onStationSelect: (station) => {
+        if (selectedBarri) selectStation(station);
+      },
     });
     void refresh();
 
-    renderTimeSelector(document.getElementById("timeline")!, {
-      index: null,
-      timeView,
-      onChange: (view) => {
-        void applyTimeView(view);
-      },
-    });
+    renderTimeSelector(document.getElementById("timeline")!, timelineOptions());
 
     document.getElementById("barri-filter-reset")!.addEventListener("click", resetBarriFilter);
 
