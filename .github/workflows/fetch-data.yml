@@ -53,9 +53,11 @@ jobs:
             echo "No data changes to commit."
             exit 0
           fi
+          git commit -m "Actualitza dades Bicing"
           for attempt in 1 2 3 4; do
             if git pull --rebase origin main; then
-              break
+              git push origin main
+              exit 0
             fi
             git rebase --abort 2>/dev/null || true
             if [ "$attempt" -eq 4 ]; then
@@ -64,9 +66,3 @@ jobs:
             fi
             sleep $((attempt * 4))
           done
-          if git diff --staged --quiet; then
-            echo "No data changes after rebase."
-            exit 0
-          fi
-          git commit -m "Actualitza dades Bicing"
-          git push origin main
