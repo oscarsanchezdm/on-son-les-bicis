@@ -1,6 +1,10 @@
 import type { CityUsageSnapshot, DayType, HistoryPoint } from "./history";
 import { dayTypeLabel, madridDayType } from "./history";
+import { bikesOutOfService, type LatestData } from "./data";
 import { formatHour } from "./format";
+
+/** Mínim d'ús assumit en el moment de màxima ocupació (bicis presumptament en circulació). */
+export const MIN_IN_USE_AT_PEAK = 30;
 
 export type HourlyUsagePoint = { hour: number; value: number };
 
@@ -21,8 +25,50 @@ function parked(s: CityUsageSnapshot): number {
   return s.bikes + s.oos;
 }
 
-export function madridTodayKey(): string {
-  return madridDateFromTs(new Date().toISOString());
+function madridHourFromTs(ts: string): number {
+  return parseInt(
+    new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Europe/Madrid",
+      hour: "2-digit",
+      hour12: false,
+    }).format(new Date(ts)),
+    10
+  );
+}
+
+/** Snapshot de ciutat des de dades en viu (mateix esquema que l'històric horari). */
+export function cityUsageFromLive(data: LatestData): CityUsageSnapshot {
+  const t = data.totals;
+  const oos =
+    t.bikes_out_of_service ??
+    bikesOutOfService(
+      t.capacity,
+      t.bikes_mechanical,
+      t.bikes_ebike,
+      t.docks_available,
+      t.bikes_total
+    );
+  return {
+    ts: data.last_updated,
+    localDate: madridDateFromTs(data.last_updated),
+    localHour: madridHourFromTs(data.last_updated),
+    dayType: madridDayType(new Date(data.last_updated)),
+    bikes: t.bikes_total,
+    oos,
+  };
+}
+
+/** Substitueix el punt de l'hora actual per dades en viu (alinea marcador i gràfic). */
+export function mergeLiveSnapshot(
+  snapshots: CityUsageSnapshot[],
+  live: LatestData | null
+): CityUsageSnapshot[] {
+  if (!live) return snapshots;
+  const snap = cityUsageFromLive(live);
+  const filtered = snapshots.filter(
+    (s) => !(s.localDate === snap.localDate && s.localHour === snap.localHour)
+  );
+  return [...filtered, snap].sort((a, b) => a.ts.localeCompare(b.ts));
 }
 
 function madridDateFromTs(ts: string): string {
@@ -38,6 +84,10 @@ function madridDateFromTs(ts: string): string {
   return `${y}-${m}-${d}`;
 }
 
+export function madridTodayKey(): string {
+  return madridDateFromTs(new Date().toISOString());
+}
+
 /** Màxim aparcades observat per dia (disponibles + FS). */
 function parkedMaxByDay(snapshots: CityUsageSnapshot[]): Map<string, number> {
   const byDay = new Map<string, number>();
@@ -50,7 +100,8 @@ function parkedMaxByDay(snapshots: CityUsageSnapshot[]): Map<string, number> {
 
 /**
  * Referència de flota per calcular l'ús.
- * Dies passats: màxim del propi dia. Dia actual (incomplet): màxim entre avui i el dia anterior.
+ * Dies passats: màxim del propi dia + mínim en circulació.
+ * Dia actual (incomplet): màxim entre avui i el dia anterior + mínim en circulació.
  */
 function fleetMaxRefByDay(
   parkedMax: Map<string, number>,
@@ -63,12 +114,12 @@ function fleetMaxRefByDay(
   for (const date of dates) {
     const raw = parkedMax.get(date) ?? 0;
     if (date < today) {
-      ref.set(date, raw);
+      ref.set(date, raw + MIN_IN_USE_AT_PEAK);
       lastCompleteMax = raw;
     } else if (date === today) {
-      ref.set(date, Math.max(raw, lastCompleteMax));
+      ref.set(date, Math.max(raw, lastCompleteMax) + MIN_IN_USE_AT_PEAK);
     } else {
-      ref.set(date, raw);
+      ref.set(date, raw + MIN_IN_USE_AT_PEAK);
     }
   }
   return ref;
@@ -176,7 +227,16 @@ export function computeUsageHourlyLatest(
   };
 }
 
-/** Estimació puntual des de totals vius (ciutat). */
+/** Ús estimat «ara» amb la mateixa lògica que la gràfica horària. */
+export function usageFromLive(data: LatestData, snapshots: CityUsageSnapshot[]): number {
+  const merged = mergeLiveSnapshot(snapshots, data);
+  const liveSnap = merged.at(-1);
+  if (!liveSnap) return 0;
+  const [{ inUse }] = attachUsage([liveSnap], merged);
+  return Math.round(inUse);
+}
+
+/** @deprecated Prefer {@link usageFromLive} per alinear marcador i gràfic. */
 export function usageFromLiveTotals(
   bikes: number,
   oos: number,
@@ -187,6 +247,6 @@ export function usageFromLiveTotals(
   const parkedMax = parkedMaxByDay(snapshots);
   const todayMax = Math.max(parkedMax.get(today) ?? 0, parkedNow);
   const prevMax = previousDayParkedMax(snapshots, today);
-  const fleetRef = Math.max(todayMax, prevMax);
+  const fleetRef = Math.max(todayMax, prevMax) + MIN_IN_USE_AT_PEAK;
   return Math.max(0, fleetRef - parkedNow);
 }
