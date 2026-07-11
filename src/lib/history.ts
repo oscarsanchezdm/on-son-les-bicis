@@ -457,6 +457,35 @@ export function sparklineValues(
   return sparklineChartPoints(series, key, maxPoints).map((p) => p.value);
 }
 
+/** Valors de sparkline de les últimes N hores (per al resum 7d). */
+export function sparklineValuesLast24h(
+  series: HistoryPoint[],
+  key: SparklineMetricKey,
+  maxPoints = 48,
+  hours = CHART_DETAIL_HOURS
+): number[] {
+  const points = filterChartPointsLast24h(sparklineChartPoints(series, key, 240), hours);
+  if (!points.length) return [];
+  if (points.length <= maxPoints) return points.map((p) => p.value);
+  const out: number[] = [];
+  for (let i = 0; i < maxPoints; i++) {
+    const idx = Math.round((i * (points.length - 1)) / Math.max(maxPoints - 1, 1));
+    out.push(points[idx]!.value);
+  }
+  return out;
+}
+
+export function recentHistoryFiles(
+  index: HistoryIndex | null,
+  hours = CHART_DETAIL_HOURS
+): HistoryFile[] {
+  if (!index?.files?.length) return [];
+  const cutoffKey = historyCutoffKeyUtc(hours);
+  return [...index.files]
+    .filter((f) => f.key >= cutoffKey)
+    .sort((a, b) => a.key.localeCompare(b.key));
+}
+
 export function labeledChartPoints(
   labels: string[],
   values: number[],
@@ -559,7 +588,8 @@ export type BarriSparklineSeries = {
 /** Recent hourly snapshots for one barri (for KPI sparklines). */
 export async function loadBarriSparklineSeries(
   index: HistoryIndex | null,
-  barriCodi: string
+  barriCodi: string,
+  hours = CHART_DETAIL_HOURS
 ): Promise<BarriSparklineSeries | null> {
   if (!index?.files?.length) return null;
 
@@ -574,7 +604,7 @@ export async function loadBarriSparklineSeries(
   const labels: string[] = [];
   const keys: string[] = [];
 
-  for (const file of [...index.files].sort((a, b) => a.key.localeCompare(b.key))) {
+  for (const file of recentHistoryFiles(index, hours)) {
     const snapshot = await loadHourlySnapshot(file.key);
     const barris = snapshot?.barris ?? [];
     const b = barris.find((x) => x.barri_codi === barriCodi);
@@ -613,9 +643,10 @@ export async function loadBarriSparklineSeries(
   };
 }
 
-/** Recent hourly city totals (for KPI sparklines when no barri is selected). */
-export async function loadCitySparklineSeries(
-  index: HistoryIndex | null
+/** Recent hourly city totals (for KPI sparklines, últimes 24 h). */
+export async function loadCitySparklineSeriesRecent(
+  index: HistoryIndex | null,
+  hours = CHART_DETAIL_HOURS
 ): Promise<BarriSparklineSeries | null> {
   if (!index?.files?.length) return null;
 
@@ -630,7 +661,7 @@ export async function loadCitySparklineSeries(
   const labels: string[] = [];
   const keys: string[] = [];
 
-  for (const file of [...index.files].sort((a, b) => a.key.localeCompare(b.key))) {
+  for (const file of recentHistoryFiles(index, hours)) {
     const snapshot = await loadHourlySnapshot(file.key);
     const barris = snapshot?.barris ?? [];
     if (!barris.length) continue;

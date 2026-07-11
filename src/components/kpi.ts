@@ -13,7 +13,7 @@ import {
   hourlyAverage,
   labeledChartPoints,
   sparklineChartPoints,
-  sparklineValues,
+  sparklineValuesLast24h,
 } from "../lib/history";
 import { formatCount, formatPct, formatRelativeDeltaPct } from "../lib/format";
 import { asyncLoadingHtml } from "../lib/asyncLoading";
@@ -162,16 +162,20 @@ export function renderKpis(
   const statsPending = showSpark && (options.statsPending ?? false);
 
   const bikesValues = showSpark
-    ? sparklines?.bikes_total ?? sparklineValues(summary?.series ?? [], "bikes_total")
+    ? sparklines?.bikes_total ??
+      sparklineValuesLast24h(summary?.series ?? [], "bikes_total")
     : [];
   const mechValues = showSpark
-    ? sparklines?.bikes_mechanical ?? sparklineValues(summary?.series ?? [], "bikes_mechanical")
+    ? sparklines?.bikes_mechanical ??
+      sparklineValuesLast24h(summary?.series ?? [], "bikes_mechanical")
     : [];
   const ebikeValues = showSpark
-    ? sparklines?.bikes_ebike ?? sparklineValues(summary?.series ?? [], "bikes_ebike")
+    ? sparklines?.bikes_ebike ??
+      sparklineValuesLast24h(summary?.series ?? [], "bikes_ebike")
     : [];
   const oosValues = showSpark
-    ? sparklines?.pct_oos_fleet ?? sparklineValues(summary?.series ?? [], "pct_oos_fleet")
+    ? sparklines?.pct_oos_fleet ??
+      sparklineValuesLast24h(summary?.series ?? [], "pct_oos_fleet")
     : [];
 
   const bikesPoints = showSpark ? chartPoints("bikes_total", sparklines, summary) : [];
