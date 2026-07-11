@@ -463,6 +463,7 @@ def _export_summary_7d(conn: sqlite3.Connection, ts_iso: str) -> None:
         mech = mech or 0
         ebike = ebike or 0
         oos = _bikes_out_of_service(cap, mech, ebike, docks, bikes)
+        fleet = bikes + oos
         series_by_ts[ts] = {
             "ts": ts,
             "date": dt.strftime("%d/%m"),
@@ -471,6 +472,7 @@ def _export_summary_7d(conn: sqlite3.Connection, ts_iso: str) -> None:
             "pct_mechanical": round(100 * mech / cap, 2) if cap else 0,
             "pct_ebike": round(100 * ebike / cap, 2) if cap else 0,
             "pct_oos_anchors": round(100 * oos / cap, 2) if cap else 0,
+            "pct_oos_fleet": round(100 * oos / fleet, 2) if fleet else 0,
         }
 
     series = sorted(series_by_ts.values(), key=lambda entry: entry["ts"])
