@@ -1,21 +1,21 @@
 {
-  "last_updated": "2026-07-12T19:41:19+00:00",
+  "last_updated": "2026-07-12T19:48:46+00:00",
   "totals": {
     "capacity": 14681,
-    "bikes_total": 4005,
-    "bikes_mechanical": 2673,
-    "bikes_ebike": 1359,
-    "docks_available": 8924,
+    "bikes_total": 4080,
+    "bikes_mechanical": 2693,
+    "bikes_ebike": 1420,
+    "docks_available": 8851,
     "stations_active": 541,
-    "stations_zero_ebike": 165,
-    "stations_zero_mechanical": 174,
-    "stations_zero_any": 58,
-    "pct_bikes": 27.28,
-    "pct_docks_free": 60.79,
-    "pct_mechanical": 18.21,
-    "pct_ebike": 9.26,
-    "bikes_out_of_service": 1537,
-    "pct_bikes_out_of_service": 10.47,
+    "stations_zero_ebike": 168,
+    "stations_zero_mechanical": 170,
+    "stations_zero_any": 57,
+    "pct_bikes": 27.79,
+    "pct_docks_free": 60.29,
+    "pct_mechanical": 18.34,
+    "pct_ebike": 9.67,
+    "bikes_out_of_service": 1528,
+    "pct_bikes_out_of_service": 10.41,
     "worst_barri": {
       "barri_codi": "0846",
       "barri_nom": "el Turó de la Peira",
@@ -51,14 +51,14 @@
       "barri_nom": "el Fort Pienc",
       "district": "Eixample",
       "status": "IN_SERVICE",
-      "mechanical": 6,
-      "ebike": 0,
-      "total": 6,
-      "docks_available": 36,
-      "bikes_disabled": 3,
+      "mechanical": 7,
+      "ebike": 3,
+      "total": 10,
+      "docks_available": 31,
+      "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 13.33,
-      "pct_docks_free": 80.0
+      "pct_bikes": 22.22,
+      "pct_docks_free": 68.89
     },
     {
       "station_id": "10",
@@ -112,13 +112,13 @@
       "district": "Sarrià-Sant Gervasi",
       "status": "IN_SERVICE",
       "mechanical": 1,
-      "ebike": 2,
-      "total": 3,
-      "docks_available": 16,
+      "ebike": 1,
+      "total": 2,
+      "docks_available": 17,
       "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 13.04,
-      "pct_docks_free": 69.57
+      "pct_bikes": 8.7,
+      "pct_docks_free": 73.91
     },
     {
       "station_id": "102",
@@ -131,14 +131,14 @@
       "barri_nom": "Sant Gervasi - Galvany",
       "district": "Sarrià-Sant Gervasi",
       "status": "IN_SERVICE",
-      "mechanical": 0,
-      "ebike": 5,
-      "total": 5,
-      "docks_available": 19,
+      "mechanical": 1,
+      "ebike": 2,
+      "total": 3,
+      "docks_available": 21,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 20.83,
-      "pct_docks_free": 79.17
+      "pct_bikes": 12.5,
+      "pct_docks_free": 87.5
     },
     {
       "station_id": "103",
@@ -194,11 +194,11 @@
       "mechanical": 0,
       "ebike": 4,
       "total": 4,
-      "docks_available": 4,
-      "bikes_disabled": 8,
+      "docks_available": 3,
+      "bikes_disabled": 9,
       "docks_disabled": 0,
       "pct_bikes": 20.0,
-      "pct_docks_free": 20.0
+      "pct_docks_free": 15.0
     },
     {
       "station_id": "107",
@@ -212,13 +212,13 @@
       "district": "Sarrià-Sant Gervasi",
       "status": "IN_SERVICE",
       "mechanical": 1,
-      "ebike": 4,
+      "ebike": 5,
       "total": 5,
-      "docks_available": 6,
+      "docks_available": 5,
       "bikes_disabled": 9,
       "docks_disabled": 0,
       "pct_bikes": 25.0,
-      "pct_docks_free": 30.0
+      "pct_docks_free": 25.0
     },
     {
       "station_id": "108",
@@ -232,13 +232,13 @@
       "district": "Gràcia",
       "status": "IN_SERVICE",
       "mechanical": 2,
-      "ebike": 0,
-      "total": 2,
-      "docks_available": 14,
-      "bikes_disabled": 3,
+      "ebike": 2,
+      "total": 4,
+      "docks_available": 11,
+      "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 9.52,
-      "pct_docks_free": 66.67
+      "pct_bikes": 19.05,
+      "pct_docks_free": 52.38
     },
     {
       "station_id": "109",
@@ -252,13 +252,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 5,
-      "total": 5,
-      "docks_available": 18,
+      "ebike": 2,
+      "total": 2,
+      "docks_available": 21,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 20.83,
-      "pct_docks_free": 75.0
+      "pct_bikes": 8.33,
+      "pct_docks_free": 87.5
     },
     {
       "station_id": "11",
@@ -272,13 +272,13 @@
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
       "mechanical": 1,
-      "ebike": 1,
-      "total": 2,
-      "docks_available": 31,
+      "ebike": 0,
+      "total": 1,
+      "docks_available": 32,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 5.71,
-      "pct_docks_free": 88.57
+      "pct_bikes": 2.86,
+      "pct_docks_free": 91.43
     },
     {
       "station_id": "110",
@@ -292,13 +292,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 3,
-      "ebike": 2,
-      "total": 5,
-      "docks_available": 8,
+      "ebike": 1,
+      "total": 4,
+      "docks_available": 9,
       "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 31.25,
-      "pct_docks_free": 50.0
+      "pct_bikes": 25.0,
+      "pct_docks_free": 56.25
     },
     {
       "station_id": "111",
@@ -312,13 +312,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 1,
-      "ebike": 2,
-      "total": 3,
-      "docks_available": 10,
+      "ebike": 0,
+      "total": 1,
+      "docks_available": 12,
       "bikes_disabled": 5,
       "docks_disabled": 0,
-      "pct_bikes": 15.79,
-      "pct_docks_free": 52.63
+      "pct_bikes": 5.26,
+      "pct_docks_free": 63.16
     },
     {
       "station_id": "112",
@@ -331,14 +331,14 @@
       "barri_nom": "Sant Antoni",
       "district": "Eixample",
       "status": "IN_SERVICE",
-      "mechanical": 10,
+      "mechanical": 9,
       "ebike": 4,
-      "total": 14,
-      "docks_available": 1,
+      "total": 13,
+      "docks_available": 2,
       "bikes_disabled": 5,
       "docks_disabled": 0,
-      "pct_bikes": 70.0,
-      "pct_docks_free": 5.0
+      "pct_bikes": 65.0,
+      "pct_docks_free": 10.0
     },
     {
       "station_id": "113",
@@ -371,14 +371,14 @@
       "barri_nom": "el Raval",
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
-      "mechanical": 4,
+      "mechanical": 5,
       "ebike": 7,
-      "total": 11,
-      "docks_available": 9,
+      "total": 12,
+      "docks_available": 8,
       "bikes_disabled": 0,
       "docks_disabled": 0,
-      "pct_bikes": 55.0,
-      "pct_docks_free": 45.0
+      "pct_bikes": 60.0,
+      "pct_docks_free": 40.0
     },
     {
       "station_id": "115",
@@ -391,8 +391,8 @@
       "barri_nom": "Sant Pere, Santa Caterina i la Ribera",
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
-      "mechanical": 17,
-      "ebike": 1,
+      "mechanical": 18,
+      "ebike": 0,
       "total": 18,
       "docks_available": 1,
       "bikes_disabled": 2,
@@ -432,13 +432,13 @@
       "district": "Sant Martí",
       "status": "IN_SERVICE",
       "mechanical": 8,
-      "ebike": 0,
-      "total": 8,
-      "docks_available": 11,
+      "ebike": 1,
+      "total": 9,
+      "docks_available": 10,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 38.1,
-      "pct_docks_free": 52.38
+      "pct_bikes": 42.86,
+      "pct_docks_free": 47.62
     },
     {
       "station_id": "118",
@@ -451,14 +451,14 @@
       "barri_nom": "el Parc i la Llacuna del Poblenou",
       "district": "Sant Martí",
       "status": "IN_SERVICE",
-      "mechanical": 6,
-      "ebike": 8,
-      "total": 14,
-      "docks_available": 10,
+      "mechanical": 8,
+      "ebike": 7,
+      "total": 15,
+      "docks_available": 9,
       "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 51.85,
-      "pct_docks_free": 37.04
+      "pct_bikes": 55.56,
+      "pct_docks_free": 33.33
     },
     {
       "station_id": "119",
@@ -472,13 +472,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 8,
-      "ebike": 6,
-      "total": 14,
-      "docks_available": 22,
+      "ebike": 7,
+      "total": 15,
+      "docks_available": 21,
       "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 35.9,
-      "pct_docks_free": 56.41
+      "pct_bikes": 38.46,
+      "pct_docks_free": 53.85
     },
     {
       "station_id": "12",
@@ -491,13 +491,13 @@
       "barri_nom": "la Barceloneta",
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
-      "mechanical": 6,
-      "ebike": 1,
-      "total": 6,
+      "mechanical": 7,
+      "ebike": 0,
+      "total": 7,
       "docks_available": 13,
       "bikes_disabled": 5,
       "docks_disabled": 0,
-      "pct_bikes": 23.08,
+      "pct_bikes": 26.92,
       "pct_docks_free": 50.0
     },
     {
@@ -552,13 +552,13 @@
       "district": "Gràcia",
       "status": "IN_SERVICE",
       "mechanical": 7,
-      "ebike": 3,
-      "total": 10,
-      "docks_available": 15,
+      "ebike": 1,
+      "total": 8,
+      "docks_available": 17,
       "bikes_disabled": 7,
       "docks_disabled": 0,
-      "pct_bikes": 30.3,
-      "pct_docks_free": 45.45
+      "pct_bikes": 24.24,
+      "pct_docks_free": 51.52
     },
     {
       "station_id": "123",
@@ -572,13 +572,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 1,
-      "ebike": 2,
-      "total": 3,
-      "docks_available": 12,
+      "ebike": 1,
+      "total": 2,
+      "docks_available": 13,
       "bikes_disabled": 6,
       "docks_disabled": 0,
-      "pct_bikes": 14.29,
-      "pct_docks_free": 57.14
+      "pct_bikes": 9.52,
+      "pct_docks_free": 61.9
     },
     {
       "station_id": "124",
@@ -591,14 +591,14 @@
       "barri_nom": "la Barceloneta",
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
-      "mechanical": 11,
+      "mechanical": 10,
       "ebike": 0,
-      "total": 11,
-      "docks_available": 19,
+      "total": 10,
+      "docks_available": 20,
       "bikes_disabled": 0,
       "docks_disabled": 1,
-      "pct_bikes": 35.48,
-      "pct_docks_free": 61.29
+      "pct_bikes": 32.26,
+      "pct_docks_free": 64.52
     },
     {
       "station_id": "125",
@@ -632,13 +632,13 @@
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
       "mechanical": 5,
-      "ebike": 4,
-      "total": 9,
-      "docks_available": 13,
+      "ebike": 2,
+      "total": 7,
+      "docks_available": 15,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 39.13,
-      "pct_docks_free": 56.52
+      "pct_bikes": 30.43,
+      "pct_docks_free": 65.22
     },
     {
       "station_id": "127",
@@ -652,13 +652,13 @@
       "district": "Sant Martí",
       "status": "IN_SERVICE",
       "mechanical": 3,
-      "ebike": 2,
-      "total": 5,
-      "docks_available": 19,
+      "ebike": 3,
+      "total": 6,
+      "docks_available": 18,
       "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 18.52,
-      "pct_docks_free": 70.37
+      "pct_bikes": 22.22,
+      "pct_docks_free": 66.67
     },
     {
       "station_id": "128",
@@ -672,13 +672,13 @@
       "district": "Sant Martí",
       "status": "IN_SERVICE",
       "mechanical": 13,
-      "ebike": 2,
-      "total": 15,
-      "docks_available": 24,
+      "ebike": 1,
+      "total": 14,
+      "docks_available": 25,
       "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 34.88,
-      "pct_docks_free": 55.81
+      "pct_bikes": 32.56,
+      "pct_docks_free": 58.14
     },
     {
       "station_id": "129",
@@ -692,13 +692,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 8,
-      "ebike": 7,
-      "total": 15,
-      "docks_available": 4,
+      "ebike": 6,
+      "total": 14,
+      "docks_available": 5,
       "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 65.22,
-      "pct_docks_free": 17.39
+      "pct_bikes": 60.87,
+      "pct_docks_free": 21.74
     },
     {
       "station_id": "13",
@@ -712,13 +712,13 @@
       "district": "Sant Martí",
       "status": "IN_SERVICE",
       "mechanical": 22,
-      "ebike": 1,
-      "total": 23,
-      "docks_available": 26,
-      "bikes_disabled": 5,
+      "ebike": 0,
+      "total": 22,
+      "docks_available": 28,
+      "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 42.59,
-      "pct_docks_free": 48.15
+      "pct_bikes": 40.74,
+      "pct_docks_free": 51.85
     },
     {
       "station_id": "130",
@@ -731,14 +731,14 @@
       "barri_nom": "la Verneda i la Pau",
       "district": "Sant Martí",
       "status": "IN_SERVICE",
-      "mechanical": 7,
+      "mechanical": 8,
       "ebike": 1,
-      "total": 8,
-      "docks_available": 16,
-      "bikes_disabled": 0,
+      "total": 9,
+      "docks_available": 14,
+      "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 33.33,
-      "pct_docks_free": 66.67
+      "pct_bikes": 37.5,
+      "pct_docks_free": 58.33
     },
     {
       "station_id": "131",
@@ -753,12 +753,12 @@
       "status": "IN_SERVICE",
       "mechanical": 3,
       "ebike": 2,
-      "total": 5,
-      "docks_available": 21,
-      "bikes_disabled": 3,
+      "total": 4,
+      "docks_available": 22,
+      "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 17.24,
-      "pct_docks_free": 72.41
+      "pct_bikes": 13.79,
+      "pct_docks_free": 75.86
     },
     {
       "station_id": "132",
@@ -772,13 +772,13 @@
       "district": "Sant Martí",
       "status": "IN_SERVICE",
       "mechanical": 9,
-      "ebike": 3,
-      "total": 12,
-      "docks_available": 11,
+      "ebike": 2,
+      "total": 11,
+      "docks_available": 12,
       "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 44.44,
-      "pct_docks_free": 40.74
+      "pct_bikes": 40.74,
+      "pct_docks_free": 44.44
     },
     {
       "station_id": "134",
@@ -833,11 +833,11 @@
       "status": "IN_SERVICE",
       "mechanical": 14,
       "ebike": 2,
-      "total": 16,
+      "total": 15,
       "docks_available": 12,
       "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 51.61,
+      "pct_bikes": 48.39,
       "pct_docks_free": 38.71
     },
     {
@@ -911,14 +911,14 @@
       "barri_nom": "Sant Pere, Santa Caterina i la Ribera",
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
-      "mechanical": 16,
+      "mechanical": 15,
       "ebike": 0,
-      "total": 16,
-      "docks_available": 9,
+      "total": 15,
+      "docks_available": 10,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 61.54,
-      "pct_docks_free": 34.62
+      "pct_bikes": 57.69,
+      "pct_docks_free": 38.46
     },
     {
       "station_id": "140",
@@ -932,13 +932,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 1,
-      "ebike": 1,
-      "total": 2,
-      "docks_available": 20,
-      "bikes_disabled": 5,
+      "ebike": 3,
+      "total": 4,
+      "docks_available": 19,
+      "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 7.41,
-      "pct_docks_free": 74.07
+      "pct_bikes": 14.81,
+      "pct_docks_free": 70.37
     },
     {
       "station_id": "141",
@@ -951,14 +951,14 @@
       "barri_nom": "Provençals del Poblenou",
       "district": "Sant Martí",
       "status": "IN_SERVICE",
-      "mechanical": 7,
-      "ebike": 9,
-      "total": 16,
-      "docks_available": 15,
+      "mechanical": 8,
+      "ebike": 10,
+      "total": 18,
+      "docks_available": 13,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 50.0,
-      "pct_docks_free": 46.88
+      "pct_bikes": 56.25,
+      "pct_docks_free": 40.62
     },
     {
       "station_id": "142",
@@ -992,13 +992,13 @@
       "district": "Sant Martí",
       "status": "IN_SERVICE",
       "mechanical": 16,
-      "ebike": 1,
-      "total": 17,
-      "docks_available": 4,
+      "ebike": 0,
+      "total": 16,
+      "docks_available": 5,
       "bikes_disabled": 6,
       "docks_disabled": 0,
-      "pct_bikes": 62.96,
-      "pct_docks_free": 14.81
+      "pct_bikes": 59.26,
+      "pct_docks_free": 18.52
     },
     {
       "station_id": "144",
@@ -1012,13 +1012,13 @@
       "district": "Sant Martí",
       "status": "IN_SERVICE",
       "mechanical": 7,
-      "ebike": 2,
-      "total": 9,
-      "docks_available": 14,
+      "ebike": 1,
+      "total": 8,
+      "docks_available": 15,
       "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 33.33,
-      "pct_docks_free": 51.85
+      "pct_bikes": 29.63,
+      "pct_docks_free": 55.56
     },
     {
       "station_id": "145",
@@ -1051,14 +1051,14 @@
       "barri_nom": "Provençals del Poblenou",
       "district": "Sant Martí",
       "status": "IN_SERVICE",
-      "mechanical": 8,
+      "mechanical": 9,
       "ebike": 0,
-      "total": 8,
-      "docks_available": 13,
+      "total": 9,
+      "docks_available": 12,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 33.33,
-      "pct_docks_free": 54.17
+      "pct_bikes": 37.5,
+      "pct_docks_free": 50.0
     },
     {
       "station_id": "147",
@@ -1074,11 +1074,11 @@
       "mechanical": 13,
       "ebike": 7,
       "total": 20,
-      "docks_available": 10,
-      "bikes_disabled": 2,
+      "docks_available": 9,
+      "bikes_disabled": 3,
       "docks_disabled": 0,
       "pct_bikes": 60.61,
-      "pct_docks_free": 30.3
+      "pct_docks_free": 27.27
     },
     {
       "station_id": "148",
@@ -1092,13 +1092,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 6,
-      "ebike": 2,
-      "total": 8,
-      "docks_available": 15,
-      "bikes_disabled": 4,
+      "ebike": 5,
+      "total": 10,
+      "docks_available": 13,
+      "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 29.63,
-      "pct_docks_free": 55.56
+      "pct_bikes": 37.04,
+      "pct_docks_free": 48.15
     },
     {
       "station_id": "149",
@@ -1112,13 +1112,13 @@
       "district": "Sant Martí",
       "status": "IN_SERVICE",
       "mechanical": 17,
-      "ebike": 1,
-      "total": 18,
-      "docks_available": 4,
+      "ebike": 3,
+      "total": 19,
+      "docks_available": 2,
       "bikes_disabled": 5,
       "docks_disabled": 0,
-      "pct_bikes": 66.67,
-      "pct_docks_free": 14.81
+      "pct_bikes": 70.37,
+      "pct_docks_free": 7.41
     },
     {
       "station_id": "15",
@@ -1152,13 +1152,13 @@
       "district": "Sant Martí",
       "status": "IN_SERVICE",
       "mechanical": 2,
-      "ebike": 1,
-      "total": 3,
-      "docks_available": 23,
+      "ebike": 0,
+      "total": 2,
+      "docks_available": 24,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 11.11,
-      "pct_docks_free": 85.19
+      "pct_bikes": 7.41,
+      "pct_docks_free": 88.89
     },
     {
       "station_id": "151",
@@ -1171,14 +1171,14 @@
       "barri_nom": "el Poblenou",
       "district": "Sant Martí",
       "status": "IN_SERVICE",
-      "mechanical": 16,
-      "ebike": 3,
-      "total": 16,
-      "docks_available": 4,
+      "mechanical": 14,
+      "ebike": 1,
+      "total": 15,
+      "docks_available": 8,
       "bikes_disabled": 8,
       "docks_disabled": 0,
-      "pct_bikes": 51.61,
-      "pct_docks_free": 12.9
+      "pct_bikes": 48.39,
+      "pct_docks_free": 25.81
     },
     {
       "station_id": "152",
@@ -1211,14 +1211,14 @@
       "barri_nom": "el Poblenou",
       "district": "Sant Martí",
       "status": "IN_SERVICE",
-      "mechanical": 18,
-      "ebike": 0,
-      "total": 18,
-      "docks_available": 3,
+      "mechanical": 19,
+      "ebike": 1,
+      "total": 20,
+      "docks_available": 1,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 78.26,
-      "pct_docks_free": 13.04
+      "pct_bikes": 86.96,
+      "pct_docks_free": 4.35
     },
     {
       "station_id": "154",
@@ -1252,13 +1252,13 @@
       "district": "Sant Martí",
       "status": "IN_SERVICE",
       "mechanical": 17,
-      "ebike": 4,
-      "total": 20,
-      "docks_available": 5,
+      "ebike": 0,
+      "total": 17,
+      "docks_available": 9,
       "bikes_disabled": 6,
       "docks_disabled": 0,
-      "pct_bikes": 62.5,
-      "pct_docks_free": 15.62
+      "pct_bikes": 53.12,
+      "pct_docks_free": 28.12
     },
     {
       "station_id": "156",
@@ -1272,13 +1272,13 @@
       "district": "Sant Martí",
       "status": "IN_SERVICE",
       "mechanical": 14,
-      "ebike": 4,
-      "total": 18,
-      "docks_available": 5,
+      "ebike": 3,
+      "total": 17,
+      "docks_available": 6,
       "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 66.67,
-      "pct_docks_free": 18.52
+      "pct_bikes": 62.96,
+      "pct_docks_free": 22.22
     },
     {
       "station_id": "157",
@@ -1331,14 +1331,14 @@
       "barri_nom": "el Besòs i el Maresme",
       "district": "Sant Martí",
       "status": "IN_SERVICE",
-      "mechanical": 9,
+      "mechanical": 8,
       "ebike": 1,
-      "total": 10,
-      "docks_available": 21,
+      "total": 9,
+      "docks_available": 22,
       "bikes_disabled": 5,
       "docks_disabled": 0,
-      "pct_bikes": 27.78,
-      "pct_docks_free": 58.33
+      "pct_bikes": 25.0,
+      "pct_docks_free": 61.11
     },
     {
       "station_id": "160",
@@ -1351,14 +1351,14 @@
       "barri_nom": "el Besòs i el Maresme",
       "district": "Sant Martí",
       "status": "IN_SERVICE",
-      "mechanical": 7,
-      "ebike": 0,
-      "total": 7,
-      "docks_available": 18,
+      "mechanical": 4,
+      "ebike": 1,
+      "total": 5,
+      "docks_available": 20,
       "bikes_disabled": 8,
       "docks_disabled": 0,
-      "pct_bikes": 21.21,
-      "pct_docks_free": 54.55
+      "pct_bikes": 15.15,
+      "pct_docks_free": 60.61
     },
     {
       "station_id": "161",
@@ -1372,13 +1372,13 @@
       "district": "Sant Martí",
       "status": "IN_SERVICE",
       "mechanical": 22,
-      "ebike": 2,
-      "total": 24,
-      "docks_available": 1,
+      "ebike": 0,
+      "total": 22,
+      "docks_available": 3,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 88.89,
-      "pct_docks_free": 3.7
+      "pct_bikes": 81.48,
+      "pct_docks_free": 11.11
     },
     {
       "station_id": "162",
@@ -1391,14 +1391,14 @@
       "barri_nom": "el Poblenou",
       "district": "Sant Martí",
       "status": "IN_SERVICE",
-      "mechanical": 10,
-      "ebike": 1,
-      "total": 11,
-      "docks_available": 11,
+      "mechanical": 12,
+      "ebike": 0,
+      "total": 12,
+      "docks_available": 10,
       "bikes_disabled": 4,
       "docks_disabled": 1,
-      "pct_bikes": 40.74,
-      "pct_docks_free": 40.74
+      "pct_bikes": 44.44,
+      "pct_docks_free": 37.04
     },
     {
       "station_id": "163",
@@ -1411,14 +1411,14 @@
       "barri_nom": "la Vila Olímpica del Poblenou",
       "district": "Sant Martí",
       "status": "IN_SERVICE",
-      "mechanical": 10,
+      "mechanical": 9,
       "ebike": 1,
-      "total": 11,
-      "docks_available": 12,
+      "total": 10,
+      "docks_available": 13,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 42.31,
-      "pct_docks_free": 46.15
+      "pct_bikes": 38.46,
+      "pct_docks_free": 50.0
     },
     {
       "station_id": "164",
@@ -1432,13 +1432,13 @@
       "district": "Sant Martí",
       "status": "IN_SERVICE",
       "mechanical": 9,
-      "ebike": 6,
-      "total": 15,
-      "docks_available": 6,
-      "bikes_disabled": 6,
+      "ebike": 8,
+      "total": 17,
+      "docks_available": 5,
+      "bikes_disabled": 5,
       "docks_disabled": 0,
-      "pct_bikes": 55.56,
-      "pct_docks_free": 22.22
+      "pct_bikes": 62.96,
+      "pct_docks_free": 18.52
     },
     {
       "station_id": "165",
@@ -1451,14 +1451,14 @@
       "barri_nom": "el Poblenou",
       "district": "Sant Martí",
       "status": "IN_SERVICE",
-      "mechanical": 14,
-      "ebike": 2,
-      "total": 15,
-      "docks_available": 9,
+      "mechanical": 12,
+      "ebike": 0,
+      "total": 12,
+      "docks_available": 13,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 55.56,
-      "pct_docks_free": 33.33
+      "pct_bikes": 44.44,
+      "pct_docks_free": 48.15
     },
     {
       "station_id": "166",
@@ -1472,13 +1472,13 @@
       "district": "Sant Martí",
       "status": "IN_SERVICE",
       "mechanical": 22,
-      "ebike": 0,
-      "total": 22,
-      "docks_available": 4,
+      "ebike": 1,
+      "total": 23,
+      "docks_available": 3,
       "bikes_disabled": 0,
       "docks_disabled": 0,
-      "pct_bikes": 84.62,
-      "pct_docks_free": 15.38
+      "pct_bikes": 88.46,
+      "pct_docks_free": 11.54
     },
     {
       "station_id": "167",
@@ -1491,14 +1491,14 @@
       "barri_nom": "Diagonal Mar i el Front Marítim del Poblenou",
       "district": "Sant Martí",
       "status": "IN_SERVICE",
-      "mechanical": 6,
+      "mechanical": 5,
       "ebike": 0,
-      "total": 6,
-      "docks_available": 13,
+      "total": 5,
+      "docks_available": 14,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 28.57,
-      "pct_docks_free": 61.9
+      "pct_bikes": 23.81,
+      "pct_docks_free": 66.67
     },
     {
       "station_id": "168",
@@ -1511,14 +1511,14 @@
       "barri_nom": "Diagonal Mar i el Front Marítim del Poblenou",
       "district": "Sant Martí",
       "status": "IN_SERVICE",
-      "mechanical": 8,
-      "ebike": 1,
-      "total": 9,
-      "docks_available": 16,
+      "mechanical": 12,
+      "ebike": 0,
+      "total": 12,
+      "docks_available": 13,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 34.62,
-      "pct_docks_free": 61.54
+      "pct_bikes": 46.15,
+      "pct_docks_free": 50.0
     },
     {
       "station_id": "17",
@@ -1571,14 +1571,14 @@
       "barri_nom": "la Vila Olímpica del Poblenou",
       "district": "Sant Martí",
       "status": "IN_SERVICE",
-      "mechanical": 10,
-      "ebike": 1,
-      "total": 11,
-      "docks_available": 40,
+      "mechanical": 8,
+      "ebike": 0,
+      "total": 8,
+      "docks_available": 43,
       "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 20.37,
-      "pct_docks_free": 74.07
+      "pct_bikes": 14.81,
+      "pct_docks_free": 79.63
     },
     {
       "station_id": "173",
@@ -1591,14 +1591,14 @@
       "barri_nom": "el Poblenou",
       "district": "Sant Martí",
       "status": "IN_SERVICE",
-      "mechanical": 3,
+      "mechanical": 1,
       "ebike": 0,
-      "total": 3,
-      "docks_available": 23,
+      "total": 1,
+      "docks_available": 25,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 11.11,
-      "pct_docks_free": 85.19
+      "pct_bikes": 3.7,
+      "pct_docks_free": 92.59
     },
     {
       "station_id": "174",
@@ -1631,14 +1631,14 @@
       "barri_nom": "Diagonal Mar i el Front Marítim del Poblenou",
       "district": "Sant Martí",
       "status": "IN_SERVICE",
-      "mechanical": 8,
-      "ebike": 2,
-      "total": 9,
-      "docks_available": 15,
+      "mechanical": 7,
+      "ebike": 0,
+      "total": 7,
+      "docks_available": 18,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 33.33,
-      "pct_docks_free": 55.56
+      "pct_bikes": 25.93,
+      "pct_docks_free": 66.67
     },
     {
       "station_id": "176",
@@ -1652,13 +1652,13 @@
       "district": "Sant Martí",
       "status": "IN_SERVICE",
       "mechanical": 13,
-      "ebike": 0,
-      "total": 13,
-      "docks_available": 15,
+      "ebike": 1,
+      "total": 14,
+      "docks_available": 14,
       "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 41.94,
-      "pct_docks_free": 48.39
+      "pct_bikes": 45.16,
+      "pct_docks_free": 45.16
     },
     {
       "station_id": "177",
@@ -1672,12 +1672,12 @@
       "district": "Sant Martí",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 8,
-      "total": 8,
+      "ebike": 9,
+      "total": 9,
       "docks_available": 26,
-      "bikes_disabled": 3,
+      "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 21.62,
+      "pct_bikes": 24.32,
       "pct_docks_free": 70.27
     },
     {
@@ -1712,13 +1712,13 @@
       "district": "Sants-Montjuïc",
       "status": "IN_SERVICE",
       "mechanical": 7,
-      "ebike": 0,
-      "total": 7,
-      "docks_available": 7,
+      "ebike": 1,
+      "total": 8,
+      "docks_available": 6,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 43.75,
-      "pct_docks_free": 43.75
+      "pct_bikes": 50.0,
+      "pct_docks_free": 37.5
     },
     {
       "station_id": "18",
@@ -1732,13 +1732,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 11,
-      "total": 11,
-      "docks_available": 14,
+      "ebike": 9,
+      "total": 9,
+      "docks_available": 16,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 42.31,
-      "pct_docks_free": 53.85
+      "pct_bikes": 34.62,
+      "pct_docks_free": 61.54
     },
     {
       "station_id": "180",
@@ -1772,13 +1772,13 @@
       "district": "Sants-Montjuïc",
       "status": "IN_SERVICE",
       "mechanical": 7,
-      "ebike": 5,
-      "total": 12,
-      "docks_available": 16,
-      "bikes_disabled": 2,
+      "ebike": 6,
+      "total": 13,
+      "docks_available": 14,
+      "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 37.5,
-      "pct_docks_free": 50.0
+      "pct_bikes": 40.62,
+      "pct_docks_free": 43.75
     },
     {
       "station_id": "183",
@@ -1792,13 +1792,13 @@
       "district": "Sants-Montjuïc",
       "status": "IN_SERVICE",
       "mechanical": 18,
-      "ebike": 1,
-      "total": 19,
-      "docks_available": 9,
+      "ebike": 2,
+      "total": 20,
+      "docks_available": 8,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 63.33,
-      "pct_docks_free": 30.0
+      "pct_bikes": 66.67,
+      "pct_docks_free": 26.67
     },
     {
       "station_id": "184",
@@ -1812,13 +1812,13 @@
       "district": "Sants-Montjuïc",
       "status": "IN_SERVICE",
       "mechanical": 13,
-      "ebike": 4,
-      "total": 17,
-      "docks_available": 7,
+      "ebike": 2,
+      "total": 14,
+      "docks_available": 9,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 62.96,
-      "pct_docks_free": 25.93
+      "pct_bikes": 51.85,
+      "pct_docks_free": 33.33
     },
     {
       "station_id": "185",
@@ -1831,14 +1831,14 @@
       "barri_nom": "la Bordeta",
       "district": "Sants-Montjuïc",
       "status": "IN_SERVICE",
-      "mechanical": 11,
+      "mechanical": 10,
       "ebike": 2,
-      "total": 13,
-      "docks_available": 1,
+      "total": 12,
+      "docks_available": 2,
       "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 76.47,
-      "pct_docks_free": 5.88
+      "pct_bikes": 70.59,
+      "pct_docks_free": 11.76
     },
     {
       "station_id": "186",
@@ -1852,13 +1852,13 @@
       "district": "Sants-Montjuïc",
       "status": "IN_SERVICE",
       "mechanical": 6,
-      "ebike": 1,
-      "total": 7,
-      "docks_available": 15,
+      "ebike": 3,
+      "total": 9,
+      "docks_available": 13,
       "bikes_disabled": 3,
       "docks_disabled": 1,
-      "pct_bikes": 26.92,
-      "pct_docks_free": 57.69
+      "pct_bikes": 34.62,
+      "pct_docks_free": 50.0
     },
     {
       "station_id": "187",
@@ -1892,13 +1892,13 @@
       "district": "Sants-Montjuïc",
       "status": "IN_SERVICE",
       "mechanical": 5,
-      "ebike": 8,
-      "total": 13,
-      "docks_available": 9,
+      "ebike": 6,
+      "total": 11,
+      "docks_available": 11,
       "bikes_disabled": 4,
       "docks_disabled": 1,
-      "pct_bikes": 48.15,
-      "pct_docks_free": 33.33
+      "pct_bikes": 40.74,
+      "pct_docks_free": 40.74
     },
     {
       "station_id": "189",
@@ -1912,13 +1912,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 2,
-      "total": 2,
-      "docks_available": 23,
+      "ebike": 4,
+      "total": 4,
+      "docks_available": 21,
       "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 7.14,
-      "pct_docks_free": 82.14
+      "pct_bikes": 14.29,
+      "pct_docks_free": 75.0
     },
     {
       "station_id": "19",
@@ -1932,13 +1932,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 1,
-      "ebike": 4,
-      "total": 5,
-      "docks_available": 24,
+      "ebike": 5,
+      "total": 6,
+      "docks_available": 23,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 16.67,
-      "pct_docks_free": 80.0
+      "pct_bikes": 20.0,
+      "pct_docks_free": 76.67
     },
     {
       "station_id": "190",
@@ -1952,13 +1952,13 @@
       "district": "Sant Martí",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 0,
-      "total": 0,
-      "docks_available": 22,
+      "ebike": 1,
+      "total": 1,
+      "docks_available": 21,
       "bikes_disabled": 7,
       "docks_disabled": 0,
-      "pct_bikes": 0.0,
-      "pct_docks_free": 75.86
+      "pct_bikes": 3.45,
+      "pct_docks_free": 72.41
     },
     {
       "station_id": "191",
@@ -1992,13 +1992,13 @@
       "district": "Sants-Montjuïc",
       "status": "IN_SERVICE",
       "mechanical": 2,
-      "ebike": 2,
-      "total": 4,
-      "docks_available": 15,
+      "ebike": 3,
+      "total": 5,
+      "docks_available": 14,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 19.05,
-      "pct_docks_free": 71.43
+      "pct_bikes": 23.81,
+      "pct_docks_free": 66.67
     },
     {
       "station_id": "193",
@@ -2032,13 +2032,13 @@
       "district": "Les Corts",
       "status": "IN_SERVICE",
       "mechanical": 3,
-      "ebike": 4,
-      "total": 7,
-      "docks_available": 16,
+      "ebike": 3,
+      "total": 6,
+      "docks_available": 17,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 29.17,
-      "pct_docks_free": 66.67
+      "pct_bikes": 25.0,
+      "pct_docks_free": 70.83
     },
     {
       "station_id": "195",
@@ -2052,13 +2052,13 @@
       "district": "Les Corts",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 1,
-      "total": 1,
-      "docks_available": 25,
+      "ebike": 0,
+      "total": 0,
+      "docks_available": 26,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 3.7,
-      "pct_docks_free": 92.59
+      "pct_bikes": 0.0,
+      "pct_docks_free": 96.3
     },
     {
       "station_id": "196",
@@ -2072,13 +2072,13 @@
       "district": "Sants-Montjuïc",
       "status": "IN_SERVICE",
       "mechanical": 2,
-      "ebike": 1,
-      "total": 3,
-      "docks_available": 20,
+      "ebike": 0,
+      "total": 2,
+      "docks_available": 21,
       "bikes_disabled": 3,
       "docks_disabled": 1,
-      "pct_bikes": 11.11,
-      "pct_docks_free": 74.07
+      "pct_bikes": 7.41,
+      "pct_docks_free": 77.78
     },
     {
       "station_id": "197",
@@ -2093,11 +2093,11 @@
       "status": "IN_SERVICE",
       "mechanical": 3,
       "ebike": 6,
-      "total": 9,
+      "total": 8,
       "docks_available": 16,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 33.33,
+      "pct_bikes": 29.63,
       "pct_docks_free": 59.26
     },
     {
@@ -2112,13 +2112,13 @@
       "district": "Les Corts",
       "status": "IN_SERVICE",
       "mechanical": 1,
-      "ebike": 0,
-      "total": 1,
-      "docks_available": 18,
+      "ebike": 1,
+      "total": 2,
+      "docks_available": 17,
       "bikes_disabled": 7,
       "docks_disabled": 0,
-      "pct_bikes": 3.7,
-      "pct_docks_free": 66.67
+      "pct_bikes": 7.41,
+      "pct_docks_free": 62.96
     },
     {
       "station_id": "199",
@@ -2153,11 +2153,11 @@
       "status": "IN_SERVICE",
       "mechanical": 5,
       "ebike": 2,
-      "total": 6,
+      "total": 7,
       "docks_available": 21,
       "bikes_disabled": 0,
       "docks_disabled": 0,
-      "pct_bikes": 21.43,
+      "pct_bikes": 25.0,
       "pct_docks_free": 75.0
     },
     {
@@ -2211,14 +2211,14 @@
       "barri_nom": "les Corts",
       "district": "Les Corts",
       "status": "IN_SERVICE",
-      "mechanical": 0,
+      "mechanical": 1,
       "ebike": 0,
-      "total": 0,
-      "docks_available": 20,
+      "total": 1,
+      "docks_available": 19,
       "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 0.0,
-      "pct_docks_free": 83.33
+      "pct_bikes": 4.17,
+      "pct_docks_free": 79.17
     },
     {
       "station_id": "202",
@@ -2252,13 +2252,13 @@
       "district": "Les Corts",
       "status": "IN_SERVICE",
       "mechanical": 2,
-      "ebike": 1,
-      "total": 3,
-      "docks_available": 28,
-      "bikes_disabled": 2,
+      "ebike": 3,
+      "total": 5,
+      "docks_available": 27,
+      "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 9.09,
-      "pct_docks_free": 84.85
+      "pct_bikes": 15.15,
+      "pct_docks_free": 81.82
     },
     {
       "station_id": "204",
@@ -2312,13 +2312,13 @@
       "district": "Les Corts",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 1,
-      "total": 1,
-      "docks_available": 32,
+      "ebike": 0,
+      "total": 0,
+      "docks_available": 33,
       "bikes_disabled": 0,
       "docks_disabled": 0,
-      "pct_bikes": 3.03,
-      "pct_docks_free": 96.97
+      "pct_bikes": 0.0,
+      "pct_docks_free": 100.0
     },
     {
       "station_id": "207",
@@ -2332,13 +2332,13 @@
       "district": "Les Corts",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 4,
-      "total": 4,
-      "docks_available": 15,
+      "ebike": 3,
+      "total": 2,
+      "docks_available": 16,
       "bikes_disabled": 5,
       "docks_disabled": 0,
-      "pct_bikes": 16.0,
-      "pct_docks_free": 60.0
+      "pct_bikes": 8.0,
+      "pct_docks_free": 64.0
     },
     {
       "station_id": "208",
@@ -2371,14 +2371,14 @@
       "barri_nom": "l'Antiga Esquerra de l'Eixample",
       "district": "Eixample",
       "status": "IN_SERVICE",
-      "mechanical": 2,
-      "ebike": 1,
-      "total": 3,
-      "docks_available": 19,
-      "bikes_disabled": 4,
+      "mechanical": 3,
+      "ebike": 4,
+      "total": 7,
+      "docks_available": 16,
+      "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 11.54,
-      "pct_docks_free": 73.08
+      "pct_bikes": 26.92,
+      "pct_docks_free": 61.54
     },
     {
       "station_id": "21",
@@ -2473,11 +2473,11 @@
       "status": "IN_SERVICE",
       "mechanical": 25,
       "ebike": 5,
-      "total": 29,
+      "total": 30,
       "docks_available": 1,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 87.88,
+      "pct_bikes": 90.91,
       "pct_docks_free": 3.03
     },
     {
@@ -2552,13 +2552,13 @@
       "district": "Sarrià-Sant Gervasi",
       "status": "IN_SERVICE",
       "mechanical": 2,
-      "ebike": 5,
-      "total": 7,
-      "docks_available": 19,
+      "ebike": 6,
+      "total": 8,
+      "docks_available": 18,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 25.93,
-      "pct_docks_free": 70.37
+      "pct_bikes": 29.63,
+      "pct_docks_free": 66.67
     },
     {
       "station_id": "218",
@@ -2571,14 +2571,14 @@
       "barri_nom": "la Sagrada Família",
       "district": "Eixample",
       "status": "IN_SERVICE",
-      "mechanical": 8,
+      "mechanical": 9,
       "ebike": 6,
-      "total": 14,
-      "docks_available": 10,
+      "total": 15,
+      "docks_available": 9,
       "bikes_disabled": 15,
       "docks_disabled": 0,
-      "pct_bikes": 35.9,
-      "pct_docks_free": 25.64
+      "pct_bikes": 38.46,
+      "pct_docks_free": 23.08
     },
     {
       "station_id": "219",
@@ -2592,13 +2592,13 @@
       "district": "Sarrià-Sant Gervasi",
       "status": "IN_SERVICE",
       "mechanical": 1,
-      "ebike": 8,
-      "total": 9,
-      "docks_available": 14,
+      "ebike": 9,
+      "total": 10,
+      "docks_available": 13,
       "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 34.62,
-      "pct_docks_free": 53.85
+      "pct_bikes": 38.46,
+      "pct_docks_free": 50.0
     },
     {
       "station_id": "22",
@@ -2632,13 +2632,13 @@
       "district": "Sarrià-Sant Gervasi",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 6,
-      "total": 6,
-      "docks_available": 15,
+      "ebike": 8,
+      "total": 8,
+      "docks_available": 13,
       "bikes_disabled": 6,
       "docks_disabled": 0,
-      "pct_bikes": 22.22,
-      "pct_docks_free": 55.56
+      "pct_bikes": 29.63,
+      "pct_docks_free": 48.15
     },
     {
       "station_id": "221",
@@ -2652,13 +2652,13 @@
       "district": "Gràcia",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 6,
-      "total": 6,
-      "docks_available": 12,
-      "bikes_disabled": 6,
+      "ebike": 7,
+      "total": 7,
+      "docks_available": 10,
+      "bikes_disabled": 7,
       "docks_disabled": 0,
-      "pct_bikes": 25.0,
-      "pct_docks_free": 50.0
+      "pct_bikes": 29.17,
+      "pct_docks_free": 41.67
     },
     {
       "station_id": "222",
@@ -2672,13 +2672,13 @@
       "district": "Gràcia",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 11,
-      "total": 11,
-      "docks_available": 5,
-      "bikes_disabled": 9,
+      "ebike": 14,
+      "total": 14,
+      "docks_available": 3,
+      "bikes_disabled": 8,
       "docks_disabled": 1,
-      "pct_bikes": 40.74,
-      "pct_docks_free": 18.52
+      "pct_bikes": 51.85,
+      "pct_docks_free": 11.11
     },
     {
       "station_id": "223",
@@ -2693,11 +2693,11 @@
       "status": "IN_SERVICE",
       "mechanical": 2,
       "ebike": 9,
-      "total": 10,
+      "total": 11,
       "docks_available": 16,
       "bikes_disabled": 5,
       "docks_disabled": 0,
-      "pct_bikes": 31.25,
+      "pct_bikes": 34.38,
       "pct_docks_free": 50.0
     },
     {
@@ -2752,13 +2752,13 @@
       "district": "Gràcia",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 9,
-      "total": 9,
-      "docks_available": 7,
-      "bikes_disabled": 9,
+      "ebike": 12,
+      "total": 12,
+      "docks_available": 5,
+      "bikes_disabled": 8,
       "docks_disabled": 0,
-      "pct_bikes": 33.33,
-      "pct_docks_free": 25.93
+      "pct_bikes": 44.44,
+      "pct_docks_free": 18.52
     },
     {
       "station_id": "227",
@@ -2792,13 +2792,13 @@
       "district": "Gràcia",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 2,
-      "total": 2,
-      "docks_available": 15,
+      "ebike": 7,
+      "total": 7,
+      "docks_available": 10,
       "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 9.52,
-      "pct_docks_free": 71.43
+      "pct_bikes": 33.33,
+      "pct_docks_free": 47.62
     },
     {
       "station_id": "229",
@@ -2811,13 +2811,13 @@
       "barri_nom": "la Vila de Gràcia",
       "district": "Gràcia",
       "status": "IN_SERVICE",
-      "mechanical": 1,
+      "mechanical": 0,
       "ebike": 0,
-      "total": 1,
+      "total": 0,
       "docks_available": 19,
-      "bikes_disabled": 7,
+      "bikes_disabled": 8,
       "docks_disabled": 0,
-      "pct_bikes": 3.57,
+      "pct_bikes": 0.0,
       "pct_docks_free": 67.86
     },
     {
@@ -2832,13 +2832,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 1,
-      "ebike": 2,
-      "total": 2,
-      "docks_available": 24,
+      "ebike": 0,
+      "total": 1,
+      "docks_available": 26,
       "bikes_disabled": 0,
       "docks_disabled": 0,
-      "pct_bikes": 7.41,
-      "pct_docks_free": 88.89
+      "pct_bikes": 3.7,
+      "pct_docks_free": 96.3
     },
     {
       "station_id": "230",
@@ -2852,12 +2852,12 @@
       "district": "Gràcia",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 0,
-      "total": 0,
+      "ebike": 1,
+      "total": 1,
       "docks_available": 16,
-      "bikes_disabled": 10,
+      "bikes_disabled": 9,
       "docks_disabled": 0,
-      "pct_bikes": 0.0,
+      "pct_bikes": 3.85,
       "pct_docks_free": 61.54
     },
     {
@@ -2872,12 +2872,12 @@
       "district": "Gràcia",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 18,
-      "total": 18,
+      "ebike": 19,
+      "total": 19,
       "docks_available": 0,
-      "bikes_disabled": 5,
+      "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 75.0,
+      "pct_bikes": 79.17,
       "pct_docks_free": 0.0
     },
     {
@@ -2932,13 +2932,13 @@
       "district": "Sants-Montjuïc",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 0,
-      "total": 0,
-      "docks_available": 18,
+      "ebike": 3,
+      "total": 3,
+      "docks_available": 15,
       "bikes_disabled": 5,
       "docks_disabled": 0,
-      "pct_bikes": 0.0,
-      "pct_docks_free": 78.26
+      "pct_bikes": 13.04,
+      "pct_docks_free": 65.22
     },
     {
       "station_id": "235",
@@ -2952,13 +2952,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 8,
-      "ebike": 5,
-      "total": 13,
-      "docks_available": 6,
+      "ebike": 4,
+      "total": 12,
+      "docks_available": 7,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 61.9,
-      "pct_docks_free": 28.57
+      "pct_bikes": 57.14,
+      "pct_docks_free": 33.33
     },
     {
       "station_id": "236",
@@ -2992,13 +2992,13 @@
       "district": "Sants-Montjuïc",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 3,
-      "total": 3,
-      "docks_available": 21,
+      "ebike": 2,
+      "total": 2,
+      "docks_available": 22,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 11.11,
-      "pct_docks_free": 77.78
+      "pct_bikes": 7.41,
+      "pct_docks_free": 81.48
     },
     {
       "station_id": "238",
@@ -3034,11 +3034,11 @@
       "mechanical": 1,
       "ebike": 7,
       "total": 8,
-      "docks_available": 25,
-      "bikes_disabled": 2,
+      "docks_available": 24,
+      "bikes_disabled": 3,
       "docks_disabled": 0,
       "pct_bikes": 22.86,
-      "pct_docks_free": 71.43
+      "pct_docks_free": 68.57
     },
     {
       "station_id": "24",
@@ -3132,13 +3132,13 @@
       "district": "Sant Andreu",
       "status": "IN_SERVICE",
       "mechanical": 12,
-      "ebike": 5,
-      "total": 17,
-      "docks_available": 6,
+      "ebike": 6,
+      "total": 18,
+      "docks_available": 5,
       "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 62.96,
-      "pct_docks_free": 22.22
+      "pct_bikes": 66.67,
+      "pct_docks_free": 18.52
     },
     {
       "station_id": "244",
@@ -3152,13 +3152,13 @@
       "district": "Sant Andreu",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 5,
-      "total": 5,
-      "docks_available": 21,
+      "ebike": 4,
+      "total": 4,
+      "docks_available": 22,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 18.52,
-      "pct_docks_free": 77.78
+      "pct_bikes": 14.81,
+      "pct_docks_free": 81.48
     },
     {
       "station_id": "247",
@@ -3172,12 +3172,12 @@
       "district": "Sant Andreu",
       "status": "IN_SERVICE",
       "mechanical": 2,
-      "ebike": 4,
-      "total": 6,
+      "ebike": 5,
+      "total": 7,
       "docks_available": 24,
-      "bikes_disabled": 2,
+      "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 18.75,
+      "pct_bikes": 21.88,
       "pct_docks_free": 75.0
     },
     {
@@ -3192,13 +3192,13 @@
       "district": "Sant Andreu",
       "status": "IN_SERVICE",
       "mechanical": 4,
-      "ebike": 1,
-      "total": 5,
-      "docks_available": 20,
+      "ebike": 2,
+      "total": 6,
+      "docks_available": 19,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 18.52,
-      "pct_docks_free": 74.07
+      "pct_bikes": 22.22,
+      "pct_docks_free": 70.37
     },
     {
       "station_id": "249",
@@ -3212,13 +3212,13 @@
       "district": "Sant Andreu",
       "status": "IN_SERVICE",
       "mechanical": 5,
-      "ebike": 6,
-      "total": 11,
-      "docks_available": 9,
+      "ebike": 7,
+      "total": 12,
+      "docks_available": 8,
       "bikes_disabled": 7,
       "docks_disabled": 0,
-      "pct_bikes": 40.74,
-      "pct_docks_free": 33.33
+      "pct_bikes": 44.44,
+      "pct_docks_free": 29.63
     },
     {
       "station_id": "25",
@@ -3252,13 +3252,13 @@
       "district": "Sant Andreu",
       "status": "IN_SERVICE",
       "mechanical": 2,
-      "ebike": 11,
-      "total": 13,
-      "docks_available": 11,
+      "ebike": 12,
+      "total": 14,
+      "docks_available": 10,
       "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 48.15,
-      "pct_docks_free": 40.74
+      "pct_bikes": 51.85,
+      "pct_docks_free": 37.04
     },
     {
       "station_id": "251",
@@ -3291,14 +3291,14 @@
       "barri_nom": "Sant Andreu",
       "district": "Sant Andreu",
       "status": "IN_SERVICE",
-      "mechanical": 9,
+      "mechanical": 10,
       "ebike": 0,
-      "total": 9,
-      "docks_available": 15,
+      "total": 10,
+      "docks_available": 14,
       "bikes_disabled": 9,
       "docks_disabled": 0,
-      "pct_bikes": 27.27,
-      "pct_docks_free": 45.45
+      "pct_bikes": 30.3,
+      "pct_docks_free": 42.42
     },
     {
       "station_id": "253",
@@ -3372,13 +3372,13 @@
       "district": "Sant Andreu",
       "status": "IN_SERVICE",
       "mechanical": 4,
-      "ebike": 0,
-      "total": 4,
-      "docks_available": 21,
+      "ebike": 1,
+      "total": 5,
+      "docks_available": 20,
       "bikes_disabled": 7,
       "docks_disabled": 0,
-      "pct_bikes": 12.5,
-      "pct_docks_free": 65.62
+      "pct_bikes": 15.62,
+      "pct_docks_free": 62.5
     },
     {
       "station_id": "257",
@@ -3392,13 +3392,13 @@
       "district": "Sant Andreu",
       "status": "IN_SERVICE",
       "mechanical": 7,
-      "ebike": 3,
-      "total": 10,
-      "docks_available": 10,
+      "ebike": 2,
+      "total": 8,
+      "docks_available": 11,
       "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 43.48,
-      "pct_docks_free": 43.48
+      "pct_bikes": 34.78,
+      "pct_docks_free": 47.83
     },
     {
       "station_id": "258",
@@ -3431,8 +3431,8 @@
       "barri_nom": "Sant Andreu",
       "district": "Sant Andreu",
       "status": "IN_SERVICE",
-      "mechanical": 2,
-      "ebike": 4,
+      "mechanical": 3,
+      "ebike": 3,
       "total": 6,
       "docks_available": 15,
       "bikes_disabled": 1,
@@ -3452,13 +3452,13 @@
       "district": "Sant Martí",
       "status": "IN_SERVICE",
       "mechanical": 1,
-      "ebike": 7,
-      "total": 8,
-      "docks_available": 6,
-      "bikes_disabled": 4,
+      "ebike": 10,
+      "total": 11,
+      "docks_available": 5,
+      "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 44.44,
-      "pct_docks_free": 33.33
+      "pct_bikes": 61.11,
+      "pct_docks_free": 27.78
     },
     {
       "station_id": "260",
@@ -3472,13 +3472,13 @@
       "district": "Sant Andreu",
       "status": "IN_SERVICE",
       "mechanical": 1,
-      "ebike": 2,
-      "total": 3,
-      "docks_available": 16,
+      "ebike": 0,
+      "total": 1,
+      "docks_available": 18,
       "bikes_disabled": 8,
       "docks_disabled": 0,
-      "pct_bikes": 11.11,
-      "pct_docks_free": 59.26
+      "pct_bikes": 3.7,
+      "pct_docks_free": 66.67
     },
     {
       "station_id": "261",
@@ -3492,13 +3492,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 8,
-      "ebike": 3,
-      "total": 10,
-      "docks_available": 17,
+      "ebike": 4,
+      "total": 12,
+      "docks_available": 16,
       "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 31.25,
-      "pct_docks_free": 53.12
+      "pct_bikes": 37.5,
+      "pct_docks_free": 50.0
     },
     {
       "station_id": "262",
@@ -3511,14 +3511,14 @@
       "barri_nom": "la Nova Esquerra de l'Eixample",
       "district": "Eixample",
       "status": "IN_SERVICE",
-      "mechanical": 8,
+      "mechanical": 10,
       "ebike": 3,
-      "total": 11,
-      "docks_available": 9,
+      "total": 13,
+      "docks_available": 7,
       "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 45.83,
-      "pct_docks_free": 37.5
+      "pct_bikes": 54.17,
+      "pct_docks_free": 29.17
     },
     {
       "station_id": "263",
@@ -3532,13 +3532,13 @@
       "district": "Sant Andreu",
       "status": "IN_SERVICE",
       "mechanical": 4,
-      "ebike": 0,
-      "total": 4,
-      "docks_available": 15,
+      "ebike": 2,
+      "total": 6,
+      "docks_available": 13,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 20.0,
-      "pct_docks_free": 75.0
+      "pct_bikes": 30.0,
+      "pct_docks_free": 65.0
     },
     {
       "station_id": "264",
@@ -3572,13 +3572,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 1,
-      "ebike": 11,
-      "total": 12,
-      "docks_available": 10,
+      "ebike": 9,
+      "total": 10,
+      "docks_available": 12,
       "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 44.44,
-      "pct_docks_free": 37.04
+      "pct_bikes": 37.04,
+      "pct_docks_free": 44.44
     },
     {
       "station_id": "266",
@@ -3612,13 +3612,13 @@
       "district": "Sant Andreu",
       "status": "IN_SERVICE",
       "mechanical": 2,
-      "ebike": 1,
-      "total": 3,
-      "docks_available": 19,
+      "ebike": 0,
+      "total": 2,
+      "docks_available": 20,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 12.5,
-      "pct_docks_free": 79.17
+      "pct_bikes": 8.33,
+      "pct_docks_free": 83.33
     },
     {
       "station_id": "268",
@@ -3672,13 +3672,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 3,
-      "total": 3,
-      "docks_available": 11,
+      "ebike": 2,
+      "total": 2,
+      "docks_available": 12,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 17.65,
-      "pct_docks_free": 64.71
+      "pct_bikes": 11.76,
+      "pct_docks_free": 70.59
     },
     {
       "station_id": "270",
@@ -3752,12 +3752,12 @@
       "district": "Sant Andreu",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 1,
-      "total": 1,
+      "ebike": 2,
+      "total": 2,
       "docks_available": 31,
-      "bikes_disabled": 3,
+      "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 2.78,
+      "pct_bikes": 5.56,
       "pct_docks_free": 86.11
     },
     {
@@ -3771,14 +3771,14 @@
       "barri_nom": "Sant Andreu",
       "district": "Sant Andreu",
       "status": "IN_SERVICE",
-      "mechanical": 6,
-      "ebike": 0,
+      "mechanical": 5,
+      "ebike": 1,
       "total": 6,
-      "docks_available": 21,
-      "bikes_disabled": 4,
+      "docks_available": 22,
+      "bikes_disabled": 3,
       "docks_disabled": 0,
       "pct_bikes": 19.35,
-      "pct_docks_free": 67.74
+      "pct_docks_free": 70.97
     },
     {
       "station_id": "275",
@@ -3792,13 +3792,13 @@
       "district": "Nou Barris",
       "status": "IN_SERVICE",
       "mechanical": 3,
-      "ebike": 1,
-      "total": 4,
-      "docks_available": 26,
+      "ebike": 2,
+      "total": 5,
+      "docks_available": 25,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 12.5,
-      "pct_docks_free": 81.25
+      "pct_bikes": 15.62,
+      "pct_docks_free": 78.12
     },
     {
       "station_id": "276",
@@ -3812,13 +3812,13 @@
       "district": "Horta-Guinardó",
       "status": "IN_SERVICE",
       "mechanical": 18,
-      "ebike": 3,
-      "total": 21,
-      "docks_available": 4,
+      "ebike": 4,
+      "total": 22,
+      "docks_available": 3,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 77.78,
-      "pct_docks_free": 14.81
+      "pct_bikes": 81.48,
+      "pct_docks_free": 11.11
     },
     {
       "station_id": "277",
@@ -3852,13 +3852,13 @@
       "district": "Horta-Guinardó",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 11,
-      "total": 11,
-      "docks_available": 12,
+      "ebike": 10,
+      "total": 10,
+      "docks_available": 13,
       "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 40.74,
-      "pct_docks_free": 44.44
+      "pct_bikes": 37.04,
+      "pct_docks_free": 48.15
     },
     {
       "station_id": "279",
@@ -3872,13 +3872,13 @@
       "district": "Horta-Guinardó",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 1,
-      "total": 1,
-      "docks_available": 22,
-      "bikes_disabled": 4,
+      "ebike": 3,
+      "total": 3,
+      "docks_available": 21,
+      "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 3.7,
-      "pct_docks_free": 81.48
+      "pct_bikes": 11.11,
+      "pct_docks_free": 77.78
     },
     {
       "station_id": "28",
@@ -3894,11 +3894,11 @@
       "mechanical": 2,
       "ebike": 7,
       "total": 9,
-      "docks_available": 12,
-      "bikes_disabled": 2,
+      "docks_available": 11,
+      "bikes_disabled": 3,
       "docks_disabled": 0,
       "pct_bikes": 39.13,
-      "pct_docks_free": 52.17
+      "pct_docks_free": 47.83
     },
     {
       "station_id": "280",
@@ -3972,13 +3972,13 @@
       "district": "Horta-Guinardó",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 4,
-      "total": 3,
-      "docks_available": 15,
+      "ebike": 3,
+      "total": 2,
+      "docks_available": 16,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 15.0,
-      "pct_docks_free": 75.0
+      "pct_bikes": 10.0,
+      "pct_docks_free": 80.0
     },
     {
       "station_id": "284",
@@ -4072,13 +4072,13 @@
       "district": "Nou Barris",
       "status": "IN_SERVICE",
       "mechanical": 12,
-      "ebike": 7,
-      "total": 19,
-      "docks_available": 9,
+      "ebike": 6,
+      "total": 18,
+      "docks_available": 10,
       "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 59.38,
-      "pct_docks_free": 28.12
+      "pct_bikes": 56.25,
+      "pct_docks_free": 31.25
     },
     {
       "station_id": "289",
@@ -4172,13 +4172,13 @@
       "district": "Nou Barris",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 3,
-      "total": 3,
-      "docks_available": 5,
+      "ebike": 4,
+      "total": 4,
+      "docks_available": 4,
       "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 25.0,
-      "pct_docks_free": 41.67
+      "pct_bikes": 33.33,
+      "pct_docks_free": 33.33
     },
     {
       "station_id": "293",
@@ -4252,13 +4252,13 @@
       "district": "Nou Barris",
       "status": "IN_SERVICE",
       "mechanical": 3,
-      "ebike": 3,
-      "total": 6,
-      "docks_available": 24,
+      "ebike": 4,
+      "total": 7,
+      "docks_available": 23,
       "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 18.18,
-      "pct_docks_free": 72.73
+      "pct_bikes": 21.21,
+      "pct_docks_free": 69.7
     },
     {
       "station_id": "297",
@@ -4291,14 +4291,14 @@
       "barri_nom": "Porta",
       "district": "Nou Barris",
       "status": "IN_SERVICE",
-      "mechanical": 4,
+      "mechanical": 5,
       "ebike": 6,
-      "total": 10,
-      "docks_available": 19,
+      "total": 11,
+      "docks_available": 18,
       "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 30.3,
-      "pct_docks_free": 57.58
+      "pct_bikes": 33.33,
+      "pct_docks_free": 54.55
     },
     {
       "station_id": "299",
@@ -4334,11 +4334,11 @@
       "mechanical": 3,
       "ebike": 1,
       "total": 4,
-      "docks_available": 21,
-      "bikes_disabled": 2,
+      "docks_available": 22,
+      "bikes_disabled": 1,
       "docks_disabled": 0,
       "pct_bikes": 14.81,
-      "pct_docks_free": 77.78
+      "pct_docks_free": 81.48
     },
     {
       "station_id": "30",
@@ -4352,13 +4352,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 4,
-      "ebike": 3,
+      "ebike": 2,
       "total": 6,
-      "docks_available": 16,
+      "docks_available": 17,
       "bikes_disabled": 5,
       "docks_disabled": 1,
       "pct_bikes": 20.69,
-      "pct_docks_free": 55.17
+      "pct_docks_free": 58.62
     },
     {
       "station_id": "300",
@@ -4372,13 +4372,13 @@
       "district": "Nou Barris",
       "status": "IN_SERVICE",
       "mechanical": 2,
-      "ebike": 5,
+      "ebike": 6,
       "total": 7,
-      "docks_available": 8,
+      "docks_available": 7,
       "bikes_disabled": 1,
       "docks_disabled": 1,
       "pct_bikes": 38.89,
-      "pct_docks_free": 44.44
+      "pct_docks_free": 38.89
     },
     {
       "station_id": "301",
@@ -4532,13 +4532,13 @@
       "district": "Les Corts",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 5,
-      "total": 5,
-      "docks_available": 17,
+      "ebike": 7,
+      "total": 7,
+      "docks_available": 15,
       "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 18.52,
-      "pct_docks_free": 62.96
+      "pct_bikes": 25.93,
+      "pct_docks_free": 55.56
     },
     {
       "station_id": "309",
@@ -4552,13 +4552,13 @@
       "district": "Les Corts",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 3,
-      "total": 3,
-      "docks_available": 17,
+      "ebike": 2,
+      "total": 2,
+      "docks_available": 18,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 13.64,
-      "pct_docks_free": 77.27
+      "pct_bikes": 9.09,
+      "pct_docks_free": 81.82
     },
     {
       "station_id": "31",
@@ -4572,13 +4572,13 @@
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
       "mechanical": 7,
-      "ebike": 1,
-      "total": 8,
-      "docks_available": 6,
+      "ebike": 0,
+      "total": 7,
+      "docks_available": 7,
       "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 44.44,
-      "pct_docks_free": 33.33
+      "pct_bikes": 38.89,
+      "pct_docks_free": 38.89
     },
     {
       "station_id": "310",
@@ -4612,13 +4612,13 @@
       "district": "Les Corts",
       "status": "IN_SERVICE",
       "mechanical": 3,
-      "ebike": 1,
-      "total": 4,
-      "docks_available": 17,
+      "ebike": 2,
+      "total": 5,
+      "docks_available": 16,
       "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 16.67,
-      "pct_docks_free": 70.83
+      "pct_bikes": 20.83,
+      "pct_docks_free": 66.67
     },
     {
       "station_id": "312",
@@ -4652,13 +4652,13 @@
       "district": "Sants-Montjuïc",
       "status": "IN_SERVICE",
       "mechanical": 2,
-      "ebike": 3,
-      "total": 5,
-      "docks_available": 23,
+      "ebike": 5,
+      "total": 7,
+      "docks_available": 21,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 17.24,
-      "pct_docks_free": 79.31
+      "pct_bikes": 24.14,
+      "pct_docks_free": 72.41
     },
     {
       "station_id": "314",
@@ -4692,13 +4692,13 @@
       "district": "Sant Martí",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 1,
-      "total": 1,
-      "docks_available": 23,
+      "ebike": 2,
+      "total": 2,
+      "docks_available": 22,
       "bikes_disabled": 2,
       "docks_disabled": 1,
-      "pct_bikes": 3.7,
-      "pct_docks_free": 85.19
+      "pct_bikes": 7.41,
+      "pct_docks_free": 81.48
     },
     {
       "station_id": "316",
@@ -4712,13 +4712,13 @@
       "district": "Sant Martí",
       "status": "IN_SERVICE",
       "mechanical": 11,
-      "ebike": 2,
-      "total": 13,
-      "docks_available": 7,
+      "ebike": 3,
+      "total": 14,
+      "docks_available": 6,
       "bikes_disabled": 5,
       "docks_disabled": 0,
-      "pct_bikes": 50.0,
-      "pct_docks_free": 26.92
+      "pct_bikes": 53.85,
+      "pct_docks_free": 23.08
     },
     {
       "station_id": "317",
@@ -4773,11 +4773,11 @@
       "status": "IN_SERVICE",
       "mechanical": 0,
       "ebike": 7,
-      "total": 6,
+      "total": 7,
       "docks_available": 19,
       "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 19.35,
+      "pct_bikes": 22.58,
       "pct_docks_free": 61.29
     },
     {
@@ -4812,12 +4812,12 @@
       "district": "Sarrià-Sant Gervasi",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 2,
-      "total": 2,
+      "ebike": 3,
+      "total": 3,
       "docks_available": 19,
-      "bikes_disabled": 4,
+      "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 7.41,
+      "pct_bikes": 11.11,
       "pct_docks_free": 70.37
     },
     {
@@ -4832,13 +4832,13 @@
       "district": "Sarrià-Sant Gervasi",
       "status": "IN_SERVICE",
       "mechanical": 18,
-      "ebike": 1,
-      "total": 19,
-      "docks_available": 1,
-      "bikes_disabled": 7,
+      "ebike": 3,
+      "total": 21,
+      "docks_available": 0,
+      "bikes_disabled": 6,
       "docks_disabled": 0,
-      "pct_bikes": 70.37,
-      "pct_docks_free": 3.7
+      "pct_bikes": 77.78,
+      "pct_docks_free": 0.0
     },
     {
       "station_id": "322",
@@ -4852,13 +4852,13 @@
       "district": "Sarrià-Sant Gervasi",
       "status": "IN_SERVICE",
       "mechanical": 2,
-      "ebike": 0,
-      "total": 2,
-      "docks_available": 20,
+      "ebike": 1,
+      "total": 3,
+      "docks_available": 19,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 8.33,
-      "pct_docks_free": 83.33
+      "pct_bikes": 12.5,
+      "pct_docks_free": 79.17
     },
     {
       "station_id": "323",
@@ -4872,13 +4872,13 @@
       "district": "Sarrià-Sant Gervasi",
       "status": "IN_SERVICE",
       "mechanical": 18,
-      "ebike": 0,
-      "total": 18,
-      "docks_available": 5,
-      "bikes_disabled": 4,
+      "ebike": 5,
+      "total": 23,
+      "docks_available": 2,
+      "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 66.67,
-      "pct_docks_free": 18.52
+      "pct_bikes": 85.19,
+      "pct_docks_free": 7.41
     },
     {
       "station_id": "324",
@@ -4912,13 +4912,13 @@
       "district": "Sarrià-Sant Gervasi",
       "status": "IN_SERVICE",
       "mechanical": 13,
-      "ebike": 2,
-      "total": 15,
-      "docks_available": 7,
+      "ebike": 3,
+      "total": 14,
+      "docks_available": 6,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 65.22,
-      "pct_docks_free": 30.43
+      "pct_bikes": 60.87,
+      "pct_docks_free": 26.09
     },
     {
       "station_id": "326",
@@ -4933,11 +4933,11 @@
       "status": "IN_SERVICE",
       "mechanical": 0,
       "ebike": 6,
-      "total": 6,
+      "total": 5,
       "docks_available": 22,
       "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 18.75,
+      "pct_bikes": 15.62,
       "pct_docks_free": 68.75
     },
     {
@@ -4952,13 +4952,13 @@
       "district": "Sarrià-Sant Gervasi",
       "status": "IN_SERVICE",
       "mechanical": 1,
-      "ebike": 3,
-      "total": 4,
-      "docks_available": 17,
+      "ebike": 2,
+      "total": 2,
+      "docks_available": 18,
       "bikes_disabled": 1,
       "docks_disabled": 1,
-      "pct_bikes": 16.67,
-      "pct_docks_free": 70.83
+      "pct_bikes": 8.33,
+      "pct_docks_free": 75.0
     },
     {
       "station_id": "328",
@@ -4971,14 +4971,14 @@
       "barri_nom": "Sant Gervasi - la Bonanova",
       "district": "Sarrià-Sant Gervasi",
       "status": "IN_SERVICE",
-      "mechanical": 2,
+      "mechanical": 1,
       "ebike": 1,
-      "total": 3,
-      "docks_available": 22,
+      "total": 2,
+      "docks_available": 23,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 11.11,
-      "pct_docks_free": 81.48
+      "pct_bikes": 7.41,
+      "pct_docks_free": 85.19
     },
     {
       "station_id": "329",
@@ -5054,11 +5054,11 @@
       "mechanical": 4,
       "ebike": 0,
       "total": 4,
-      "docks_available": 24,
-      "bikes_disabled": 3,
+      "docks_available": 23,
+      "bikes_disabled": 4,
       "docks_disabled": 0,
       "pct_bikes": 12.9,
-      "pct_docks_free": 77.42
+      "pct_docks_free": 74.19
     },
     {
       "station_id": "332",
@@ -5172,13 +5172,13 @@
       "district": "Sarrià-Sant Gervasi",
       "status": "IN_SERVICE",
       "mechanical": 1,
-      "ebike": 2,
-      "total": 3,
-      "docks_available": 19,
+      "ebike": 1,
+      "total": 2,
+      "docks_available": 20,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 13.04,
-      "pct_docks_free": 82.61
+      "pct_bikes": 8.7,
+      "pct_docks_free": 86.96
     },
     {
       "station_id": "338",
@@ -5212,13 +5212,13 @@
       "district": "Sant Martí",
       "status": "IN_SERVICE",
       "mechanical": 17,
-      "ebike": 0,
-      "total": 17,
-      "docks_available": 7,
+      "ebike": 1,
+      "total": 18,
+      "docks_available": 6,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 62.96,
-      "pct_docks_free": 25.93
+      "pct_bikes": 66.67,
+      "pct_docks_free": 22.22
     },
     {
       "station_id": "34",
@@ -5232,13 +5232,13 @@
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
       "mechanical": 10,
-      "ebike": 0,
-      "total": 10,
-      "docks_available": 5,
-      "bikes_disabled": 5,
+      "ebike": 1,
+      "total": 11,
+      "docks_available": 3,
+      "bikes_disabled": 6,
       "docks_disabled": 1,
-      "pct_bikes": 47.62,
-      "pct_docks_free": 23.81
+      "pct_bikes": 52.38,
+      "pct_docks_free": 14.29
     },
     {
       "station_id": "340",
@@ -5371,14 +5371,14 @@
       "barri_nom": "la Marina de Port",
       "district": "Sants-Montjuïc",
       "status": "IN_SERVICE",
-      "mechanical": 10,
-      "ebike": 5,
-      "total": 15,
-      "docks_available": 16,
+      "mechanical": 15,
+      "ebike": 6,
+      "total": 21,
+      "docks_available": 10,
       "bikes_disabled": 5,
       "docks_disabled": 0,
-      "pct_bikes": 41.67,
-      "pct_docks_free": 44.44
+      "pct_bikes": 58.33,
+      "pct_docks_free": 27.78
     },
     {
       "station_id": "347",
@@ -5392,13 +5392,13 @@
       "district": "Sants-Montjuïc",
       "status": "IN_SERVICE",
       "mechanical": 2,
-      "ebike": 3,
-      "total": 5,
-      "docks_available": 27,
+      "ebike": 1,
+      "total": 3,
+      "docks_available": 29,
       "bikes_disabled": 0,
       "docks_disabled": 0,
-      "pct_bikes": 15.62,
-      "pct_docks_free": 84.38
+      "pct_bikes": 9.38,
+      "pct_docks_free": 90.62
     },
     {
       "station_id": "348",
@@ -5471,14 +5471,14 @@
       "barri_nom": "la Marina de Port",
       "district": "Sants-Montjuïc",
       "status": "IN_SERVICE",
-      "mechanical": 10,
+      "mechanical": 9,
       "ebike": 0,
-      "total": 10,
-      "docks_available": 22,
+      "total": 9,
+      "docks_available": 23,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 30.3,
-      "pct_docks_free": 66.67
+      "pct_bikes": 27.27,
+      "pct_docks_free": 69.7
     },
     {
       "station_id": "352",
@@ -5492,13 +5492,13 @@
       "district": "Sants-Montjuïc",
       "status": "IN_SERVICE",
       "mechanical": 1,
-      "ebike": 3,
-      "total": 4,
-      "docks_available": 22,
+      "ebike": 0,
+      "total": 1,
+      "docks_available": 25,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 14.29,
-      "pct_docks_free": 78.57
+      "pct_bikes": 3.57,
+      "pct_docks_free": 89.29
     },
     {
       "station_id": "353",
@@ -5512,13 +5512,13 @@
       "district": "Sants-Montjuïc",
       "status": "IN_SERVICE",
       "mechanical": 1,
-      "ebike": 6,
-      "total": 7,
-      "docks_available": 19,
+      "ebike": 8,
+      "total": 9,
+      "docks_available": 17,
       "bikes_disabled": 5,
       "docks_disabled": 0,
-      "pct_bikes": 22.58,
-      "pct_docks_free": 61.29
+      "pct_bikes": 29.03,
+      "pct_docks_free": 54.84
     },
     {
       "station_id": "354",
@@ -5532,12 +5532,12 @@
       "district": "Sants-Montjuïc",
       "status": "IN_SERVICE",
       "mechanical": 5,
-      "ebike": 8,
-      "total": 13,
+      "ebike": 9,
+      "total": 14,
       "docks_available": 9,
-      "bikes_disabled": 5,
+      "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 48.15,
+      "pct_bikes": 51.85,
       "pct_docks_free": 33.33
     },
     {
@@ -5572,13 +5572,13 @@
       "district": "Horta-Guinardó",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 3,
-      "total": 3,
-      "docks_available": 28,
+      "ebike": 2,
+      "total": 2,
+      "docks_available": 29,
       "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 8.57,
-      "pct_docks_free": 80.0
+      "pct_bikes": 5.71,
+      "pct_docks_free": 82.86
     },
     {
       "station_id": "357",
@@ -5592,12 +5592,12 @@
       "district": "Gràcia",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 7,
-      "total": 7,
+      "ebike": 6,
+      "total": 6,
       "docks_available": 11,
-      "bikes_disabled": 7,
+      "bikes_disabled": 8,
       "docks_disabled": 0,
-      "pct_bikes": 25.93,
+      "pct_bikes": 22.22,
       "pct_docks_free": 40.74
     },
     {
@@ -5631,13 +5631,13 @@
       "barri_nom": "Sant Pere, Santa Caterina i la Ribera",
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
-      "mechanical": 9,
-      "ebike": 1,
-      "total": 10,
+      "mechanical": 8,
+      "ebike": 2,
+      "total": 9,
       "docks_available": 13,
       "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 38.46,
+      "pct_bikes": 34.62,
       "pct_docks_free": 50.0
     },
     {
@@ -5651,14 +5651,14 @@
       "barri_nom": "el Barri Gòtic",
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
-      "mechanical": 15,
+      "mechanical": 16,
       "ebike": 1,
-      "total": 16,
-      "docks_available": 2,
+      "total": 17,
+      "docks_available": 1,
       "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 76.19,
-      "pct_docks_free": 9.52
+      "pct_bikes": 80.95,
+      "pct_docks_free": 4.76
     },
     {
       "station_id": "360",
@@ -5732,13 +5732,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 4,
-      "ebike": 0,
-      "total": 4,
-      "docks_available": 18,
+      "ebike": 1,
+      "total": 5,
+      "docks_available": 17,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 16.67,
-      "pct_docks_free": 75.0
+      "pct_bikes": 20.83,
+      "pct_docks_free": 70.83
     },
     {
       "station_id": "364",
@@ -5812,13 +5812,13 @@
       "district": "Les Corts",
       "status": "IN_SERVICE",
       "mechanical": 2,
-      "ebike": 5,
-      "total": 7,
-      "docks_available": 19,
-      "bikes_disabled": 5,
+      "ebike": 4,
+      "total": 5,
+      "docks_available": 21,
+      "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 21.88,
-      "pct_docks_free": 59.38
+      "pct_bikes": 15.62,
+      "pct_docks_free": 65.62
     },
     {
       "station_id": "368",
@@ -5831,14 +5831,14 @@
       "barri_nom": "la Dreta de l'Eixample",
       "district": "Eixample",
       "status": "IN_SERVICE",
-      "mechanical": 3,
+      "mechanical": 4,
       "ebike": 2,
-      "total": 5,
-      "docks_available": 21,
+      "total": 6,
+      "docks_available": 20,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 18.52,
-      "pct_docks_free": 77.78
+      "pct_bikes": 22.22,
+      "pct_docks_free": 74.07
     },
     {
       "station_id": "369",
@@ -5872,13 +5872,13 @@
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
       "mechanical": 16,
-      "ebike": 1,
-      "total": 17,
-      "docks_available": 3,
+      "ebike": 0,
+      "total": 16,
+      "docks_available": 4,
       "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 70.83,
-      "pct_docks_free": 12.5
+      "pct_bikes": 66.67,
+      "pct_docks_free": 16.67
     },
     {
       "station_id": "370",
@@ -5891,14 +5891,14 @@
       "barri_nom": "la Sagrada Família",
       "district": "Eixample",
       "status": "IN_SERVICE",
-      "mechanical": 0,
-      "ebike": 4,
-      "total": 4,
-      "docks_available": 21,
+      "mechanical": 1,
+      "ebike": 5,
+      "total": 6,
+      "docks_available": 19,
       "bikes_disabled": 7,
       "docks_disabled": 0,
-      "pct_bikes": 12.5,
-      "pct_docks_free": 65.62
+      "pct_bikes": 18.75,
+      "pct_docks_free": 59.38
     },
     {
       "station_id": "371",
@@ -5912,13 +5912,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 2,
-      "ebike": 3,
-      "total": 5,
-      "docks_available": 30,
+      "ebike": 4,
+      "total": 6,
+      "docks_available": 29,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 13.89,
-      "pct_docks_free": 83.33
+      "pct_bikes": 16.67,
+      "pct_docks_free": 80.56
     },
     {
       "station_id": "372",
@@ -5932,13 +5932,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 5,
-      "ebike": 5,
-      "total": 10,
-      "docks_available": 16,
+      "ebike": 4,
+      "total": 9,
+      "docks_available": 17,
       "bikes_disabled": 0,
       "docks_disabled": 1,
-      "pct_bikes": 37.04,
-      "pct_docks_free": 59.26
+      "pct_bikes": 33.33,
+      "pct_docks_free": 62.96
     },
     {
       "station_id": "373",
@@ -5951,14 +5951,14 @@
       "barri_nom": "Sant Antoni",
       "district": "Eixample",
       "status": "IN_SERVICE",
-      "mechanical": 12,
-      "ebike": 4,
-      "total": 16,
-      "docks_available": 12,
+      "mechanical": 13,
+      "ebike": 7,
+      "total": 20,
+      "docks_available": 8,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 53.33,
-      "pct_docks_free": 40.0
+      "pct_bikes": 66.67,
+      "pct_docks_free": 26.67
     },
     {
       "station_id": "374",
@@ -6032,13 +6032,13 @@
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
       "mechanical": 2,
-      "ebike": 0,
-      "total": 2,
-      "docks_available": 23,
+      "ebike": 1,
+      "total": 3,
+      "docks_available": 22,
       "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 6.9,
-      "pct_docks_free": 79.31
+      "pct_bikes": 10.34,
+      "pct_docks_free": 75.86
     },
     {
       "station_id": "378",
@@ -6051,14 +6051,14 @@
       "barri_nom": "el Barri Gòtic",
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
-      "mechanical": 5,
+      "mechanical": 6,
       "ebike": 2,
-      "total": 7,
-      "docks_available": 10,
-      "bikes_disabled": 4,
+      "total": 8,
+      "docks_available": 7,
+      "bikes_disabled": 6,
       "docks_disabled": 0,
-      "pct_bikes": 33.33,
-      "pct_docks_free": 47.62
+      "pct_bikes": 38.1,
+      "pct_docks_free": 33.33
     },
     {
       "station_id": "379",
@@ -6072,13 +6072,13 @@
       "district": "Sants-Montjuïc",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 1,
-      "total": 1,
-      "docks_available": 17,
+      "ebike": 0,
+      "total": 0,
+      "docks_available": 18,
       "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 4.76,
-      "pct_docks_free": 80.95
+      "pct_bikes": 0.0,
+      "pct_docks_free": 85.71
     },
     {
       "station_id": "380",
@@ -6112,13 +6112,13 @@
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
       "mechanical": 1,
-      "ebike": 7,
-      "total": 8,
-      "docks_available": 25,
+      "ebike": 9,
+      "total": 10,
+      "docks_available": 23,
       "bikes_disabled": 7,
       "docks_disabled": 0,
-      "pct_bikes": 20.0,
-      "pct_docks_free": 62.5
+      "pct_bikes": 25.0,
+      "pct_docks_free": 57.5
     },
     {
       "station_id": "382",
@@ -6131,14 +6131,14 @@
       "barri_nom": "el Poblenou",
       "district": "Sant Martí",
       "status": "IN_SERVICE",
-      "mechanical": 17,
+      "mechanical": 18,
       "ebike": 1,
-      "total": 18,
-      "docks_available": 6,
+      "total": 19,
+      "docks_available": 5,
       "bikes_disabled": 1,
       "docks_disabled": 1,
-      "pct_bikes": 69.23,
-      "pct_docks_free": 23.08
+      "pct_bikes": 73.08,
+      "pct_docks_free": 19.23
     },
     {
       "station_id": "383",
@@ -6171,14 +6171,14 @@
       "barri_nom": "la Nova Esquerra de l'Eixample",
       "district": "Eixample",
       "status": "IN_SERVICE",
-      "mechanical": 2,
-      "ebike": 1,
-      "total": 3,
-      "docks_available": 18,
+      "mechanical": 3,
+      "ebike": 2,
+      "total": 5,
+      "docks_available": 16,
       "bikes_disabled": 5,
       "docks_disabled": 0,
-      "pct_bikes": 11.54,
-      "pct_docks_free": 69.23
+      "pct_bikes": 19.23,
+      "pct_docks_free": 61.54
     },
     {
       "station_id": "385",
@@ -6192,13 +6192,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 3,
-      "ebike": 4,
-      "total": 7,
-      "docks_available": 20,
+      "ebike": 3,
+      "total": 6,
+      "docks_available": 21,
       "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 23.33,
-      "pct_docks_free": 66.67
+      "pct_bikes": 20.0,
+      "pct_docks_free": 70.0
     },
     {
       "station_id": "386",
@@ -6211,14 +6211,14 @@
       "barri_nom": "Sant Antoni",
       "district": "Eixample",
       "status": "IN_SERVICE",
-      "mechanical": 2,
-      "ebike": 6,
-      "total": 8,
-      "docks_available": 5,
+      "mechanical": 3,
+      "ebike": 4,
+      "total": 7,
+      "docks_available": 6,
       "bikes_disabled": 5,
       "docks_disabled": 0,
-      "pct_bikes": 44.44,
-      "pct_docks_free": 27.78
+      "pct_bikes": 38.89,
+      "pct_docks_free": 33.33
     },
     {
       "station_id": "387",
@@ -6233,11 +6233,11 @@
       "status": "IN_SERVICE",
       "mechanical": 4,
       "ebike": 1,
-      "total": 5,
+      "total": 4,
       "docks_available": 25,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 15.62,
+      "pct_bikes": 12.5,
       "pct_docks_free": 78.12
     },
     {
@@ -6252,13 +6252,13 @@
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
       "mechanical": 5,
-      "ebike": 16,
-      "total": 21,
-      "docks_available": 6,
+      "ebike": 19,
+      "total": 24,
+      "docks_available": 3,
       "bikes_disabled": 7,
       "docks_disabled": 0,
-      "pct_bikes": 60.0,
-      "pct_docks_free": 17.14
+      "pct_bikes": 68.57,
+      "pct_docks_free": 8.57
     },
     {
       "station_id": "389",
@@ -6291,14 +6291,14 @@
       "barri_nom": "la Barceloneta",
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
-      "mechanical": 29,
+      "mechanical": 28,
       "ebike": 0,
-      "total": 29,
-      "docks_available": 10,
+      "total": 28,
+      "docks_available": 11,
       "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 65.91,
-      "pct_docks_free": 22.73
+      "pct_bikes": 63.64,
+      "pct_docks_free": 25.0
     },
     {
       "station_id": "390",
@@ -6311,14 +6311,14 @@
       "barri_nom": "Sant Pere, Santa Caterina i la Ribera",
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
-      "mechanical": 22,
-      "ebike": 1,
-      "total": 23,
-      "docks_available": 1,
-      "bikes_disabled": 1,
+      "mechanical": 21,
+      "ebike": 0,
+      "total": 21,
+      "docks_available": 4,
+      "bikes_disabled": 0,
       "docks_disabled": 0,
-      "pct_bikes": 92.0,
-      "pct_docks_free": 4.0
+      "pct_bikes": 84.0,
+      "pct_docks_free": 16.0
     },
     {
       "station_id": "391",
@@ -6332,13 +6332,13 @@
       "district": "Sant Andreu",
       "status": "IN_SERVICE",
       "mechanical": 2,
-      "ebike": 1,
-      "total": 3,
-      "docks_available": 21,
+      "ebike": 2,
+      "total": 4,
+      "docks_available": 20,
       "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 11.11,
-      "pct_docks_free": 77.78
+      "pct_bikes": 14.81,
+      "pct_docks_free": 74.07
     },
     {
       "station_id": "392",
@@ -6392,13 +6392,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 2,
-      "ebike": 3,
-      "total": 5,
-      "docks_available": 21,
+      "ebike": 4,
+      "total": 4,
+      "docks_available": 20,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 18.52,
-      "pct_docks_free": 77.78
+      "pct_bikes": 14.81,
+      "pct_docks_free": 74.07
     },
     {
       "station_id": "395",
@@ -6472,13 +6472,13 @@
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
       "mechanical": 16,
-      "ebike": 0,
+      "ebike": 2,
       "total": 16,
-      "docks_available": 15,
+      "docks_available": 13,
       "bikes_disabled": 2,
       "docks_disabled": 0,
       "pct_bikes": 47.06,
-      "pct_docks_free": 44.12
+      "pct_docks_free": 38.24
     },
     {
       "station_id": "399",
@@ -6511,14 +6511,14 @@
       "barri_nom": "el Fort Pienc",
       "district": "Eixample",
       "status": "IN_SERVICE",
-      "mechanical": 1,
+      "mechanical": 2,
       "ebike": 0,
-      "total": 1,
-      "docks_available": 20,
+      "total": 2,
+      "docks_available": 19,
       "bikes_disabled": 0,
       "docks_disabled": 0,
-      "pct_bikes": 4.76,
-      "pct_docks_free": 95.24
+      "pct_bikes": 9.52,
+      "pct_docks_free": 90.48
     },
     {
       "station_id": "40",
@@ -6531,14 +6531,14 @@
       "barri_nom": "la Barceloneta",
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
-      "mechanical": 8,
+      "mechanical": 7,
       "ebike": 0,
-      "total": 8,
-      "docks_available": 7,
+      "total": 7,
+      "docks_available": 8,
       "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 44.44,
-      "pct_docks_free": 38.89
+      "pct_bikes": 38.89,
+      "pct_docks_free": 44.44
     },
     {
       "station_id": "400",
@@ -6591,14 +6591,14 @@
       "barri_nom": "el Barri Gòtic",
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
-      "mechanical": 13,
+      "mechanical": 14,
       "ebike": 0,
-      "total": 13,
-      "docks_available": 14,
+      "total": 14,
+      "docks_available": 13,
       "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 41.94,
-      "pct_docks_free": 45.16
+      "pct_bikes": 45.16,
+      "pct_docks_free": 41.94
     },
     {
       "station_id": "403",
@@ -6612,13 +6612,13 @@
       "district": "Sants-Montjuïc",
       "status": "IN_SERVICE",
       "mechanical": 1,
-      "ebike": 3,
-      "total": 4,
-      "docks_available": 18,
+      "ebike": 2,
+      "total": 3,
+      "docks_available": 19,
       "bikes_disabled": 0,
       "docks_disabled": 0,
-      "pct_bikes": 18.18,
-      "pct_docks_free": 81.82
+      "pct_bikes": 13.64,
+      "pct_docks_free": 86.36
     },
     {
       "station_id": "404",
@@ -6632,13 +6632,13 @@
       "district": "Sants-Montjuïc",
       "status": "IN_SERVICE",
       "mechanical": 5,
-      "ebike": 0,
-      "total": 5,
-      "docks_available": 26,
+      "ebike": 1,
+      "total": 6,
+      "docks_available": 25,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 15.62,
-      "pct_docks_free": 81.25
+      "pct_bikes": 18.75,
+      "pct_docks_free": 78.12
     },
     {
       "station_id": "405",
@@ -6671,14 +6671,14 @@
       "barri_nom": "la Dreta de l'Eixample",
       "district": "Eixample",
       "status": "IN_SERVICE",
-      "mechanical": 5,
-      "ebike": 1,
-      "total": 6,
-      "docks_available": 26,
+      "mechanical": 4,
+      "ebike": 0,
+      "total": 4,
+      "docks_available": 28,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 18.18,
-      "pct_docks_free": 78.79
+      "pct_bikes": 12.12,
+      "pct_docks_free": 84.85
     },
     {
       "station_id": "408",
@@ -6692,13 +6692,13 @@
       "district": "Sant Martí",
       "status": "IN_SERVICE",
       "mechanical": 18,
-      "ebike": 3,
-      "total": 20,
-      "docks_available": 17,
+      "ebike": 2,
+      "total": 19,
+      "docks_available": 18,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 51.28,
-      "pct_docks_free": 43.59
+      "pct_bikes": 48.72,
+      "pct_docks_free": 46.15
     },
     {
       "station_id": "409",
@@ -6711,14 +6711,14 @@
       "barri_nom": "la Vila Olímpica del Poblenou",
       "district": "Sant Martí",
       "status": "IN_SERVICE",
-      "mechanical": 19,
-      "ebike": 1,
-      "total": 20,
-      "docks_available": 5,
+      "mechanical": 21,
+      "ebike": 4,
+      "total": 25,
+      "docks_available": 0,
       "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 74.07,
-      "pct_docks_free": 18.52
+      "pct_bikes": 92.59,
+      "pct_docks_free": 0.0
     },
     {
       "station_id": "41",
@@ -6731,8 +6731,8 @@
       "barri_nom": "la Barceloneta",
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
-      "mechanical": 13,
-      "ebike": 1,
+      "mechanical": 14,
+      "ebike": 0,
       "total": 14,
       "docks_available": 4,
       "bikes_disabled": 6,
@@ -6751,14 +6751,14 @@
       "barri_nom": "el Barri Gòtic",
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
-      "mechanical": 21,
+      "mechanical": 23,
       "ebike": 1,
-      "total": 22,
-      "docks_available": 13,
+      "total": 24,
+      "docks_available": 11,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 59.46,
-      "pct_docks_free": 35.14
+      "pct_bikes": 64.86,
+      "pct_docks_free": 29.73
     },
     {
       "station_id": "411",
@@ -6772,13 +6772,13 @@
       "district": "Sant Martí",
       "status": "IN_SERVICE",
       "mechanical": 11,
-      "ebike": 2,
-      "total": 12,
-      "docks_available": 8,
+      "ebike": 0,
+      "total": 11,
+      "docks_available": 10,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 50.0,
-      "pct_docks_free": 33.33
+      "pct_bikes": 45.83,
+      "pct_docks_free": 41.67
     },
     {
       "station_id": "412",
@@ -6792,13 +6792,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 2,
-      "ebike": 0,
-      "total": 2,
-      "docks_available": 22,
+      "ebike": 2,
+      "total": 3,
+      "docks_available": 20,
       "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 7.41,
-      "pct_docks_free": 81.48
+      "pct_bikes": 11.11,
+      "pct_docks_free": 74.07
     },
     {
       "station_id": "413",
@@ -6811,14 +6811,14 @@
       "barri_nom": "la Dreta de l'Eixample",
       "district": "Eixample",
       "status": "IN_SERVICE",
-      "mechanical": 1,
-      "ebike": 4,
-      "total": 5,
-      "docks_available": 24,
-      "bikes_disabled": 2,
+      "mechanical": 2,
+      "ebike": 6,
+      "total": 8,
+      "docks_available": 22,
+      "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 16.13,
-      "pct_docks_free": 77.42
+      "pct_bikes": 25.81,
+      "pct_docks_free": 70.97
     },
     {
       "station_id": "414",
@@ -6832,13 +6832,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 1,
-      "ebike": 1,
-      "total": 2,
-      "docks_available": 29,
+      "ebike": 6,
+      "total": 7,
+      "docks_available": 24,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 6.06,
-      "pct_docks_free": 87.88
+      "pct_bikes": 21.21,
+      "pct_docks_free": 72.73
     },
     {
       "station_id": "415",
@@ -6852,13 +6852,13 @@
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
       "mechanical": 11,
-      "ebike": 5,
-      "total": 16,
-      "docks_available": 2,
+      "ebike": 7,
+      "total": 18,
+      "docks_available": 0,
       "bikes_disabled": 6,
       "docks_disabled": 1,
-      "pct_bikes": 64.0,
-      "pct_docks_free": 8.0
+      "pct_bikes": 72.0,
+      "pct_docks_free": 0.0
     },
     {
       "station_id": "416",
@@ -6871,14 +6871,14 @@
       "barri_nom": "el Raval",
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
-      "mechanical": 2,
-      "ebike": 6,
-      "total": 8,
-      "docks_available": 16,
+      "mechanical": 3,
+      "ebike": 7,
+      "total": 10,
+      "docks_available": 14,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 29.63,
-      "pct_docks_free": 59.26
+      "pct_bikes": 37.04,
+      "pct_docks_free": 51.85
     },
     {
       "station_id": "417",
@@ -6911,14 +6911,14 @@
       "barri_nom": "Sant Pere, Santa Caterina i la Ribera",
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
-      "mechanical": 15,
+      "mechanical": 14,
       "ebike": 0,
-      "total": 15,
-      "docks_available": 9,
-      "bikes_disabled": 2,
+      "total": 14,
+      "docks_available": 8,
+      "bikes_disabled": 4,
       "docks_disabled": 1,
-      "pct_bikes": 55.56,
-      "pct_docks_free": 33.33
+      "pct_bikes": 51.85,
+      "pct_docks_free": 29.63
     },
     {
       "station_id": "419",
@@ -6952,13 +6952,13 @@
       "district": "Sant Martí",
       "status": "IN_SERVICE",
       "mechanical": 1,
-      "ebike": 3,
-      "total": 4,
-      "docks_available": 22,
+      "ebike": 4,
+      "total": 3,
+      "docks_available": 21,
       "bikes_disabled": 5,
       "docks_disabled": 0,
-      "pct_bikes": 12.5,
-      "pct_docks_free": 68.75
+      "pct_bikes": 9.38,
+      "pct_docks_free": 65.62
     },
     {
       "station_id": "420",
@@ -6992,13 +6992,13 @@
       "district": "Sants-Montjuïc",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 1,
-      "total": 1,
-      "docks_available": 18,
+      "ebike": 2,
+      "total": 2,
+      "docks_available": 17,
       "bikes_disabled": 6,
       "docks_disabled": 0,
-      "pct_bikes": 4.0,
-      "pct_docks_free": 72.0
+      "pct_bikes": 8.0,
+      "pct_docks_free": 68.0
     },
     {
       "station_id": "422",
@@ -7012,13 +7012,13 @@
       "district": "Les Corts",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 3,
-      "total": 3,
-      "docks_available": 40,
+      "ebike": 4,
+      "total": 4,
+      "docks_available": 39,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 6.82,
-      "pct_docks_free": 90.91
+      "pct_bikes": 9.09,
+      "pct_docks_free": 88.64
     },
     {
       "station_id": "423",
@@ -7032,13 +7032,13 @@
       "district": "Sant Andreu",
       "status": "IN_SERVICE",
       "mechanical": 6,
-      "ebike": 7,
-      "total": 13,
-      "docks_available": 11,
+      "ebike": 5,
+      "total": 10,
+      "docks_available": 13,
       "bikes_disabled": 9,
       "docks_disabled": 0,
-      "pct_bikes": 40.62,
-      "pct_docks_free": 34.38
+      "pct_bikes": 31.25,
+      "pct_docks_free": 40.62
     },
     {
       "station_id": "424",
@@ -7051,14 +7051,14 @@
       "barri_nom": "la Barceloneta",
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
-      "mechanical": 15,
+      "mechanical": 14,
       "ebike": 0,
-      "total": 15,
-      "docks_available": 7,
+      "total": 14,
+      "docks_available": 8,
       "bikes_disabled": 5,
       "docks_disabled": 0,
-      "pct_bikes": 55.56,
-      "pct_docks_free": 25.93
+      "pct_bikes": 51.85,
+      "pct_docks_free": 29.63
     },
     {
       "station_id": "425",
@@ -7072,13 +7072,13 @@
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
       "mechanical": 8,
-      "ebike": 0,
-      "total": 8,
-      "docks_available": 11,
+      "ebike": 1,
+      "total": 9,
+      "docks_available": 10,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 33.33,
-      "pct_docks_free": 45.83
+      "pct_bikes": 37.5,
+      "pct_docks_free": 41.67
     },
     {
       "station_id": "426",
@@ -7111,14 +7111,14 @@
       "barri_nom": "el Raval",
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
-      "mechanical": 3,
-      "ebike": 7,
-      "total": 10,
-      "docks_available": 16,
+      "mechanical": 4,
+      "ebike": 8,
+      "total": 12,
+      "docks_available": 14,
       "bikes_disabled": 0,
       "docks_disabled": 0,
-      "pct_bikes": 38.46,
-      "pct_docks_free": 61.54
+      "pct_bikes": 46.15,
+      "pct_docks_free": 53.85
     },
     {
       "station_id": "428",
@@ -7172,13 +7172,13 @@
       "district": "Sant Martí",
       "status": "IN_SERVICE",
       "mechanical": 7,
-      "ebike": 1,
-      "total": 8,
-      "docks_available": 15,
+      "ebike": 0,
+      "total": 7,
+      "docks_available": 16,
       "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 29.63,
-      "pct_docks_free": 55.56
+      "pct_bikes": 25.93,
+      "pct_docks_free": 59.26
     },
     {
       "station_id": "430",
@@ -7192,13 +7192,13 @@
       "district": "Les Corts",
       "status": "IN_SERVICE",
       "mechanical": 1,
-      "ebike": 0,
-      "total": 1,
-      "docks_available": 27,
+      "ebike": 2,
+      "total": 3,
+      "docks_available": 25,
       "bikes_disabled": 0,
       "docks_disabled": 0,
-      "pct_bikes": 3.57,
-      "pct_docks_free": 96.43
+      "pct_bikes": 10.71,
+      "pct_docks_free": 89.29
     },
     {
       "station_id": "431",
@@ -7252,13 +7252,13 @@
       "district": "Les Corts",
       "status": "IN_SERVICE",
       "mechanical": 1,
-      "ebike": 16,
-      "total": 17,
-      "docks_available": 34,
+      "ebike": 18,
+      "total": 19,
+      "docks_available": 32,
       "bikes_disabled": 1,
       "docks_disabled": 1,
-      "pct_bikes": 31.48,
-      "pct_docks_free": 62.96
+      "pct_bikes": 35.19,
+      "pct_docks_free": 59.26
     },
     {
       "station_id": "434",
@@ -7272,13 +7272,13 @@
       "district": "Sants-Montjuïc",
       "status": "IN_SERVICE",
       "mechanical": 2,
-      "ebike": 4,
-      "total": 6,
-      "docks_available": 16,
+      "ebike": 6,
+      "total": 8,
+      "docks_available": 14,
       "bikes_disabled": 4,
       "docks_disabled": 1,
-      "pct_bikes": 22.22,
-      "pct_docks_free": 59.26
+      "pct_bikes": 29.63,
+      "pct_docks_free": 51.85
     },
     {
       "station_id": "435",
@@ -7352,13 +7352,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 4,
-      "total": 4,
-      "docks_available": 22,
+      "ebike": 5,
+      "total": 5,
+      "docks_available": 21,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 14.81,
-      "pct_docks_free": 81.48
+      "pct_bikes": 18.52,
+      "pct_docks_free": 77.78
     },
     {
       "station_id": "439",
@@ -7374,11 +7374,11 @@
       "mechanical": 4,
       "ebike": 3,
       "total": 7,
-      "docks_available": 11,
-      "bikes_disabled": 0,
+      "docks_available": 10,
+      "bikes_disabled": 1,
       "docks_disabled": 0,
       "pct_bikes": 38.89,
-      "pct_docks_free": 61.11
+      "pct_docks_free": 55.56
     },
     {
       "station_id": "44",
@@ -7391,14 +7391,14 @@
       "barri_nom": "el Fort Pienc",
       "district": "Eixample",
       "status": "IN_SERVICE",
-      "mechanical": 2,
-      "ebike": 1,
-      "total": 3,
-      "docks_available": 13,
-      "bikes_disabled": 4,
+      "mechanical": 3,
+      "ebike": 4,
+      "total": 7,
+      "docks_available": 10,
+      "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 14.29,
-      "pct_docks_free": 61.9
+      "pct_bikes": 33.33,
+      "pct_docks_free": 47.62
     },
     {
       "station_id": "440",
@@ -7411,14 +7411,14 @@
       "barri_nom": "Sant Martí de Provençals",
       "district": "Sant Martí",
       "status": "IN_SERVICE",
-      "mechanical": 9,
-      "ebike": 2,
-      "total": 11,
-      "docks_available": 14,
+      "mechanical": 10,
+      "ebike": 3,
+      "total": 13,
+      "docks_available": 12,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 40.74,
-      "pct_docks_free": 51.85
+      "pct_bikes": 48.15,
+      "pct_docks_free": 44.44
     },
     {
       "station_id": "441",
@@ -7451,8 +7451,8 @@
       "barri_nom": "la Marina de Port",
       "district": "Sants-Montjuïc",
       "status": "IN_SERVICE",
-      "mechanical": 7,
-      "ebike": 4,
+      "mechanical": 8,
+      "ebike": 3,
       "total": 11,
       "docks_available": 6,
       "bikes_disabled": 1,
@@ -7472,13 +7472,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 1,
-      "ebike": 1,
-      "total": 2,
-      "docks_available": 26,
+      "ebike": 2,
+      "total": 3,
+      "docks_available": 25,
       "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 6.25,
-      "pct_docks_free": 81.25
+      "pct_bikes": 9.38,
+      "pct_docks_free": 78.12
     },
     {
       "station_id": "444",
@@ -7492,13 +7492,13 @@
       "district": "Sants-Montjuïc",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 6,
-      "total": 6,
-      "docks_available": 21,
+      "ebike": 7,
+      "total": 7,
+      "docks_available": 20,
       "bikes_disabled": 0,
       "docks_disabled": 0,
-      "pct_bikes": 22.22,
-      "pct_docks_free": 77.78
+      "pct_bikes": 25.93,
+      "pct_docks_free": 74.07
     },
     {
       "station_id": "445",
@@ -7511,14 +7511,14 @@
       "barri_nom": "Sant Antoni",
       "district": "Eixample",
       "status": "IN_SERVICE",
-      "mechanical": 10,
+      "mechanical": 9,
       "ebike": 0,
-      "total": 10,
-      "docks_available": 12,
+      "total": 9,
+      "docks_available": 13,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 41.67,
-      "pct_docks_free": 50.0
+      "pct_bikes": 37.5,
+      "pct_docks_free": 54.17
     },
     {
       "station_id": "446",
@@ -7531,14 +7531,14 @@
       "barri_nom": "la Barceloneta",
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
-      "mechanical": 12,
+      "mechanical": 10,
       "ebike": 1,
-      "total": 12,
-      "docks_available": 2,
+      "total": 11,
+      "docks_available": 4,
       "bikes_disabled": 0,
       "docks_disabled": 0,
-      "pct_bikes": 80.0,
-      "pct_docks_free": 13.33
+      "pct_bikes": 73.33,
+      "pct_docks_free": 26.67
     },
     {
       "station_id": "447",
@@ -7552,13 +7552,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 8,
-      "ebike": 2,
+      "ebike": 3,
       "total": 10,
-      "docks_available": 14,
-      "bikes_disabled": 1,
+      "docks_available": 12,
+      "bikes_disabled": 2,
       "docks_disabled": 0,
       "pct_bikes": 37.04,
-      "pct_docks_free": 51.85
+      "pct_docks_free": 44.44
     },
     {
       "station_id": "448",
@@ -7591,14 +7591,14 @@
       "barri_nom": "Provençals del Poblenou",
       "district": "Sant Martí",
       "status": "IN_SERVICE",
-      "mechanical": 14,
+      "mechanical": 16,
       "ebike": 2,
-      "total": 16,
-      "docks_available": 4,
+      "total": 18,
+      "docks_available": 2,
       "bikes_disabled": 7,
       "docks_disabled": 0,
-      "pct_bikes": 59.26,
-      "pct_docks_free": 14.81
+      "pct_bikes": 66.67,
+      "pct_docks_free": 7.41
     },
     {
       "station_id": "45",
@@ -7612,13 +7612,13 @@
       "district": "Sant Martí",
       "status": "IN_SERVICE",
       "mechanical": 16,
-      "ebike": 5,
-      "total": 20,
-      "docks_available": 3,
+      "ebike": 2,
+      "total": 18,
+      "docks_available": 6,
       "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 74.07,
-      "pct_docks_free": 11.11
+      "pct_bikes": 66.67,
+      "pct_docks_free": 22.22
     },
     {
       "station_id": "450",
@@ -7652,13 +7652,13 @@
       "district": "Sant Martí",
       "status": "IN_SERVICE",
       "mechanical": 6,
-      "ebike": 10,
-      "total": 16,
-      "docks_available": 7,
+      "ebike": 11,
+      "total": 17,
+      "docks_available": 6,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 66.67,
-      "pct_docks_free": 29.17
+      "pct_bikes": 70.83,
+      "pct_docks_free": 25.0
     },
     {
       "station_id": "452",
@@ -7672,13 +7672,13 @@
       "district": "Sant Martí",
       "status": "IN_SERVICE",
       "mechanical": 4,
-      "ebike": 3,
-      "total": 7,
-      "docks_available": 46,
+      "ebike": 6,
+      "total": 10,
+      "docks_available": 43,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 12.96,
-      "pct_docks_free": 85.19
+      "pct_bikes": 18.52,
+      "pct_docks_free": 79.63
     },
     {
       "station_id": "454",
@@ -7692,13 +7692,13 @@
       "district": "Horta-Guinardó",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 3,
-      "total": 3,
-      "docks_available": 19,
+      "ebike": 5,
+      "total": 5,
+      "docks_available": 17,
       "bikes_disabled": 4,
       "docks_disabled": 1,
-      "pct_bikes": 11.11,
-      "pct_docks_free": 70.37
+      "pct_bikes": 18.52,
+      "pct_docks_free": 62.96
     },
     {
       "station_id": "455",
@@ -7731,14 +7731,14 @@
       "barri_nom": "el Clot",
       "district": "Sant Martí",
       "status": "IN_SERVICE",
-      "mechanical": 2,
-      "ebike": 11,
-      "total": 13,
-      "docks_available": 3,
+      "mechanical": 1,
+      "ebike": 10,
+      "total": 11,
+      "docks_available": 5,
       "bikes_disabled": 6,
       "docks_disabled": 0,
-      "pct_bikes": 61.9,
-      "pct_docks_free": 14.29
+      "pct_bikes": 52.38,
+      "pct_docks_free": 23.81
     },
     {
       "station_id": "457",
@@ -7851,14 +7851,14 @@
       "barri_nom": "la Prosperitat",
       "district": "Nou Barris",
       "status": "IN_SERVICE",
-      "mechanical": 0,
-      "ebike": 3,
-      "total": 3,
-      "docks_available": 19,
+      "mechanical": 1,
+      "ebike": 4,
+      "total": 5,
+      "docks_available": 17,
       "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 10.71,
-      "pct_docks_free": 67.86
+      "pct_bikes": 17.86,
+      "pct_docks_free": 60.71
     },
     {
       "station_id": "462",
@@ -7931,14 +7931,14 @@
       "barri_nom": "la Dreta de l'Eixample",
       "district": "Eixample",
       "status": "IN_SERVICE",
-      "mechanical": 0,
+      "mechanical": 1,
       "ebike": 1,
-      "total": 1,
-      "docks_available": 22,
+      "total": 2,
+      "docks_available": 21,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 3.7,
-      "pct_docks_free": 81.48
+      "pct_bikes": 7.41,
+      "pct_docks_free": 77.78
     },
     {
       "station_id": "466",
@@ -8153,11 +8153,11 @@
       "status": "IN_SERVICE",
       "mechanical": 1,
       "ebike": 3,
-      "total": 4,
+      "total": 3,
       "docks_available": 14,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 21.05,
+      "pct_bikes": 15.79,
       "pct_docks_free": 73.68
     },
     {
@@ -8192,13 +8192,13 @@
       "district": "Horta-Guinardó",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 0,
-      "total": 0,
-      "docks_available": 23,
+      "ebike": 1,
+      "total": 1,
+      "docks_available": 22,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 0.0,
-      "pct_docks_free": 88.46
+      "pct_bikes": 3.85,
+      "pct_docks_free": 84.62
     },
     {
       "station_id": "478",
@@ -8252,13 +8252,13 @@
       "district": "Sant Martí",
       "status": "IN_SERVICE",
       "mechanical": 1,
-      "ebike": 1,
+      "ebike": 2,
       "total": 2,
-      "docks_available": 18,
+      "docks_available": 17,
       "bikes_disabled": 1,
       "docks_disabled": 0,
       "pct_bikes": 9.52,
-      "pct_docks_free": 85.71
+      "pct_docks_free": 80.95
     },
     {
       "station_id": "480",
@@ -8392,13 +8392,13 @@
       "district": "Horta-Guinardó",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 1,
-      "total": 1,
-      "docks_available": 27,
+      "ebike": 0,
+      "total": 0,
+      "docks_available": 28,
       "bikes_disabled": 0,
       "docks_disabled": 0,
-      "pct_bikes": 3.57,
-      "pct_docks_free": 96.43
+      "pct_bikes": 0.0,
+      "pct_docks_free": 100.0
     },
     {
       "station_id": "487",
@@ -8414,11 +8414,11 @@
       "mechanical": 0,
       "ebike": 0,
       "total": 0,
-      "docks_available": 26,
-      "bikes_disabled": 1,
+      "docks_available": 25,
+      "bikes_disabled": 2,
       "docks_disabled": 0,
       "pct_bikes": 0.0,
-      "pct_docks_free": 96.3
+      "pct_docks_free": 92.59
     },
     {
       "station_id": "488",
@@ -8512,13 +8512,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 2,
-      "ebike": 0,
-      "total": 2,
-      "docks_available": 19,
+      "ebike": 1,
+      "total": 3,
+      "docks_available": 18,
       "bikes_disabled": 2,
       "docks_disabled": 1,
-      "pct_bikes": 8.33,
-      "pct_docks_free": 79.17
+      "pct_bikes": 12.5,
+      "pct_docks_free": 75.0
     },
     {
       "station_id": "493",
@@ -8532,13 +8532,13 @@
       "district": "Gràcia",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 0,
-      "total": 0,
-      "docks_available": 22,
+      "ebike": 1,
+      "total": 1,
+      "docks_available": 21,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 0.0,
-      "pct_docks_free": 91.67
+      "pct_bikes": 4.17,
+      "pct_docks_free": 87.5
     },
     {
       "station_id": "494",
@@ -8571,14 +8571,14 @@
       "barri_nom": "la Nova Esquerra de l'Eixample",
       "district": "Eixample",
       "status": "IN_SERVICE",
-      "mechanical": 4,
+      "mechanical": 5,
       "ebike": 0,
-      "total": 4,
-      "docks_available": 15,
+      "total": 5,
+      "docks_available": 14,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 19.05,
-      "pct_docks_free": 71.43
+      "pct_bikes": 23.81,
+      "pct_docks_free": 66.67
     },
     {
       "station_id": "496",
@@ -8592,13 +8592,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 1,
-      "ebike": 4,
-      "total": 5,
-      "docks_available": 11,
+      "ebike": 3,
+      "total": 4,
+      "docks_available": 12,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 27.78,
-      "pct_docks_free": 61.11
+      "pct_bikes": 22.22,
+      "pct_docks_free": 66.67
     },
     {
       "station_id": "497",
@@ -8632,13 +8632,13 @@
       "district": "Gràcia",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 1,
-      "total": 1,
-      "docks_available": 24,
+      "ebike": 0,
+      "total": 0,
+      "docks_available": 25,
       "bikes_disabled": 0,
       "docks_disabled": 1,
-      "pct_bikes": 3.85,
-      "pct_docks_free": 92.31
+      "pct_bikes": 0.0,
+      "pct_docks_free": 96.15
     },
     {
       "station_id": "499",
@@ -8652,13 +8652,13 @@
       "district": "Gràcia",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 3,
-      "total": 3,
-      "docks_available": 22,
+      "ebike": 2,
+      "total": 2,
+      "docks_available": 23,
       "bikes_disabled": 0,
       "docks_disabled": 2,
-      "pct_bikes": 11.11,
-      "pct_docks_free": 81.48
+      "pct_bikes": 7.41,
+      "pct_docks_free": 85.19
     },
     {
       "station_id": "5",
@@ -8672,13 +8672,13 @@
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
       "mechanical": 1,
-      "ebike": 3,
-      "total": 4,
-      "docks_available": 35,
+      "ebike": 2,
+      "total": 3,
+      "docks_available": 36,
       "bikes_disabled": 0,
       "docks_disabled": 0,
-      "pct_bikes": 10.26,
-      "pct_docks_free": 89.74
+      "pct_bikes": 7.69,
+      "pct_docks_free": 92.31
     },
     {
       "station_id": "50",
@@ -8691,13 +8691,13 @@
       "barri_nom": "el Raval",
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
-      "mechanical": 7,
-      "ebike": 6,
-      "total": 13,
+      "mechanical": 8,
+      "ebike": 4,
+      "total": 12,
       "docks_available": 2,
-      "bikes_disabled": 3,
+      "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 72.22,
+      "pct_bikes": 66.67,
       "pct_docks_free": 11.11
     },
     {
@@ -8732,12 +8732,12 @@
       "district": "Sarrià-Sant Gervasi",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 4,
-      "total": 4,
+      "ebike": 3,
+      "total": 3,
       "docks_available": 11,
-      "bikes_disabled": 1,
+      "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 25.0,
+      "pct_bikes": 18.75,
       "pct_docks_free": 68.75
     },
     {
@@ -8752,13 +8752,13 @@
       "district": "Gràcia",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 0,
-      "total": 0,
-      "docks_available": 15,
+      "ebike": 1,
+      "total": 1,
+      "docks_available": 14,
       "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 0.0,
-      "pct_docks_free": 78.95
+      "pct_bikes": 5.26,
+      "pct_docks_free": 73.68
     },
     {
       "station_id": "503",
@@ -8792,13 +8792,13 @@
       "district": "Gràcia",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 5,
-      "total": 5,
-      "docks_available": 21,
+      "ebike": 4,
+      "total": 4,
+      "docks_available": 22,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 17.86,
-      "pct_docks_free": 75.0
+      "pct_bikes": 14.29,
+      "pct_docks_free": 78.57
     },
     {
       "station_id": "505",
@@ -8812,13 +8812,13 @@
       "district": "Horta-Guinardó",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 3,
-      "total": 3,
-      "docks_available": 16,
+      "ebike": 2,
+      "total": 2,
+      "docks_available": 17,
       "bikes_disabled": 6,
       "docks_disabled": 0,
-      "pct_bikes": 11.11,
-      "pct_docks_free": 59.26
+      "pct_bikes": 7.41,
+      "pct_docks_free": 62.96
     },
     {
       "station_id": "506",
@@ -8832,13 +8832,13 @@
       "district": "Horta-Guinardó",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 1,
-      "total": 1,
-      "docks_available": 14,
+      "ebike": 0,
+      "total": 0,
+      "docks_available": 15,
       "bikes_disabled": 0,
       "docks_disabled": 0,
-      "pct_bikes": 6.67,
-      "pct_docks_free": 93.33
+      "pct_bikes": 0.0,
+      "pct_docks_free": 100.0
     },
     {
       "station_id": "507",
@@ -8892,13 +8892,13 @@
       "district": "Gràcia",
       "status": "IN_SERVICE",
       "mechanical": 2,
-      "ebike": 5,
-      "total": 7,
-      "docks_available": 19,
+      "ebike": 6,
+      "total": 8,
+      "docks_available": 18,
       "bikes_disabled": 6,
       "docks_disabled": 0,
-      "pct_bikes": 21.88,
-      "pct_docks_free": 59.38
+      "pct_bikes": 25.0,
+      "pct_docks_free": 56.25
     },
     {
       "station_id": "51",
@@ -8911,13 +8911,13 @@
       "barri_nom": "el Raval",
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
-      "mechanical": 7,
+      "mechanical": 6,
       "ebike": 2,
-      "total": 9,
+      "total": 8,
       "docks_available": 9,
-      "bikes_disabled": 0,
+      "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 45.0,
+      "pct_bikes": 40.0,
       "pct_docks_free": 45.0
     },
     {
@@ -8932,13 +8932,13 @@
       "district": "Gràcia",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 1,
-      "total": 1,
-      "docks_available": 20,
+      "ebike": 3,
+      "total": 3,
+      "docks_available": 18,
       "bikes_disabled": 6,
       "docks_disabled": 0,
-      "pct_bikes": 3.7,
-      "pct_docks_free": 74.07
+      "pct_bikes": 11.11,
+      "pct_docks_free": 66.67
     },
     {
       "station_id": "511",
@@ -8952,13 +8952,13 @@
       "district": "Gràcia",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 0,
-      "total": 0,
-      "docks_available": 14,
+      "ebike": 1,
+      "total": 1,
+      "docks_available": 13,
       "bikes_disabled": 6,
       "docks_disabled": 0,
-      "pct_bikes": 0.0,
-      "pct_docks_free": 70.0
+      "pct_bikes": 5.0,
+      "pct_docks_free": 65.0
     },
     {
       "station_id": "512",
@@ -9012,13 +9012,13 @@
       "district": "Sant Martí",
       "status": "IN_SERVICE",
       "mechanical": 12,
-      "ebike": 0,
-      "total": 12,
-      "docks_available": 8,
+      "ebike": 1,
+      "total": 13,
+      "docks_available": 7,
       "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 50.0,
-      "pct_docks_free": 33.33
+      "pct_bikes": 54.17,
+      "pct_docks_free": 29.17
     },
     {
       "station_id": "515",
@@ -9132,13 +9132,13 @@
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
       "mechanical": 15,
-      "ebike": 1,
-      "total": 16,
-      "docks_available": 8,
+      "ebike": 2,
+      "total": 17,
+      "docks_available": 7,
       "bikes_disabled": 8,
       "docks_disabled": 0,
-      "pct_bikes": 50.0,
-      "pct_docks_free": 25.0
+      "pct_bikes": 53.12,
+      "pct_docks_free": 21.88
     },
     {
       "station_id": "526",
@@ -9272,13 +9272,13 @@
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
       "mechanical": 5,
-      "ebike": 2,
-      "total": 7,
-      "docks_available": 7,
+      "ebike": 7,
+      "total": 12,
+      "docks_available": 2,
       "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 36.84,
-      "pct_docks_free": 36.84
+      "pct_bikes": 63.16,
+      "pct_docks_free": 10.53
     },
     {
       "station_id": "540",
@@ -9292,13 +9292,13 @@
       "district": "Sants-Montjuïc",
       "status": "IN_SERVICE",
       "mechanical": 3,
-      "ebike": 1,
-      "total": 4,
-      "docks_available": 12,
+      "ebike": 0,
+      "total": 3,
+      "docks_available": 13,
       "bikes_disabled": 5,
       "docks_disabled": 0,
-      "pct_bikes": 20.0,
-      "pct_docks_free": 60.0
+      "pct_bikes": 15.0,
+      "pct_docks_free": 65.0
     },
     {
       "station_id": "541",
@@ -9332,13 +9332,13 @@
       "district": "Sants-Montjuïc",
       "status": "IN_SERVICE",
       "mechanical": 1,
-      "ebike": 4,
-      "total": 4,
-      "docks_available": 13,
-      "bikes_disabled": 2,
+      "ebike": 2,
+      "total": 3,
+      "docks_available": 14,
+      "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 20.0,
-      "pct_docks_free": 65.0
+      "pct_bikes": 15.0,
+      "pct_docks_free": 70.0
     },
     {
       "station_id": "547",
@@ -9354,11 +9354,11 @@
       "mechanical": 5,
       "ebike": 8,
       "total": 13,
-      "docks_available": 6,
-      "bikes_disabled": 3,
+      "docks_available": 7,
+      "bikes_disabled": 2,
       "docks_disabled": 1,
       "pct_bikes": 56.52,
-      "pct_docks_free": 26.09
+      "pct_docks_free": 30.43
     },
     {
       "station_id": "55",
@@ -9374,11 +9374,11 @@
       "mechanical": 2,
       "ebike": 3,
       "total": 5,
-      "docks_available": 17,
-      "bikes_disabled": 4,
+      "docks_available": 18,
+      "bikes_disabled": 3,
       "docks_disabled": 0,
       "pct_bikes": 18.52,
-      "pct_docks_free": 62.96
+      "pct_docks_free": 66.67
     },
     {
       "station_id": "553",
@@ -9392,13 +9392,13 @@
       "district": "Gràcia",
       "status": "IN_SERVICE",
       "mechanical": 1,
-      "ebike": 0,
-      "total": 1,
-      "docks_available": 23,
+      "ebike": 1,
+      "total": 2,
+      "docks_available": 22,
       "bikes_disabled": 5,
       "docks_disabled": 2,
-      "pct_bikes": 3.12,
-      "pct_docks_free": 71.88
+      "pct_bikes": 6.25,
+      "pct_docks_free": 68.75
     },
     {
       "station_id": "554",
@@ -9432,13 +9432,13 @@
       "district": "Horta-Guinardó",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 2,
-      "total": 2,
-      "docks_available": 29,
+      "ebike": 3,
+      "total": 3,
+      "docks_available": 28,
       "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 5.56,
-      "pct_docks_free": 80.56
+      "pct_bikes": 8.33,
+      "pct_docks_free": 77.78
     },
     {
       "station_id": "561",
@@ -9452,13 +9452,13 @@
       "district": "Les Corts",
       "status": "IN_SERVICE",
       "mechanical": 13,
-      "ebike": 2,
-      "total": 15,
-      "docks_available": 7,
+      "ebike": 3,
+      "total": 16,
+      "docks_available": 6,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 62.5,
-      "pct_docks_free": 29.17
+      "pct_bikes": 66.67,
+      "pct_docks_free": 25.0
     },
     {
       "station_id": "563",
@@ -9472,13 +9472,13 @@
       "district": "Les Corts",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 6,
-      "total": 6,
-      "docks_available": 13,
+      "ebike": 5,
+      "total": 5,
+      "docks_available": 14,
       "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 25.0,
-      "pct_docks_free": 54.17
+      "pct_bikes": 20.83,
+      "pct_docks_free": 58.33
     },
     {
       "station_id": "564",
@@ -9492,12 +9492,12 @@
       "district": "Sants-Montjuïc",
       "status": "IN_SERVICE",
       "mechanical": 1,
-      "ebike": 2,
-      "total": 3,
+      "ebike": 1,
+      "total": 2,
       "docks_available": 23,
-      "bikes_disabled": 2,
+      "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 10.71,
+      "pct_bikes": 7.14,
       "pct_docks_free": 82.14
     },
     {
@@ -9512,13 +9512,13 @@
       "district": "Sant Andreu",
       "status": "IN_SERVICE",
       "mechanical": 4,
-      "ebike": 1,
-      "total": 5,
-      "docks_available": 23,
+      "ebike": 0,
+      "total": 4,
+      "docks_available": 24,
       "bikes_disabled": 0,
       "docks_disabled": 0,
-      "pct_bikes": 17.86,
-      "pct_docks_free": 82.14
+      "pct_bikes": 14.29,
+      "pct_docks_free": 85.71
     },
     {
       "station_id": "566",
@@ -9571,14 +9571,14 @@
       "barri_nom": "Sant Gervasi - la Bonanova",
       "district": "Sarrià-Sant Gervasi",
       "status": "IN_SERVICE",
-      "mechanical": 2,
+      "mechanical": 1,
       "ebike": 0,
-      "total": 2,
-      "docks_available": 21,
+      "total": 1,
+      "docks_available": 22,
       "bikes_disabled": 0,
       "docks_disabled": 1,
-      "pct_bikes": 8.33,
-      "pct_docks_free": 87.5
+      "pct_bikes": 4.17,
+      "pct_docks_free": 91.67
     },
     {
       "station_id": "569",
@@ -9611,14 +9611,14 @@
       "barri_nom": "el Raval",
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
-      "mechanical": 24,
-      "ebike": 5,
-      "total": 29,
-      "docks_available": 3,
+      "mechanical": 25,
+      "ebike": 3,
+      "total": 28,
+      "docks_available": 5,
       "bikes_disabled": 4,
-      "docks_disabled": 1,
-      "pct_bikes": 78.38,
-      "pct_docks_free": 8.11
+      "docks_disabled": 0,
+      "pct_bikes": 75.68,
+      "pct_docks_free": 13.51
     },
     {
       "station_id": "572",
@@ -9692,13 +9692,13 @@
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
       "mechanical": 12,
-      "ebike": 2,
-      "total": 14,
-      "docks_available": 2,
+      "ebike": 1,
+      "total": 13,
+      "docks_available": 3,
       "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 66.67,
-      "pct_docks_free": 9.52
+      "pct_bikes": 61.9,
+      "pct_docks_free": 14.29
     },
     {
       "station_id": "581",
@@ -9731,14 +9731,14 @@
       "barri_nom": "Sant Genís dels Agudells",
       "district": "Horta-Guinardó",
       "status": "IN_SERVICE",
-      "mechanical": 12,
+      "mechanical": 11,
       "ebike": 0,
-      "total": 12,
-      "docks_available": 18,
+      "total": 11,
+      "docks_available": 19,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 38.71,
-      "pct_docks_free": 58.06
+      "pct_bikes": 35.48,
+      "pct_docks_free": 61.29
     },
     {
       "station_id": "59",
@@ -9833,12 +9833,12 @@
       "status": "IN_SERVICE",
       "mechanical": 0,
       "ebike": 2,
-      "total": 2,
-      "docks_available": 19,
-      "bikes_disabled": 2,
+      "total": 1,
+      "docks_available": 20,
+      "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 8.7,
-      "pct_docks_free": 82.61
+      "pct_bikes": 4.35,
+      "pct_docks_free": 86.96
     },
     {
       "station_id": "599",
@@ -9893,11 +9893,11 @@
       "status": "IN_SERVICE",
       "mechanical": 1,
       "ebike": 3,
-      "total": 3,
+      "total": 4,
       "docks_available": 22,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 11.11,
+      "pct_bikes": 14.81,
       "pct_docks_free": 81.48
     },
     {
@@ -9913,11 +9913,11 @@
       "status": "IN_SERVICE",
       "mechanical": 3,
       "ebike": 1,
-      "total": 3,
+      "total": 4,
       "docks_available": 19,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 12.5,
+      "pct_bikes": 16.67,
       "pct_docks_free": 79.17
     },
     {
@@ -9932,13 +9932,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 1,
-      "ebike": 3,
-      "total": 4,
-      "docks_available": 14,
+      "ebike": 6,
+      "total": 7,
+      "docks_available": 11,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 20.0,
-      "pct_docks_free": 70.0
+      "pct_bikes": 35.0,
+      "pct_docks_free": 55.0
     },
     {
       "station_id": "603",
@@ -10012,13 +10012,13 @@
       "district": "Sant Martí",
       "status": "IN_SERVICE",
       "mechanical": 19,
-      "ebike": 1,
-      "total": 20,
-      "docks_available": 0,
+      "ebike": 0,
+      "total": 19,
+      "docks_available": 1,
       "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 83.33,
-      "pct_docks_free": 0.0
+      "pct_bikes": 79.17,
+      "pct_docks_free": 4.17
     },
     {
       "station_id": "61",
@@ -10032,12 +10032,12 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 0,
-      "total": 0,
+      "ebike": 1,
+      "total": 1,
       "docks_available": 25,
-      "bikes_disabled": 1,
+      "bikes_disabled": 0,
       "docks_disabled": 0,
-      "pct_bikes": 0.0,
+      "pct_bikes": 3.85,
       "pct_docks_free": 96.15
     },
     {
@@ -10052,13 +10052,13 @@
       "district": "Sant Martí",
       "status": "IN_SERVICE",
       "mechanical": 15,
-      "ebike": 2,
-      "total": 17,
-      "docks_available": 7,
+      "ebike": 0,
+      "total": 15,
+      "docks_available": 9,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 62.96,
-      "pct_docks_free": 25.93
+      "pct_bikes": 55.56,
+      "pct_docks_free": 33.33
     },
     {
       "station_id": "614",
@@ -10071,14 +10071,14 @@
       "barri_nom": "Provençals del Poblenou",
       "district": "Sant Martí",
       "status": "IN_SERVICE",
-      "mechanical": 13,
-      "ebike": 2,
-      "total": 15,
-      "docks_available": 24,
+      "mechanical": 12,
+      "ebike": 0,
+      "total": 12,
+      "docks_available": 27,
       "bikes_disabled": 0,
       "docks_disabled": 1,
-      "pct_bikes": 37.5,
-      "pct_docks_free": 60.0
+      "pct_bikes": 30.0,
+      "pct_docks_free": 67.5
     },
     {
       "station_id": "62",
@@ -10111,8 +10111,8 @@
       "barri_nom": "la Dreta de l'Eixample",
       "district": "Eixample",
       "status": "IN_SERVICE",
-      "mechanical": 8,
-      "ebike": 0,
+      "mechanical": 7,
+      "ebike": 1,
       "total": 8,
       "docks_available": 17,
       "bikes_disabled": 2,
@@ -10171,14 +10171,14 @@
       "barri_nom": "la Dreta de l'Eixample",
       "district": "Eixample",
       "status": "IN_SERVICE",
-      "mechanical": 1,
+      "mechanical": 0,
       "ebike": 0,
-      "total": 1,
-      "docks_available": 12,
+      "total": 0,
+      "docks_available": 13,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 6.67,
-      "pct_docks_free": 80.0
+      "pct_bikes": 0.0,
+      "pct_docks_free": 86.67
     },
     {
       "station_id": "67",
@@ -10192,13 +10192,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 6,
-      "total": 6,
-      "docks_available": 15,
+      "ebike": 4,
+      "total": 4,
+      "docks_available": 17,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 25.0,
-      "pct_docks_free": 62.5
+      "pct_bikes": 16.67,
+      "pct_docks_free": 70.83
     },
     {
       "station_id": "68",
@@ -10232,13 +10232,13 @@
       "district": "Sant Martí",
       "status": "IN_SERVICE",
       "mechanical": 7,
-      "ebike": 1,
-      "total": 8,
-      "docks_available": 33,
+      "ebike": 0,
+      "total": 7,
+      "docks_available": 34,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 19.05,
-      "pct_docks_free": 78.57
+      "pct_bikes": 16.67,
+      "pct_docks_free": 80.95
     },
     {
       "station_id": "7",
@@ -10272,13 +10272,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 3,
-      "ebike": 4,
-      "total": 7,
-      "docks_available": 12,
+      "ebike": 2,
+      "total": 5,
+      "docks_available": 14,
       "bikes_disabled": 6,
       "docks_disabled": 1,
-      "pct_bikes": 25.93,
-      "pct_docks_free": 44.44
+      "pct_bikes": 18.52,
+      "pct_docks_free": 51.85
     },
     {
       "station_id": "71",
@@ -10291,14 +10291,14 @@
       "barri_nom": "Sant Antoni",
       "district": "Eixample",
       "status": "IN_SERVICE",
-      "mechanical": 5,
+      "mechanical": 4,
       "ebike": 0,
-      "total": 5,
-      "docks_available": 17,
+      "total": 4,
+      "docks_available": 18,
       "bikes_disabled": 5,
       "docks_disabled": 0,
-      "pct_bikes": 18.52,
-      "pct_docks_free": 62.96
+      "pct_bikes": 14.81,
+      "pct_docks_free": 66.67
     },
     {
       "station_id": "72",
@@ -10312,13 +10312,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 1,
-      "ebike": 6,
-      "total": 7,
-      "docks_available": 17,
+      "ebike": 3,
+      "total": 4,
+      "docks_available": 20,
       "bikes_disabled": 3,
       "docks_disabled": 1,
-      "pct_bikes": 25.0,
-      "pct_docks_free": 60.71
+      "pct_bikes": 14.29,
+      "pct_docks_free": 71.43
     },
     {
       "station_id": "73",
@@ -10331,14 +10331,14 @@
       "barri_nom": "l'Antiga Esquerra de l'Eixample",
       "district": "Eixample",
       "status": "IN_SERVICE",
-      "mechanical": 2,
-      "ebike": 8,
-      "total": 10,
-      "docks_available": 12,
+      "mechanical": 1,
+      "ebike": 6,
+      "total": 7,
+      "docks_available": 15,
       "bikes_disabled": 5,
       "docks_disabled": 0,
-      "pct_bikes": 37.04,
-      "pct_docks_free": 44.44
+      "pct_bikes": 25.93,
+      "pct_docks_free": 55.56
     },
     {
       "station_id": "74",
@@ -10352,13 +10352,13 @@
       "district": "Les Corts",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 7,
-      "total": 7,
-      "docks_available": 2,
+      "ebike": 9,
+      "total": 9,
+      "docks_available": 0,
       "bikes_disabled": 6,
       "docks_disabled": 0,
-      "pct_bikes": 46.67,
-      "pct_docks_free": 13.33
+      "pct_bikes": 60.0,
+      "pct_docks_free": 0.0
     },
     {
       "station_id": "75",
@@ -10372,13 +10372,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 3,
-      "total": 2,
-      "docks_available": 12,
+      "ebike": 4,
+      "total": 4,
+      "docks_available": 11,
       "bikes_disabled": 6,
       "docks_disabled": 0,
-      "pct_bikes": 9.52,
-      "pct_docks_free": 57.14
+      "pct_bikes": 19.05,
+      "pct_docks_free": 52.38
     },
     {
       "station_id": "76",
@@ -10392,12 +10392,12 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 1,
-      "ebike": 6,
-      "total": 7,
+      "ebike": 7,
+      "total": 8,
       "docks_available": 20,
-      "bikes_disabled": 5,
+      "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 21.88,
+      "pct_bikes": 25.0,
       "pct_docks_free": 62.5
     },
     {
@@ -10412,13 +10412,13 @@
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
       "mechanical": 16,
-      "ebike": 0,
-      "total": 16,
-      "docks_available": 4,
-      "bikes_disabled": 4,
+      "ebike": 2,
+      "total": 18,
+      "docks_available": 1,
+      "bikes_disabled": 5,
       "docks_disabled": 0,
-      "pct_bikes": 66.67,
-      "pct_docks_free": 16.67
+      "pct_bikes": 75.0,
+      "pct_docks_free": 4.17
     },
     {
       "station_id": "78",
@@ -10432,13 +10432,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 4,
-      "ebike": 4,
-      "total": 8,
-      "docks_available": 17,
+      "ebike": 0,
+      "total": 4,
+      "docks_available": 21,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 29.63,
-      "pct_docks_free": 62.96
+      "pct_bikes": 14.81,
+      "pct_docks_free": 77.78
     },
     {
       "station_id": "79",
@@ -10452,13 +10452,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 4,
-      "ebike": 1,
-      "total": 5,
-      "docks_available": 15,
+      "ebike": 2,
+      "total": 6,
+      "docks_available": 14,
       "bikes_disabled": 1,
       "docks_disabled": 1,
-      "pct_bikes": 21.74,
-      "pct_docks_free": 65.22
+      "pct_bikes": 26.09,
+      "pct_docks_free": 60.87
     },
     {
       "station_id": "8",
@@ -10471,14 +10471,14 @@
       "barri_nom": "Sant Pere, Santa Caterina i la Ribera",
       "district": "Ciutat Vella",
       "status": "IN_SERVICE",
-      "mechanical": 9,
-      "ebike": 3,
+      "mechanical": 10,
+      "ebike": 1,
       "total": 11,
-      "docks_available": 14,
+      "docks_available": 15,
       "bikes_disabled": 1,
       "docks_disabled": 0,
       "pct_bikes": 40.74,
-      "pct_docks_free": 51.85
+      "pct_docks_free": 55.56
     },
     {
       "station_id": "80",
@@ -10531,14 +10531,14 @@
       "barri_nom": "la Nova Esquerra de l'Eixample",
       "district": "Eixample",
       "status": "IN_SERVICE",
-      "mechanical": 2,
-      "ebike": 7,
-      "total": 8,
-      "docks_available": 25,
+      "mechanical": 1,
+      "ebike": 6,
+      "total": 6,
+      "docks_available": 27,
       "bikes_disabled": 6,
       "docks_disabled": 0,
-      "pct_bikes": 20.0,
-      "pct_docks_free": 62.5
+      "pct_bikes": 15.0,
+      "pct_docks_free": 67.5
     },
     {
       "station_id": "83",
@@ -10551,14 +10551,14 @@
       "barri_nom": "la Nova Esquerra de l'Eixample",
       "district": "Eixample",
       "status": "IN_SERVICE",
-      "mechanical": 4,
-      "ebike": 2,
-      "total": 6,
-      "docks_available": 13,
+      "mechanical": 5,
+      "ebike": 5,
+      "total": 10,
+      "docks_available": 9,
       "bikes_disabled": 4,
       "docks_disabled": 0,
-      "pct_bikes": 25.0,
-      "pct_docks_free": 54.17
+      "pct_bikes": 41.67,
+      "pct_docks_free": 37.5
     },
     {
       "station_id": "84",
@@ -10572,13 +10572,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 5,
-      "ebike": 2,
-      "total": 5,
-      "docks_available": 16,
-      "bikes_disabled": 2,
+      "ebike": 4,
+      "total": 8,
+      "docks_available": 13,
+      "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 18.52,
-      "pct_docks_free": 59.26
+      "pct_bikes": 29.63,
+      "pct_docks_free": 48.15
     },
     {
       "station_id": "85",
@@ -10591,14 +10591,14 @@
       "barri_nom": "Sant Antoni",
       "district": "Eixample",
       "status": "IN_SERVICE",
-      "mechanical": 4,
-      "ebike": 4,
-      "total": 8,
-      "docks_available": 28,
+      "mechanical": 5,
+      "ebike": 6,
+      "total": 11,
+      "docks_available": 25,
       "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 20.0,
-      "pct_docks_free": 70.0
+      "pct_bikes": 27.5,
+      "pct_docks_free": 62.5
     },
     {
       "station_id": "86",
@@ -10611,14 +10611,14 @@
       "barri_nom": "Sant Antoni",
       "district": "Eixample",
       "status": "IN_SERVICE",
-      "mechanical": 5,
+      "mechanical": 6,
       "ebike": 1,
-      "total": 6,
-      "docks_available": 18,
+      "total": 7,
+      "docks_available": 17,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 22.22,
-      "pct_docks_free": 66.67
+      "pct_bikes": 25.93,
+      "pct_docks_free": 62.96
     },
     {
       "station_id": "87",
@@ -10632,13 +10632,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 4,
-      "ebike": 1,
-      "total": 5,
-      "docks_available": 19,
+      "ebike": 2,
+      "total": 6,
+      "docks_available": 18,
       "bikes_disabled": 1,
       "docks_disabled": 0,
-      "pct_bikes": 20.0,
-      "pct_docks_free": 76.0
+      "pct_bikes": 24.0,
+      "pct_docks_free": 72.0
     },
     {
       "station_id": "88",
@@ -10672,13 +10672,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 4,
-      "ebike": 3,
-      "total": 7,
-      "docks_available": 15,
+      "ebike": 2,
+      "total": 6,
+      "docks_available": 16,
       "bikes_disabled": 0,
       "docks_disabled": 2,
-      "pct_bikes": 29.17,
-      "pct_docks_free": 62.5
+      "pct_bikes": 25.0,
+      "pct_docks_free": 66.67
     },
     {
       "station_id": "9",
@@ -10712,13 +10712,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 2,
-      "total": 2,
-      "docks_available": 14,
+      "ebike": 3,
+      "total": 3,
+      "docks_available": 13,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 11.11,
-      "pct_docks_free": 77.78
+      "pct_bikes": 16.67,
+      "pct_docks_free": 72.22
     },
     {
       "station_id": "91",
@@ -10732,13 +10732,13 @@
       "district": "Eixample",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 3,
-      "total": 3,
-      "docks_available": 29,
+      "ebike": 5,
+      "total": 5,
+      "docks_available": 27,
       "bikes_disabled": 2,
       "docks_disabled": 0,
-      "pct_bikes": 8.57,
-      "pct_docks_free": 82.86
+      "pct_bikes": 14.29,
+      "pct_docks_free": 77.14
     },
     {
       "station_id": "92",
@@ -10771,14 +10771,14 @@
       "barri_nom": "la Nova Esquerra de l'Eixample",
       "district": "Eixample",
       "status": "IN_SERVICE",
-      "mechanical": 0,
-      "ebike": 0,
-      "total": 0,
-      "docks_available": 42,
-      "bikes_disabled": 6,
+      "mechanical": 2,
+      "ebike": 1,
+      "total": 3,
+      "docks_available": 40,
+      "bikes_disabled": 5,
       "docks_disabled": 0,
-      "pct_bikes": 0.0,
-      "pct_docks_free": 87.5
+      "pct_bikes": 6.25,
+      "pct_docks_free": 83.33
     },
     {
       "station_id": "95",
@@ -10791,14 +10791,14 @@
       "barri_nom": "Hostafrancs",
       "district": "Sants-Montjuïc",
       "status": "IN_SERVICE",
-      "mechanical": 6,
+      "mechanical": 5,
       "ebike": 0,
-      "total": 6,
-      "docks_available": 23,
+      "total": 5,
+      "docks_available": 24,
       "bikes_disabled": 3,
       "docks_disabled": 0,
-      "pct_bikes": 18.75,
-      "pct_docks_free": 71.88
+      "pct_bikes": 15.62,
+      "pct_docks_free": 75.0
     },
     {
       "station_id": "96",
@@ -10852,13 +10852,13 @@
       "district": "Sants-Montjuïc",
       "status": "IN_SERVICE",
       "mechanical": 0,
-      "ebike": 1,
-      "total": 1,
-      "docks_available": 15,
+      "ebike": 0,
+      "total": 0,
+      "docks_available": 16,
       "bikes_disabled": 5,
       "docks_disabled": 0,
-      "pct_bikes": 4.76,
-      "pct_docks_free": 71.43
+      "pct_bikes": 0.0,
+      "pct_docks_free": 76.19
     },
     {
       "station_id": "99",
