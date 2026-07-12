@@ -38,7 +38,7 @@ def _log_opendata_failure(url: str, error: Exception) -> None:
                 f"  GET {url}",
                 f"  Authorization: {masked_auth} (len={len(BICING_TOKEN or '')})",
                 f"  Accept: {headers['Accept']}",
-                f"  User-Agent: {headers['User-Agent']}",
+                "  User-Agent: (no personalitzat; mateix patró que bicing-hassio)",
                 "  allow_redirects: false",
                 "  timeout: 30s",
                 f"  Error: {error}",
@@ -54,7 +54,6 @@ def _headers() -> dict[str, str]:
     return {
         "Authorization": BICING_TOKEN,
         "Accept": "application/json",
-        "User-Agent": "on-son-les-bicis/1.0 (github-actions)",
     }
 
 
