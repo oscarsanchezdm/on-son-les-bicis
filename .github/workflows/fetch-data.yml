@@ -38,6 +38,7 @@ jobs:
 
       - name: Ingest and export
         env:
+          # Open Data BCN (mateix API que bicing-hassio); GBFS només si falla o falta token
           BICING_TOKEN: ${{ secrets.BICING_TOKEN }}
         run: |
           python scripts/init_db.py

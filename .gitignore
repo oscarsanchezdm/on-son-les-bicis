@@ -2,6 +2,7 @@ node_modules/
 dist/
 .env
 db/
+public/data/last-source.json
 *.db
 .DS_Store
 __pycache__/
