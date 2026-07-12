@@ -46,7 +46,7 @@ def _load_source_data() -> tuple[dict[str, dict], list[dict], str, str]:
             return info_by_id, status_list, last_updated, source
         except Exception as opendata_error:
             print(
-                f"Open Data failed ({opendata_error}); falling back to GBFS",
+                f"Open Data BCN no disponible; es recorre a GBFS. Motiu: {opendata_error}",
                 file=sys.stderr,
             )
     else:
