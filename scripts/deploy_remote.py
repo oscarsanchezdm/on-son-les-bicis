@@ -1,10 +1,17 @@
 #!/usr/bin/env python3
-"""Deploy on-son-les-bicis to the ingest server."""
+"""Desplega ingestió Open Data al servidor de casa via SSH.
+
+Executar des d'una màquina a la LAN (no des del cloud agent):
+  export BICING_TOKEN=...
+  python3 scripts/deploy_remote.py
+"""
 
 from __future__ import annotations
 
 import os
+import shlex
 import sys
+from pathlib import Path
 
 try:
     import paramiko
@@ -15,9 +22,20 @@ except ImportError:
 HOST = os.environ.get("INGEST_HOST", "10.10.100.104")
 USER = os.environ.get("INGEST_USER", "cursor")
 PASSWORD = os.environ.get("INGEST_PASSWORD", "cursor")
-REMOTE_DIR = os.environ.get("INGEST_REMOTE_DIR", "/root/on-son-les-bicis")
-REPO = os.environ.get("INGEST_REPO", "https://github.com/oscarsanchezdm/on-son-les-bicis.git")
-TOKEN = os.environ.get("BICING_TOKEN", "")
+ROOT = Path(__file__).resolve().parents[1]
+SETUP_SCRIPT = ROOT / "scripts" / "setup_home_ingest.sh"
+
+
+def load_token() -> str:
+    token = os.environ.get("BICING_TOKEN", "")
+    if token:
+        return token
+    env_path = ROOT / ".env"
+    if env_path.exists():
+        for line in env_path.read_text().splitlines():
+            if line.startswith("BICING_TOKEN="):
+                return line.split("=", 1)[1].strip()
+    return ""
 
 
 def run(client: paramiko.SSHClient, cmd: str, check: bool = True) -> tuple[int, str, str]:
@@ -35,14 +53,14 @@ def run(client: paramiko.SSHClient, cmd: str, check: bool = True) -> tuple[int, 
     return code, out, err
 
 
-def sudo_bash(client: paramiko.SSHClient, password: str, script: str, check: bool = True) -> None:
-    escaped = script.replace("'", "'\"'\"'")
-    run(client, f"echo {password!r} | sudo -S bash -lc '{escaped}'", check=check)
-
-
 def main() -> None:
-    if not TOKEN:
-        print("Set BICING_TOKEN", file=sys.stderr)
+    token = load_token()
+    if not token:
+        print("Set BICING_TOKEN in environment or .env", file=sys.stderr)
+        sys.exit(1)
+
+    if not SETUP_SCRIPT.is_file():
+        print(f"Missing {SETUP_SCRIPT}", file=sys.stderr)
         sys.exit(1)
 
     client = paramiko.SSHClient()
@@ -50,40 +68,29 @@ def main() -> None:
     print(f"Connecting to {USER}@{HOST}...")
     client.connect(HOST, username=USER, password=PASSWORD, timeout=30)
 
-    run(client, f"echo {PASSWORD!r} | sudo -S mkdir -p {REMOTE_DIR}")
-
-    if_code, _, _ = run(
-        client,
-        f"echo {PASSWORD!r} | sudo -S test -d {REMOTE_DIR}/.git",
-        check=False,
+    remote_cmd = (
+        f"export BICING_TOKEN={shlex.quote(token)}; "
+        f"export REPO_DIR={shlex.quote(os.environ.get('INGEST_REMOTE_DIR', '$HOME/on-son-les-bicis'))}; "
+        "bash -s"
     )
-    if if_code == 0:
-        sudo_bash(client, PASSWORD, f"cd {REMOTE_DIR} && git pull --ff-only")
-    else:
-        run(
-            client,
-            f"echo {PASSWORD!r} | sudo -S git clone {REPO} {REMOTE_DIR}",
-        )
+    stdin, stdout, stderr = client.exec_command(remote_cmd, get_pty=True)
+    stdin.write(SETUP_SCRIPT.read_text())
+    stdin.channel.shutdown_write()
 
-    sudo_bash(
-        client,
-        PASSWORD,
-        f"printf '%s\\n' 'BICING_TOKEN={TOKEN}' > {REMOTE_DIR}/.env",
-    )
-    sudo_bash(client, PASSWORD, f"mkdir -p {REMOTE_DIR}/db {REMOTE_DIR}/deploy/ssh")
-    sudo_bash(
-        client,
-        PASSWORD,
-        f"chmod +x {REMOTE_DIR}/scripts/deploy.sh {REMOTE_DIR}/docker/entrypoint.sh",
-    )
-
-    sudo_bash(client, PASSWORD, f"cd {REMOTE_DIR} && docker compose build")
-    sudo_bash(client, PASSWORD, f"cd {REMOTE_DIR} && docker compose up -d")
-    sudo_bash(client, PASSWORD, f"cd {REMOTE_DIR} && docker compose ps", check=False)
-    sudo_bash(client, PASSWORD, f"cd {REMOTE_DIR} && docker compose logs --tail=30", check=False)
-
+    out = stdout.read().decode()
+    err = stderr.read().decode()
+    code = stdout.channel.recv_exit_status()
+    if out.strip():
+        print(out.rstrip())
+    if err.strip():
+        print(err.rstrip(), file=sys.stderr)
     client.close()
-    print(f"\nDesplegat a {HOST}:{REMOTE_DIR}")
+
+    if code != 0:
+        print(f"Setup failed ({code})", file=sys.stderr)
+        sys.exit(code)
+
+    print(f"\nDesplegat a {HOST}. Cron cada 30 min dins el contenidor Docker.")
 
 
 if __name__ == "__main__":
