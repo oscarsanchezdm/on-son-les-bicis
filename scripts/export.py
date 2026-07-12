@@ -15,6 +15,7 @@ from zoneinfo import ZoneInfo
 MADRID = ZoneInfo("Europe/Madrid")
 
 from config import DATA_DIR, DB_PATH, ROOT
+from source_meta import read_last_source
 from status import is_station_active
 
 
@@ -268,7 +269,7 @@ def _export_latest(conn: sqlite3.Connection, ts: str, ts_iso: str) -> None:
             {
                 "last_updated": ts_iso,
                 "exported_at": datetime.now(timezone.utc).isoformat(),
-                "source": "Bicing (GBFS — B:SM)",
+                "source": f"Bicing ({read_last_source()})",
                 "station_count": len(station_list),
                 "barri_count": len(barri_list),
                 "disclaimer": "Dades amb retard d'uns minuts. Només estacions en servei entren als percentatges agregats.",

@@ -4,8 +4,8 @@ Eina periodística per visualitzar la disponibilitat de bicicletes del Bicing a 
 
 ## Dades
 
-- [GBFS Bicing](https://barcelona.publicbikesystem.net/customer/gbfs/v3.0/gbfs.json) (temps real, sense token — font principal a GitHub Actions)
-- [Estat d'estacions Bicing (Open Data)](https://opendata-ajuntament.barcelona.cat/data/ca/dataset/estat-estacions-bicing) (opcional, requereix token)
+- [Estat d'estacions Bicing (Open Data)](https://opendata-ajuntament.barcelona.cat/data/ca/dataset/estat-estacions-bicing) (font principal a GitHub Actions, requereix `BICING_TOKEN` — mateix API que [bicing-hassio](https://github.com/oscarsanchezdm/bicing-hassio))
+- [GBFS Bicing](https://barcelona.publicbikesystem.net/customer/gbfs/v3.0/gbfs.json) (fallback sense token si Open Data falla)
 - [Informació d'estacions](https://opendata-ajuntament.barcelona.cat/data/ca/dataset/informacio-estacions-bicing)
 - [Unitats administratives (barris)](https://opendata-ajuntament.barcelona.cat/data/ca/dataset/20170706-districtes-barris)
 - [Superfície de barris](https://opendata-ajuntament.barcelona.cat/data/ca/dataset/est-superficie) (opcional)
@@ -18,7 +18,7 @@ Eina periodística per visualitzar la disponibilitat de bicicletes del Bicing a 
 
 ## Arquitectura
 
-1. **GitHub Actions** (`fetch-data.yml`): cada **30 min** consulta el feed GBFS del Bicing (sense token), exporta JSON i fa commit a `public/data/`
+1. **GitHub Actions** (`fetch-data.yml`): cada **30 min** consulta Open Data BCN amb el secret `BICING_TOKEN` (mateixes URLs que bicing-hassio); si falla, usa GBFS com a fallback. Exporta JSON i fa commit a `public/data/`
 2. **GitHub Pages** (`pages.yml`): frontend estàtic (Vite + Leaflet) que llegeix `public/data/*.json`. Es desplega en canvis de codi, **després de cada fetch** (`workflow_run`) i cada 30 min (`schedule`), perquè els commits automàtics de dades no disparen altres workflows.
 
 El repo és **públic**, així que les Actions no consumeixen minuts de facturació.

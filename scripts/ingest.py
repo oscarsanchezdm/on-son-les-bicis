@@ -18,6 +18,7 @@ from config import BARRIS_GEOJSON, BICING_TOKEN, DB_PATH, SUPERFICIE_CSV
 from gbfs import load_gbfs_stations
 from init_db import init_db
 from opendata import load_opendata_stations
+from source_meta import write_last_source
 from status import is_station_active
 
 PREPARED = False
@@ -36,17 +37,37 @@ def _normalize_ts(ts: str | int | float) -> str:
 
 
 def _load_source_data() -> tuple[dict[str, dict], list[dict], str, str]:
+    """Prefer Open Data BCN (same API as bicing-hassio); fall back to GBFS."""
+    if BICING_TOKEN:
+        try:
+            info_by_id, status_list, last_updated = load_opendata_stations()
+            source = "Open Data BCN"
+            write_last_source(source)
+            return info_by_id, status_list, last_updated, source
+        except Exception as opendata_error:
+            print(
+                f"Open Data failed ({opendata_error}); falling back to GBFS",
+                file=sys.stderr,
+            )
+    else:
+        print(
+            "BICING_TOKEN not set; using GBFS (set the secret for Open Data BCN)",
+            file=sys.stderr,
+        )
+
     try:
         info_by_id, status_list, last_updated = load_gbfs_stations()
-        return info_by_id, status_list, last_updated, "GBFS (B:SM)"
+        source = "GBFS (B:SM)"
+        write_last_source(source)
+        return info_by_id, status_list, last_updated, source
     except Exception as gbfs_error:
-        if not BICING_TOKEN:
+        if BICING_TOKEN:
             raise RuntimeError(
-                "GBFS feed failed and BICING_TOKEN is not set for Open Data fallback"
+                "Both Open Data BCN and GBFS feeds failed"
             ) from gbfs_error
-        print(f"GBFS failed ({gbfs_error}); falling back to Open Data", file=sys.stderr)
-        info_by_id, status_list, last_updated = load_opendata_stations()
-        return info_by_id, status_list, last_updated, "Open Data BCN"
+        raise RuntimeError(
+            "GBFS feed failed and BICING_TOKEN is not set for Open Data"
+        ) from gbfs_error
 
 
 def _load_barris() -> None:
