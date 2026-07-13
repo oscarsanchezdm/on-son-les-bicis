@@ -463,9 +463,17 @@ function filterBarrisBySearch(barris: Barri[]): Barri[] {
   return barris.filter((b) => matchesSearch(b.barri_nom, query));
 }
 
+function resolvedSelectedStation(): Station | null {
+  if (!selectedStation) return null;
+  return (
+    displayStations?.find((s) => s.station_id === selectedStation!.station_id) ?? selectedStation
+  );
+}
+
 function tableStations(): Station[] {
   if (!displayStations) return [];
-  if (selectedStation) return [selectedStation];
+  const station = resolvedSelectedStation();
+  if (station) return [station];
   if (selectedBarri) {
     return displayStations.filter((s) => s.barri_codi === selectedBarri!.barri_codi);
   }
@@ -474,7 +482,8 @@ function tableStations(): Station[] {
 
 function mapStations(): Station[] | null {
   if (!displayStations) return null;
-  if (selectedStation) return [selectedStation];
+  const station = resolvedSelectedStation();
+  if (station) return [station];
   if (selectedBarri) return displayStations.filter((s) => s.barri_codi === selectedBarri!.barri_codi);
   return displayStations;
 }
@@ -499,7 +508,8 @@ function buildKpiData() {
       : latestData;
   }
 
-  if (selectedStation) return latestFromStation(selectedStation, latestData.last_updated);
+  const station = resolvedSelectedStation();
+  if (station) return latestFromStation(station, latestData.last_updated);
 
   if (selectedBarri) {
     const barri = displayBarris.find((b) => b.barri_codi === selectedBarri!.barri_codi);
