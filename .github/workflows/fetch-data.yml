@@ -2,8 +2,9 @@ name: Fetch Bicing data
 
 on:
   schedule:
-    # Cada 30 min (UTC). GitHub pot endarrerir jobs programats uns minuts.
-    - cron: "0,30 * * * *"
+    # Cada 30 min (UTC), desplaçat +7 min per evitar col·lisions de GitHub a :00/:30
+    # (els jobs programats sovint s'endarrereixen o es perden a la hora en punt).
+    - cron: "7,37 * * * *"
   workflow_dispatch:
   push:
     branches: [main]
