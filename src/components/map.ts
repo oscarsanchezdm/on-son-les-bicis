@@ -432,11 +432,7 @@ export function createMap(
         if (visualRadius <= 0) continue;
 
         const fillColor = isAbsolute ? metricAbsoluteColor(mode) : metricPctColor(value, mode);
-        const fillOpacity = isAbsolute
-          ? mode === "out_of_service"
-            ? 0.62 + 0.36 * Math.pow(count / maxCount, 0.42)
-            : 0.55 + 0.4 * Math.pow(count / maxCount, 0.65)
-          : 0.92;
+        const fillOpacity = isAbsolute ? 0.55 + 0.4 * Math.pow(count / maxCount, 0.65) : 0.92;
         const popup = stationPopupHtml(s, timeView);
         const tooltip = stationTooltipHtml(s);
 

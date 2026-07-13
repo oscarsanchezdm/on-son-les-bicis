@@ -146,8 +146,8 @@ const ColorHeatLayerImpl = L.Renderer.extend({
     const heatScale = this._heatScale as HeatScaleMode;
     const zoom = map.getZoom();
     const oosBoost = heatScale === "absolute" && mode === "out_of_service";
-    const radius = splatRadius(zoom) * (oosBoost ? 1.28 : 1);
-    const alphaScale = splatAlphaScale(zoom) * (oosBoost ? 1.2 : 1);
+    const radius = splatRadius(zoom) * (oosBoost ? 1.14 : 1);
+    const alphaScale = splatAlphaScale(zoom) * (oosBoost ? 1.1 : 1);
 
     const maxCount =
       heatScale === "absolute"
@@ -176,7 +176,7 @@ const ColorHeatLayerImpl = L.Renderer.extend({
         [r, g, b] = hexToRgb(metricAbsoluteColor(mode));
         const intensity = absoluteCountIntensity(count, maxCount, mode);
         alpha = oosBoost
-          ? (0.16 + 0.58 * intensity) * alphaScale
+          ? (0.12 + 0.5 * intensity) * alphaScale
           : (0.08 + 0.42 * intensity) * alphaScale;
       } else {
         const availability = stationMetric(s, mode);

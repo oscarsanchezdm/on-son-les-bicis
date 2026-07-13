@@ -106,8 +106,8 @@ export function metricAbsoluteOpacity(pct: number): number {
 }
 
 /**
- * Absolute count → 0..1 intensity. Fora de servei usa una corba més agressiva
- * perquè els valors solen ser baixos i cal sobrepresentar els focus.
+ * Absolute count → 0..1 intensity.
+ * Fora de servei (quantitat): corba a mig camí entre la resta i la sobrerepresentació forta.
  */
 export function absoluteCountIntensity(
   count: number,
@@ -116,7 +116,7 @@ export function absoluteCountIntensity(
 ): number {
   if (count <= 0 || maxCount <= 0) return 0;
   const t = Math.min(1, count / maxCount);
-  const power = mode === "out_of_service" ? 0.42 : 0.7;
+  const power = mode === "out_of_service" ? 0.56 : 0.7;
   return Math.pow(t, power);
 }
 
@@ -125,16 +125,11 @@ export function absoluteStationRadius(
   count: number,
   maxCount: number,
   capacity: number,
-  mode: MetricMode = "total"
+  _mode: MetricMode = "total"
 ): number {
   if (count <= 0 || maxCount <= 0) return 0;
   const base = Math.min(8, Math.max(4, 3.2 + capacity * 0.07));
-  const intensity = absoluteCountIntensity(count, maxCount, mode);
-  if (mode === "out_of_service") {
-    // Un pèl més llegible que la resta, sense exagerar el radi
-    return Math.min(15, base * (0.6 + 1.05 * intensity));
-  }
-  const scale = 0.55 + 0.95 * intensity;
+  const scale = 0.55 + 0.95 * Math.pow(count / maxCount, 0.7);
   return Math.min(14, base * scale);
 }
 
