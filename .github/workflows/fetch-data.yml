@@ -1,0 +1,89 @@
+name: Fetch Bicing data
+
+on:
+  schedule:
+    # Cada 30 min (UTC), desplaçat +7 min per evitar col·lisions de GitHub a :00/:30
+    - cron: "7,37 * * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "public/data/**"
+
+concurrency:
+  group: bicing-pipeline
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  fetch-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Fetch static data if missing
+        if: hashFiles('public/data/static/barris.geojson') == ''
+        run: python scripts/fetch_static_data.py
+
+      - name: Ingest and export
+        env:
+          # Open Data BCN (mateix API que bicing-hassio); GBFS només si falla o falta token
+          BICING_TOKEN: ${{ secrets.BICING_TOKEN }}
+        run: |
+          python scripts/init_db.py
+          python scripts/ingest.py
+          python scripts/export.py
+
+      - name: Commit data changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data
+          if git diff --staged --quiet; then
+            echo "No data changes to commit."
+          else
+            git commit -m "Actualitza dades Bicing"
+            for attempt in 1 2 3 4; do
+              if git pull --rebase origin main && git push origin main; then
+                break
+              fi
+              git rebase --abort 2>/dev/null || true
+              if [ "$attempt" -eq 4 ]; then
+                echo "Failed to push data after ${attempt} attempts."
+                exit 1
+              fi
+              sleep $((attempt * 4))
+            done
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Build site
+        run: |
+          npm install
+          npm run build
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

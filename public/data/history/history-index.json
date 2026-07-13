@@ -1,0 +1,541 @@
+{
+  "generated_at": "2026-07-13T19:16:23+00:00",
+  "timezone": "Europe/Madrid",
+  "hoursByDayType": {
+    "weekday": [
+      0,
+      1,
+      2,
+      3,
+      5,
+      6,
+      8,
+      9,
+      11,
+      12,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21
+    ],
+    "friday": [
+      10,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23
+    ],
+    "saturday": [
+      0,
+      1,
+      2,
+      3,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23
+    ],
+    "sunday": [
+      0,
+      1,
+      2,
+      3,
+      5,
+      6,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23
+    ]
+  },
+  "files": [
+    {
+      "key": "2026-07-10-08",
+      "localDate": "2026-07-10",
+      "localHour": 10,
+      "dayType": "friday"
+    },
+    {
+      "key": "2026-07-10-11",
+      "localDate": "2026-07-10",
+      "localHour": 13,
+      "dayType": "friday"
+    },
+    {
+      "key": "2026-07-10-12",
+      "localDate": "2026-07-10",
+      "localHour": 14,
+      "dayType": "friday"
+    },
+    {
+      "key": "2026-07-10-13",
+      "localDate": "2026-07-10",
+      "localHour": 15,
+      "dayType": "friday"
+    },
+    {
+      "key": "2026-07-10-14",
+      "localDate": "2026-07-10",
+      "localHour": 16,
+      "dayType": "friday"
+    },
+    {
+      "key": "2026-07-10-15",
+      "localDate": "2026-07-10",
+      "localHour": 17,
+      "dayType": "friday"
+    },
+    {
+      "key": "2026-07-10-16",
+      "localDate": "2026-07-10",
+      "localHour": 18,
+      "dayType": "friday"
+    },
+    {
+      "key": "2026-07-10-17",
+      "localDate": "2026-07-10",
+      "localHour": 19,
+      "dayType": "friday"
+    },
+    {
+      "key": "2026-07-10-18",
+      "localDate": "2026-07-10",
+      "localHour": 20,
+      "dayType": "friday"
+    },
+    {
+      "key": "2026-07-10-19",
+      "localDate": "2026-07-10",
+      "localHour": 21,
+      "dayType": "friday"
+    },
+    {
+      "key": "2026-07-10-20",
+      "localDate": "2026-07-10",
+      "localHour": 22,
+      "dayType": "friday"
+    },
+    {
+      "key": "2026-07-10-21",
+      "localDate": "2026-07-10",
+      "localHour": 23,
+      "dayType": "friday"
+    },
+    {
+      "key": "2026-07-10-22",
+      "localDate": "2026-07-11",
+      "localHour": 0,
+      "dayType": "saturday"
+    },
+    {
+      "key": "2026-07-10-23",
+      "localDate": "2026-07-11",
+      "localHour": 1,
+      "dayType": "saturday"
+    },
+    {
+      "key": "2026-07-11-00",
+      "localDate": "2026-07-11",
+      "localHour": 2,
+      "dayType": "saturday"
+    },
+    {
+      "key": "2026-07-11-01",
+      "localDate": "2026-07-11",
+      "localHour": 3,
+      "dayType": "saturday"
+    },
+    {
+      "key": "2026-07-11-03",
+      "localDate": "2026-07-11",
+      "localHour": 5,
+      "dayType": "saturday"
+    },
+    {
+      "key": "2026-07-11-04",
+      "localDate": "2026-07-11",
+      "localHour": 6,
+      "dayType": "saturday"
+    },
+    {
+      "key": "2026-07-11-05",
+      "localDate": "2026-07-11",
+      "localHour": 7,
+      "dayType": "saturday"
+    },
+    {
+      "key": "2026-07-11-06",
+      "localDate": "2026-07-11",
+      "localHour": 8,
+      "dayType": "saturday"
+    },
+    {
+      "key": "2026-07-11-07",
+      "localDate": "2026-07-11",
+      "localHour": 9,
+      "dayType": "saturday"
+    },
+    {
+      "key": "2026-07-11-08",
+      "localDate": "2026-07-11",
+      "localHour": 10,
+      "dayType": "saturday"
+    },
+    {
+      "key": "2026-07-11-09",
+      "localDate": "2026-07-11",
+      "localHour": 11,
+      "dayType": "saturday"
+    },
+    {
+      "key": "2026-07-11-10",
+      "localDate": "2026-07-11",
+      "localHour": 12,
+      "dayType": "saturday"
+    },
+    {
+      "key": "2026-07-11-11",
+      "localDate": "2026-07-11",
+      "localHour": 13,
+      "dayType": "saturday"
+    },
+    {
+      "key": "2026-07-11-12",
+      "localDate": "2026-07-11",
+      "localHour": 14,
+      "dayType": "saturday"
+    },
+    {
+      "key": "2026-07-11-13",
+      "localDate": "2026-07-11",
+      "localHour": 15,
+      "dayType": "saturday"
+    },
+    {
+      "key": "2026-07-11-14",
+      "localDate": "2026-07-11",
+      "localHour": 16,
+      "dayType": "saturday"
+    },
+    {
+      "key": "2026-07-11-15",
+      "localDate": "2026-07-11",
+      "localHour": 17,
+      "dayType": "saturday"
+    },
+    {
+      "key": "2026-07-11-16",
+      "localDate": "2026-07-11",
+      "localHour": 18,
+      "dayType": "saturday"
+    },
+    {
+      "key": "2026-07-11-17",
+      "localDate": "2026-07-11",
+      "localHour": 19,
+      "dayType": "saturday"
+    },
+    {
+      "key": "2026-07-11-18",
+      "localDate": "2026-07-11",
+      "localHour": 20,
+      "dayType": "saturday"
+    },
+    {
+      "key": "2026-07-11-19",
+      "localDate": "2026-07-11",
+      "localHour": 21,
+      "dayType": "saturday"
+    },
+    {
+      "key": "2026-07-11-20",
+      "localDate": "2026-07-11",
+      "localHour": 22,
+      "dayType": "saturday"
+    },
+    {
+      "key": "2026-07-11-21",
+      "localDate": "2026-07-11",
+      "localHour": 23,
+      "dayType": "saturday"
+    },
+    {
+      "key": "2026-07-11-22",
+      "localDate": "2026-07-12",
+      "localHour": 0,
+      "dayType": "sunday"
+    },
+    {
+      "key": "2026-07-11-23",
+      "localDate": "2026-07-12",
+      "localHour": 1,
+      "dayType": "sunday"
+    },
+    {
+      "key": "2026-07-12-00",
+      "localDate": "2026-07-12",
+      "localHour": 2,
+      "dayType": "sunday"
+    },
+    {
+      "key": "2026-07-12-01",
+      "localDate": "2026-07-12",
+      "localHour": 3,
+      "dayType": "sunday"
+    },
+    {
+      "key": "2026-07-12-03",
+      "localDate": "2026-07-12",
+      "localHour": 5,
+      "dayType": "sunday"
+    },
+    {
+      "key": "2026-07-12-04",
+      "localDate": "2026-07-12",
+      "localHour": 6,
+      "dayType": "sunday"
+    },
+    {
+      "key": "2026-07-12-06",
+      "localDate": "2026-07-12",
+      "localHour": 8,
+      "dayType": "sunday"
+    },
+    {
+      "key": "2026-07-12-07",
+      "localDate": "2026-07-12",
+      "localHour": 9,
+      "dayType": "sunday"
+    },
+    {
+      "key": "2026-07-12-08",
+      "localDate": "2026-07-12",
+      "localHour": 10,
+      "dayType": "sunday"
+    },
+    {
+      "key": "2026-07-12-09",
+      "localDate": "2026-07-12",
+      "localHour": 11,
+      "dayType": "sunday"
+    },
+    {
+      "key": "2026-07-12-10",
+      "localDate": "2026-07-12",
+      "localHour": 12,
+      "dayType": "sunday"
+    },
+    {
+      "key": "2026-07-12-11",
+      "localDate": "2026-07-12",
+      "localHour": 13,
+      "dayType": "sunday"
+    },
+    {
+      "key": "2026-07-12-12",
+      "localDate": "2026-07-12",
+      "localHour": 14,
+      "dayType": "sunday"
+    },
+    {
+      "key": "2026-07-12-13",
+      "localDate": "2026-07-12",
+      "localHour": 15,
+      "dayType": "sunday"
+    },
+    {
+      "key": "2026-07-12-14",
+      "localDate": "2026-07-12",
+      "localHour": 16,
+      "dayType": "sunday"
+    },
+    {
+      "key": "2026-07-12-15",
+      "localDate": "2026-07-12",
+      "localHour": 17,
+      "dayType": "sunday"
+    },
+    {
+      "key": "2026-07-12-16",
+      "localDate": "2026-07-12",
+      "localHour": 18,
+      "dayType": "sunday"
+    },
+    {
+      "key": "2026-07-12-17",
+      "localDate": "2026-07-12",
+      "localHour": 19,
+      "dayType": "sunday"
+    },
+    {
+      "key": "2026-07-12-18",
+      "localDate": "2026-07-12",
+      "localHour": 20,
+      "dayType": "sunday"
+    },
+    {
+      "key": "2026-07-12-19",
+      "localDate": "2026-07-12",
+      "localHour": 21,
+      "dayType": "sunday"
+    },
+    {
+      "key": "2026-07-12-20",
+      "localDate": "2026-07-12",
+      "localHour": 22,
+      "dayType": "sunday"
+    },
+    {
+      "key": "2026-07-12-21",
+      "localDate": "2026-07-12",
+      "localHour": 23,
+      "dayType": "sunday"
+    },
+    {
+      "key": "2026-07-12-22",
+      "localDate": "2026-07-13",
+      "localHour": 0,
+      "dayType": "weekday"
+    },
+    {
+      "key": "2026-07-12-23",
+      "localDate": "2026-07-13",
+      "localHour": 1,
+      "dayType": "weekday"
+    },
+    {
+      "key": "2026-07-13-00",
+      "localDate": "2026-07-13",
+      "localHour": 2,
+      "dayType": "weekday"
+    },
+    {
+      "key": "2026-07-13-01",
+      "localDate": "2026-07-13",
+      "localHour": 3,
+      "dayType": "weekday"
+    },
+    {
+      "key": "2026-07-13-03",
+      "localDate": "2026-07-13",
+      "localHour": 5,
+      "dayType": "weekday"
+    },
+    {
+      "key": "2026-07-13-04",
+      "localDate": "2026-07-13",
+      "localHour": 6,
+      "dayType": "weekday"
+    },
+    {
+      "key": "2026-07-13-06",
+      "localDate": "2026-07-13",
+      "localHour": 8,
+      "dayType": "weekday"
+    },
+    {
+      "key": "2026-07-13-07",
+      "localDate": "2026-07-13",
+      "localHour": 9,
+      "dayType": "weekday"
+    },
+    {
+      "key": "2026-07-13-09",
+      "localDate": "2026-07-13",
+      "localHour": 11,
+      "dayType": "weekday"
+    },
+    {
+      "key": "2026-07-13-10",
+      "localDate": "2026-07-13",
+      "localHour": 12,
+      "dayType": "weekday"
+    },
+    {
+      "key": "2026-07-13-12",
+      "localDate": "2026-07-13",
+      "localHour": 14,
+      "dayType": "weekday"
+    },
+    {
+      "key": "2026-07-13-13",
+      "localDate": "2026-07-13",
+      "localHour": 15,
+      "dayType": "weekday"
+    },
+    {
+      "key": "2026-07-13-14",
+      "localDate": "2026-07-13",
+      "localHour": 16,
+      "dayType": "weekday"
+    },
+    {
+      "key": "2026-07-13-15",
+      "localDate": "2026-07-13",
+      "localHour": 17,
+      "dayType": "weekday"
+    },
+    {
+      "key": "2026-07-13-16",
+      "localDate": "2026-07-13",
+      "localHour": 18,
+      "dayType": "weekday"
+    },
+    {
+      "key": "2026-07-13-17",
+      "localDate": "2026-07-13",
+      "localHour": 19,
+      "dayType": "weekday"
+    },
+    {
+      "key": "2026-07-13-18",
+      "localDate": "2026-07-13",
+      "localHour": 20,
+      "dayType": "weekday"
+    },
+    {
+      "key": "2026-07-13-19",
+      "localDate": "2026-07-13",
+      "localHour": 21,
+      "dayType": "weekday"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+# =============================================================================
+# DESACTIVAT (juliol 2026): el fetch és cada 30 min via .github/workflows/fetch-data.yml
+# =============================================================================
+#
+# SHELL=/bin/bash
+# PATH=/usr/local/bin:/usr/bin:/bin
+# */30 * * * * root cd /app && /usr/local/bin/python scripts/ingest.py >> /var/log/bicing-ingest.log 2>&1 && /usr/local/bin/python scripts/export.py >> /var/log/bicing-export.log 2>&1 && /app/scripts/deploy.sh >> /var/log/bicing-deploy.log 2>&1
