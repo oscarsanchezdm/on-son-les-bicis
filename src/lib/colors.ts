@@ -100,9 +100,10 @@ export function metricAbsoluteColor(mode: MetricMode): string {
 
 /** Opacity for barri/station fills in absolute mode from metric % (0–100). */
 export function metricAbsoluteOpacity(pct: number): number {
-  if (!Number.isFinite(pct) || pct <= 0) return 0.06;
+  if (!Number.isFinite(pct) || pct <= 0) return 0.04;
   const t = Math.min(100, pct) / 100;
-  return 0.1 + 0.48 * Math.pow(t, 0.85);
+  // Valors habituals 30–50%: opacitat baixa per no tenyeix tot el plaç.
+  return 0.05 + 0.22 * Math.pow(t, 1.15);
 }
 
 /**

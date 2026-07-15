@@ -35,6 +35,7 @@ type SegmentDef = {
   key: SegmentKey;
   label: string;
   short: string;
+  popupLabel: string;
   color: string;
   icon: "ebike" | "mechanical" | "dock" | "maintenance";
   value: (b: StationBreakdown) => number;
@@ -47,6 +48,7 @@ const SEGMENTS: SegmentDef[] = [
     key: "ebike",
     label: "Elèctriques",
     short: "El.",
+    popupLabel: "Elèctriques",
     color: METRIC_ABSOLUTE_COLORS.ebike,
     icon: "ebike",
     value: (b) => b.ebike,
@@ -55,6 +57,7 @@ const SEGMENTS: SegmentDef[] = [
     key: "mechanical",
     label: "Mecàniques",
     short: "Mec.",
+    popupLabel: "Mecàniques",
     color: METRIC_ABSOLUTE_COLORS.mechanical,
     icon: "mechanical",
     value: (b) => b.mechanical,
@@ -63,6 +66,7 @@ const SEGMENTS: SegmentDef[] = [
     key: "docks",
     label: "Ancoratges lliures",
     short: "Ancoratges",
+    popupLabel: "Ancoratges lliures",
     color: METRIC_ABSOLUTE_COLORS.docks,
     icon: "dock",
     value: (b) => b.docks,
@@ -71,6 +75,7 @@ const SEGMENTS: SegmentDef[] = [
     key: "oos",
     label: "Bicicletes fora de servei",
     short: "FS",
+    popupLabel: "Fora de servei",
     color: METRIC_ABSOLUTE_COLORS.out_of_service,
     icon: "maintenance",
     value: (b) => b.oos,
@@ -79,6 +84,7 @@ const SEGMENTS: SegmentDef[] = [
     key: "docks_disabled",
     label: "Ancoratges avariats",
     short: "Avar.",
+    popupLabel: "Ancoratges avariats",
     color: DOCKS_DISABLED_COLOR,
     icon: "dock",
     value: (b) => b.docks_disabled,
@@ -268,7 +274,7 @@ function legendRow(
   const pct = formatPct(seg.pct);
   const icon =
     seg.key === "docks_disabled" ? countIconHtml("dock") : countIconHtml(seg.icon);
-  const label = compact && !fullLabels ? seg.short : seg.label;
+  const label = fullLabels ? seg.popupLabel : compact ? seg.short : seg.label;
   if (compact) {
     return `<li class="station-donut-legend__item"><span class="station-donut-legend__swatch" style="background:${seg.color}"></span>${icon}<span class="station-donut-legend__label">${label}</span><span class="station-donut-legend__vals"><strong>${count}</strong> · ${pct}</span></li>`;
   }
@@ -382,7 +388,7 @@ export function renderStationPopupContent(
           ${hint}
         </button>
       </div>
-      ${renderLegend(b, true)}
+      ${renderLegend(b, true, true)}
     </div>
   </div>`;
 }
