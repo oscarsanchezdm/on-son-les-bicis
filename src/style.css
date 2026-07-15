@@ -1144,6 +1144,12 @@ body.kpi-chart-open {
   color: var(--muted);
 }
 
+.station-popup .station-donut-legend__label {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.25;
+}
+
 .station-donut-legend__item--full .station-donut-legend__label {
   color: var(--text);
   font-weight: 500;
