@@ -552,7 +552,8 @@ export type SparklineMetricKey =
   | "pct_oos_fleet"
   | "bikes_total"
   | "bikes_mechanical"
-  | "bikes_ebike";
+  | "bikes_ebike"
+  | "bikes_out_of_service";
 
 export type ChartPoint = { label: string; value: number; ts?: string; key?: string };
 
@@ -609,12 +610,14 @@ export function sparklineChartPoints(
     let value: number | undefined;
     if (key === "pct_oos_anchors") {
       value = p.pct_oos_anchors ?? p.pct_oos_fleet;
-    } else if (key === "pct_oos_fleet") {
+    } else     if (key === "pct_oos_fleet") {
       value =
         p.pct_oos_fleet ??
         (p.pct_bikes !== undefined && p.pct_oos_anchors !== undefined
           ? pctOosFleetFromPctBikesAndAnchors(p.pct_bikes, p.pct_oos_anchors)
           : undefined);
+    } else if (key === "bikes_out_of_service") {
+      value = p.bikes_out_of_service;
     } else {
       value = p[key];
     }
@@ -737,6 +740,13 @@ export function hourlyAverage(
       }, 0) / samples.length
     );
   }
+  if (key === "bikes_out_of_service") {
+    const samples = bucket.samples.filter((s) => s.bikes_out_of_service !== undefined);
+    if (!samples.length) return null;
+    return (
+      samples.reduce((sum, s) => sum + (s.bikes_out_of_service ?? 0), 0) / samples.length
+    );
+  }
   return null;
 }
 
@@ -766,6 +776,7 @@ export type BarriSparklineSeries = {
   bikes_total: number[];
   bikes_mechanical: number[];
   bikes_ebike: number[];
+  bikes_out_of_service: number[];
   pct_bikes: number[];
   pct_mechanical: number[];
   pct_ebike: number[];
@@ -784,6 +795,7 @@ export async function loadBarriSparklineSeries(
   const bikes_total: number[] = [];
   const bikes_mechanical: number[] = [];
   const bikes_ebike: number[] = [];
+  const bikes_out_of_service: number[] = [];
   const pct_bikes: number[] = [];
   const pct_mechanical: number[] = [];
   const pct_ebike: number[] = [];
@@ -809,6 +821,7 @@ export async function loadBarriSparklineSeries(
     bikes_total.push(b.bikes_total);
     bikes_mechanical.push(b.bikes_mechanical);
     bikes_ebike.push(b.bikes_ebike);
+    bikes_out_of_service.push(oos);
     pct_bikes.push(b.pct_bikes);
     pct_mechanical.push((100 * b.bikes_mechanical) / b.capacity_total);
     pct_ebike.push((100 * b.bikes_ebike) / b.capacity_total);
@@ -823,6 +836,7 @@ export async function loadBarriSparklineSeries(
     bikes_total,
     bikes_mechanical,
     bikes_ebike,
+    bikes_out_of_service,
     pct_bikes,
     pct_mechanical,
     pct_ebike,
@@ -846,6 +860,7 @@ export async function loadStationSparklineSeries(
   const bikes_total: number[] = [];
   const bikes_mechanical: number[] = [];
   const bikes_ebike: number[] = [];
+  const bikes_out_of_service: number[] = [];
   const pct_bikes: number[] = [];
   const pct_mechanical: number[] = [];
   const pct_ebike: number[] = [];
@@ -874,6 +889,7 @@ export async function loadStationSparklineSeries(
     bikes_total.push(total);
     bikes_mechanical.push(mechanical);
     bikes_ebike.push(ebike);
+    bikes_out_of_service.push(oos);
     pct_bikes.push(Math.round((100 * total) / capacity * 100) / 100);
     pct_mechanical.push(Math.round((100 * mechanical) / capacity * 100) / 100);
     pct_ebike.push(Math.round((100 * ebike) / capacity * 100) / 100);
@@ -888,6 +904,7 @@ export async function loadStationSparklineSeries(
     bikes_total,
     bikes_mechanical,
     bikes_ebike,
+    bikes_out_of_service,
     pct_bikes,
     pct_mechanical,
     pct_ebike,
@@ -906,6 +923,7 @@ export async function loadCitySparklineSeriesRecent(
   const bikes_total: number[] = [];
   const bikes_mechanical: number[] = [];
   const bikes_ebike: number[] = [];
+  const bikes_out_of_service: number[] = [];
   const pct_bikes: number[] = [];
   const pct_mechanical: number[] = [];
   const pct_ebike: number[] = [];
@@ -939,6 +957,7 @@ export async function loadCitySparklineSeriesRecent(
     bikes_total.push(bikes);
     bikes_mechanical.push(mechanical);
     bikes_ebike.push(ebike);
+    bikes_out_of_service.push(oos);
     pct_bikes.push((100 * bikes) / capacity);
     pct_mechanical.push((100 * mechanical) / capacity);
     pct_ebike.push((100 * ebike) / capacity);
@@ -953,6 +972,7 @@ export async function loadCitySparklineSeriesRecent(
     bikes_total,
     bikes_mechanical,
     bikes_ebike,
+    bikes_out_of_service,
     pct_bikes,
     pct_mechanical,
     pct_ebike,
@@ -984,6 +1004,7 @@ export async function barriHistAveragesAtHour(
   const bikes_total: number[] = [];
   const bikes_mechanical: number[] = [];
   const bikes_ebike: number[] = [];
+  const bikes_out_of_service: number[] = [];
   const pct_bikes: number[] = [];
   const pct_mechanical: number[] = [];
   const pct_ebike: number[] = [];
@@ -1004,6 +1025,7 @@ export async function barriHistAveragesAtHour(
     bikes_total.push(b.bikes_total);
     bikes_mechanical.push(b.bikes_mechanical);
     bikes_ebike.push(b.bikes_ebike);
+    bikes_out_of_service.push(oos);
     pct_bikes.push(b.pct_bikes);
     pct_mechanical.push((100 * b.bikes_mechanical) / b.capacity_total);
     pct_ebike.push((100 * b.bikes_ebike) / b.capacity_total);
@@ -1017,6 +1039,7 @@ export async function barriHistAveragesAtHour(
     bikes_total: avg(bikes_total),
     bikes_mechanical: avg(bikes_mechanical),
     bikes_ebike: avg(bikes_ebike),
+    bikes_out_of_service: avg(bikes_out_of_service),
     pct_bikes: avg(pct_bikes),
     pct_mechanical: avg(pct_mechanical),
     pct_ebike: avg(pct_ebike),
@@ -1036,6 +1059,7 @@ export async function cityHistAveragesAtHour(
   const bikes_total: number[] = [];
   const bikes_mechanical: number[] = [];
   const bikes_ebike: number[] = [];
+  const bikes_out_of_service: number[] = [];
   const pct_oos_fleet: number[] = [];
 
   for (const file of matches) {
@@ -1061,6 +1085,7 @@ export async function cityHistAveragesAtHour(
     bikes_total.push(bikes);
     bikes_mechanical.push(mechanical);
     bikes_ebike.push(ebike);
+    bikes_out_of_service.push(oos);
     pct_oos_fleet.push(pctOosOfBikeFleet(bikes, oos));
   }
 
@@ -1070,6 +1095,7 @@ export async function cityHistAveragesAtHour(
     bikes_total: avg(bikes_total),
     bikes_mechanical: avg(bikes_mechanical),
     bikes_ebike: avg(bikes_ebike),
+    bikes_out_of_service: avg(bikes_out_of_service),
     pct_oos_fleet: avg(pct_oos_fleet),
   };
 }

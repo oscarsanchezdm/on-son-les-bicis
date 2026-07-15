@@ -2,31 +2,43 @@ import { formatCount, formatPct } from "../lib/format";
 
 export type ChartPoint = { label: string; value: number };
 
+export type KpiChartSeries = {
+  label: string;
+  points: ChartPoint[];
+  valueFormat: "pct" | "count";
+};
+
 export type KpiChartSpec = {
   title: string;
   subtitle?: string;
+  /** Primary series (left axis when dual). */
   points: ChartPoint[];
   valueFormat?: "pct" | "count";
+  /** Optional second series on the right axis (different unit). */
+  secondary?: KpiChartSeries;
 };
 
 const CHART_WIDTH = 640;
 const CHART_HEIGHT = 280;
 const MARGIN = { top: 20, right: 16, bottom: 52, left: 48 };
+const MARGIN_DUAL = { top: 28, right: 52, bottom: 52, left: 48 };
 
-function plotSize() {
+function plotSize(dual: boolean) {
+  const m = dual ? MARGIN_DUAL : MARGIN;
   return {
-    w: CHART_WIDTH - MARGIN.left - MARGIN.right,
-    h: CHART_HEIGHT - MARGIN.top - MARGIN.bottom,
+    m,
+    w: CHART_WIDTH - m.left - m.right,
+    h: CHART_HEIGHT - m.top - m.bottom,
   };
 }
 
-function yScale(min: number, max: number, height: number) {
+function yScale(min: number, max: number, height: number, top: number) {
   const range = max - min || 1;
-  return (value: number) => MARGIN.top + height - ((value - min) / range) * height;
+  return (value: number) => top + height - ((value - min) / range) * height;
 }
 
-function xScale(count: number, width: number) {
-  return (index: number) => MARGIN.left + (count <= 1 ? width / 2 : (index / (count - 1)) * width);
+function xScale(count: number, width: number, left: number) {
+  return (index: number) => left + (count <= 1 ? width / 2 : (index / (count - 1)) * width);
 }
 
 function yBoundsPct(values: number[]): { min: number; max: number } {
@@ -49,6 +61,10 @@ function yBoundsCount(values: number[]): { min: number; max: number } {
     min: Math.max(0, Math.floor(minV - pad)),
     max: Math.ceil(maxV + pad),
   };
+}
+
+function yBounds(values: number[], format: "pct" | "count") {
+  return format === "pct" ? yBoundsPct(values) : yBoundsCount(values);
 }
 
 function yTickValuesPct(min: number, max: number): number[] {
@@ -76,6 +92,10 @@ function yTickValuesCount(min: number, max: number): number[] {
   return ticks.length ? ticks : [lo, hi];
 }
 
+function yTicks(min: number, max: number, format: "pct" | "count"): number[] {
+  return format === "pct" ? yTickValuesPct(min, max) : yTickValuesCount(min, max);
+}
+
 function formatValue(value: number, format: "pct" | "count"): string {
   return format === "pct" ? formatPct(value) : formatCount(value);
 }
@@ -95,34 +115,87 @@ function escapeHtml(text: string): string {
     .replaceAll('"', "&quot;");
 }
 
-function renderChartSvg(points: ChartPoint[], valueFormat: "pct" | "count"): string {
-  const { w, h } = plotSize();
-  const values = points.map((p) => p.value);
-  const { min, max } =
-    valueFormat === "pct" ? yBoundsPct(values) : yBoundsCount(values);
-  const y = yScale(min, max, h);
-  const x = xScale(points.length, w);
-  const ticks =
-    valueFormat === "pct" ? yTickValuesPct(min, max) : yTickValuesCount(min, max);
+function alignSecondaryPoints(
+  primary: ChartPoint[],
+  secondary: ChartPoint[]
+): ChartPoint[] {
+  if (secondary.length === primary.length) return secondary;
+  if (!primary.length || !secondary.length) return [];
+  // Prefer label alignment when lengths differ.
+  const byLabel = new Map(secondary.map((p) => [p.label, p.value]));
+  if (primary.every((p) => byLabel.has(p.label))) {
+    return primary.map((p) => ({ label: p.label, value: byLabel.get(p.label)! }));
+  }
+  // Fallback: resample secondary onto primary length.
+  return primary.map((p, i) => {
+    const idx = Math.round((i * (secondary.length - 1)) / Math.max(primary.length - 1, 1));
+    return { label: p.label, value: secondary[idx]!.value };
+  });
+}
+
+function renderChartSvg(
+  points: ChartPoint[],
+  valueFormat: "pct" | "count",
+  secondary?: KpiChartSeries
+): string {
+  const dual = Boolean(secondary?.points.length);
+  const { m, w, h } = plotSize(dual);
+  const primaryFormat = valueFormat;
+  const primaryBounds = yBounds(
+    points.map((p) => p.value),
+    primaryFormat
+  );
+  const yPrimary = yScale(primaryBounds.min, primaryBounds.max, h, m.top);
+  const x = xScale(points.length, w, m.left);
+  const primaryTicks = yTicks(primaryBounds.min, primaryBounds.max, primaryFormat);
   const step = labelStep(points.length);
 
-  const grid = ticks
+  const grid = primaryTicks
     .map((tick) => {
-      const py = y(tick);
-      return `<line class="kpi-chart-grid" x1="${MARGIN.left}" y1="${py}" x2="${MARGIN.left + w}" y2="${py}" />
-        <text class="kpi-chart-axis" x="${MARGIN.left - 8}" y="${py + 4}" text-anchor="end">${formatValue(tick, valueFormat)}</text>`;
+      const py = yPrimary(tick);
+      return `<line class="kpi-chart-grid" x1="${m.left}" y1="${py}" x2="${m.left + w}" y2="${py}" />
+        <text class="kpi-chart-axis kpi-chart-axis--left" x="${m.left - 8}" y="${py + 4}" text-anchor="end">${formatValue(tick, primaryFormat)}</text>`;
     })
     .join("");
 
-  const polyline = points
-    .map((p, i) => `${x(i)},${y(p.value)}`)
-    .join(" ");
+  let secondarySvg = "";
+  let secondaryPoints: ChartPoint[] = [];
+  if (dual && secondary) {
+    secondaryPoints = alignSecondaryPoints(points, secondary.points);
+    const secBounds = yBounds(
+      secondaryPoints.map((p) => p.value),
+      secondary.valueFormat
+    );
+    const ySec = yScale(secBounds.min, secBounds.max, h, m.top);
+    const secTicks = yTicks(secBounds.min, secBounds.max, secondary.valueFormat);
+    const secAxis = secTicks
+      .map((tick) => {
+        const py = ySec(tick);
+        return `<text class="kpi-chart-axis kpi-chart-axis--right" x="${m.left + w + 8}" y="${py + 4}" text-anchor="start">${formatValue(tick, secondary.valueFormat)}</text>`;
+      })
+      .join("");
+    const secPoly = secondaryPoints.map((p, i) => `${x(i)},${ySec(p.value)}`).join(" ");
+    const secDots = secondaryPoints
+      .map(
+        (p, i) =>
+          `<circle class="kpi-chart-dot kpi-chart-dot--secondary" cx="${x(i)}" cy="${ySec(p.value)}" r="3">
+            <title>${escapeHtml(p.label)}: ${formatValue(p.value, secondary.valueFormat)} (${escapeHtml(secondary.label)})</title>
+          </circle>`
+      )
+      .join("");
+    secondarySvg = `
+      ${secAxis}
+      <polyline class="kpi-chart-line kpi-chart-line--secondary" fill="none" points="${secPoly}" />
+      ${secDots}
+    `;
+  }
 
+  const polyline = points.map((p, i) => `${x(i)},${yPrimary(p.value)}`).join(" ");
   const dots = points
     .map(
       (p, i) =>
-        `<circle class="kpi-chart-dot" cx="${x(i)}" cy="${y(p.value)}" r="3.5">
-          <title>${escapeHtml(p.label)}: ${formatValue(p.value, valueFormat)}</title>
+        `<circle class="kpi-chart-dot" cx="${x(i)}" cy="${yPrimary(p.value)}" r="3.5">
+          <title>${escapeHtml(p.label)}: ${formatValue(p.value, primaryFormat)}</title>
         </circle>`
     )
     .join("");
@@ -135,12 +208,24 @@ function renderChartSvg(points: ChartPoint[], valueFormat: "pct" | "count"): str
     })
     .join("");
 
+  const legend = dual && secondary
+    ? `<g class="kpi-chart-legend" transform="translate(${m.left}, 14)">
+        <line class="kpi-chart-line" x1="0" y1="0" x2="18" y2="0" />
+        <text class="kpi-chart-legend-label" x="22" y="4">Total</text>
+        <line class="kpi-chart-line kpi-chart-line--secondary" x1="78" y1="0" x2="96" y2="0" />
+        <text class="kpi-chart-legend-label kpi-chart-legend-label--secondary" x="100" y="4">${escapeHtml(secondary.label)}</text>
+      </g>`
+    : "";
+
   return `<svg class="kpi-chart-svg" viewBox="0 0 ${CHART_WIDTH} ${CHART_HEIGHT}" role="img" aria-label="${escapeHtml(points[0]?.label ?? "")} – ${escapeHtml(points.at(-1)?.label ?? "")}">
+    ${legend}
     ${grid}
-    <line class="kpi-chart-axis-line" x1="${MARGIN.left}" y1="${MARGIN.top}" x2="${MARGIN.left}" y2="${MARGIN.top + h}" />
-    <line class="kpi-chart-axis-line" x1="${MARGIN.left}" y1="${MARGIN.top + h}" x2="${MARGIN.left + w}" y2="${MARGIN.top + h}" />
+    <line class="kpi-chart-axis-line" x1="${m.left}" y1="${m.top}" x2="${m.left}" y2="${m.top + h}" />
+    ${dual ? `<line class="kpi-chart-axis-line" x1="${m.left + w}" y1="${m.top}" x2="${m.left + w}" y2="${m.top + h}" />` : ""}
+    <line class="kpi-chart-axis-line" x1="${m.left}" y1="${m.top + h}" x2="${m.left + w}" y2="${m.top + h}" />
     <polyline class="kpi-chart-line" fill="none" points="${polyline}" />
     ${dots}
+    ${secondarySvg}
     ${xLabels}
   </svg>`;
 }
@@ -179,9 +264,10 @@ function ensureModal(): HTMLElement {
 
 export function renderKpiChartSvg(
   points: ChartPoint[],
-  valueFormat: "pct" | "count" = "count"
+  valueFormat: "pct" | "count" = "count",
+  secondary?: KpiChartSeries
 ): string {
-  return renderChartSvg(points, valueFormat);
+  return renderChartSvg(points, valueFormat, secondary);
 }
 
 export function openKpiChart(spec: KpiChartSpec): void {
@@ -199,7 +285,7 @@ export function openKpiChart(spec: KpiChartSpec): void {
     subtitle.textContent = "";
     subtitle.hidden = true;
   }
-  body.innerHTML = renderChartSvg(spec.points, spec.valueFormat ?? "pct");
+  body.innerHTML = renderChartSvg(spec.points, spec.valueFormat ?? "pct", spec.secondary);
   modal.hidden = false;
   document.body.classList.add("kpi-chart-open");
   (modal.querySelector(".kpi-chart-close") as HTMLButtonElement)?.focus();
