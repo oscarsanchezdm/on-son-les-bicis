@@ -114,19 +114,20 @@ function histNoteCount(
   return `Mitjana 7 dies (${String(hour).padStart(2, "0")}:00): ${formatCount(avgShown)} (${delta})`;
 }
 
-function histNotePct(
+function histNoteOos(
   summary: Summary7d | null,
   hour: number,
-  key: Extract<SparklineMetricKey, "pct_oos_fleet">,
-  currentPct: number,
+  current: number,
   histAvg?: Partial<Record<SparklineMetricKey, number>> | null
 ): string {
-  const avg = histAvg?.[key] ?? hourlyAverage(summary, hour, key);
+  const avg =
+    histAvg?.bikes_out_of_service ??
+    hourlyAverage(summary, hour, "bikes_out_of_service");
   if (avg === null || avg === undefined) return "";
-  const avgShown = Math.round(avg * 10) / 10;
-  const currentShown = Math.round(currentPct * 10) / 10;
+  const avgShown = Math.round(avg);
+  const currentShown = Math.round(current);
   const delta = formatRelativeDeltaPct(currentShown, avgShown);
-  return `Mitjana 7 dies (${String(hour).padStart(2, "0")}:00): ${formatPct(avgShown)} (${delta})`;
+  return `Mitjana 7 dies (${String(hour).padStart(2, "0")}:00): ${formatCount(avgShown)} (${delta})`;
 }
 
 function chartPoints(
@@ -207,14 +208,15 @@ export function renderKpis(
       sparklineValuesLast24h(summary?.series ?? [], "bikes_ebike")
     : [];
   const oosValues = showSpark
-    ? sparklines?.pct_oos_fleet ??
-      sparklineValuesLast24h(summary?.series ?? [], "pct_oos_fleet")
+    ? sparklines?.bikes_out_of_service ??
+      sparklineValuesLast24h(summary?.series ?? [], "bikes_out_of_service")
     : [];
 
   const bikesPoints = showSpark ? chartPoints("bikes_total", sparklines, summary) : [];
   const mechPoints = showSpark ? chartPoints("bikes_mechanical", sparklines, summary) : [];
   const ebikePoints = showSpark ? chartPoints("bikes_ebike", sparklines, summary) : [];
-  const oosPoints = showSpark ? chartPoints("pct_oos_fleet", sparklines, summary) : [];
+  const oosAbsPoints = showSpark ? chartPoints("bikes_out_of_service", sparklines, summary) : [];
+  const oosPctPoints = showSpark ? chartPoints("pct_oos_fleet", sparklines, summary) : [];
 
   const chartSubtitle = `Últimes 24 h · ${scopeLabel}`;
   const charts: Record<string, KpiChartSpec | undefined> = showSpark
@@ -243,12 +245,19 @@ export function renderKpis(
               valueFormat: "count",
             }
           : undefined,
-        oos: oosPoints.length
+        oos: oosAbsPoints.length
           ? {
-              title: "Fora de servei (% bicicletes aparcades)",
+              title: "Bicicletes fora de servei",
               subtitle: chartSubtitle,
-              points: oosPoints,
-              valueFormat: "pct",
+              points: oosAbsPoints,
+              valueFormat: "count",
+              secondary: oosPctPoints.length
+                ? {
+                    label: "% bicicletes aparcades",
+                    points: oosPctPoints,
+                    valueFormat: "pct",
+                  }
+                : undefined,
             }
           : undefined,
       }
@@ -264,9 +273,7 @@ export function renderKpis(
   const histEbike = showHist
     ? histNoteCount(summary, hour, "bikes_ebike", t.bikes_ebike, t.capacity, histAvg)
     : "";
-  const histOos = showHist
-    ? histNotePct(summary, hour, "pct_oos_fleet", pctOosFleet, histAvg)
-    : "";
+  const histOos = showHist ? histNoteOos(summary, hour, outOfService, histAvg) : "";
 
   const zeroMech = t.stations_zero_mechanical ?? 0;
   const zeroEbike = t.stations_zero_ebike;
@@ -339,13 +346,13 @@ export function renderKpis(
       )}
       ${kpiCard(
         "oos",
-        oosPoints.length > 1,
+        oosAbsPoints.length > 1,
         `
         <span class="kpi-label">${metricIconHtml("out_of_service", "kpi-icon")} Bicicletes fora de servei</span>
         <strong>${outOfService.toLocaleString("ca-ES")}</strong>
         <small>${formatPct(pctOosFleet)} de bicicletes aparcades · ${formatPct(pctOosAnchors)} dels ancoratges</small>
         ${sparklineSlot(oosValues, statsPending)}
-        ${oosPoints.length > 1 ? sparkHint : ""}
+        ${oosAbsPoints.length > 1 ? sparkHint : ""}
         ${histOos ? `<small class="kpi-hist">${histOos}</small>` : ""}
       `
       )}
