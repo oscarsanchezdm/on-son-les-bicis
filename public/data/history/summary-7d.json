@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-03T12:12:15+00:00",
+  "generated_at": "2026-08-03T13:30:33+00:00",
   "series": [
     {
       "ts": "2026-07-10T08:03:57+00:00",
@@ -11288,6 +11288,20 @@
       "bikes_mechanical": 2763,
       "bikes_ebike": 1789,
       "bikes_out_of_service": 1708
+    },
+    {
+      "ts": "2026-08-03T13:30:33+00:00",
+      "date": "03/08",
+      "hour": 15,
+      "pct_bikes": 30.05,
+      "pct_mechanical": 18.78,
+      "pct_ebike": 11.44,
+      "pct_oos_anchors": 12.03,
+      "pct_oos_fleet": 28.59,
+      "bikes_total": 4411,
+      "bikes_mechanical": 2757,
+      "bikes_ebike": 1679,
+      "bikes_out_of_service": 1766
     }
   ],
   "hourly": [
@@ -17417,9 +17431,9 @@
     },
     {
       "hour": 15,
-      "avg_pct_bikes": 30.2,
+      "avg_pct_bikes": 30.19,
       "avg_pct_mechanical": 18.79,
-      "avg_pct_ebike": 11.65,
+      "avg_pct_ebike": 11.64,
       "samples": [
         {
           "ts": "2026-07-11T13:05:18+00:00",
@@ -17798,11 +17812,25 @@
           "bikes_mechanical": 2769,
           "bikes_ebike": 1741,
           "bikes_out_of_service": 1769
+        },
+        {
+          "ts": "2026-08-03T13:30:33+00:00",
+          "date": "03/08",
+          "hour": 15,
+          "pct_bikes": 30.05,
+          "pct_mechanical": 18.78,
+          "pct_ebike": 11.44,
+          "pct_oos_anchors": 12.03,
+          "pct_oos_fleet": 28.59,
+          "bikes_total": 4411,
+          "bikes_mechanical": 2757,
+          "bikes_ebike": 1679,
+          "bikes_out_of_service": 1766
         }
       ],
       "avg_bikes_total": 4424,
       "avg_bikes_mechanical": 2753,
-      "avg_bikes_ebike": 1707
+      "avg_bikes_ebike": 1706
     },
     {
       "hour": 16,
