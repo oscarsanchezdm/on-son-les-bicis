@@ -122,6 +122,8 @@ let barriSparklineCache: BarriSparklineSeries | null = null;
 let barriSparklineCodi: string | null = null;
 let barriSparklineLoadId = 0;
 let citySparklineCache: BarriSparklineSeries | null = null;
+/** True once we attempted city sparkline load for the current history index (even if empty). */
+let citySparklineLoadDone = false;
 let citySparklineLoadId = 0;
 let histAveragesCache: Partial<Record<SparklineMetricKey, number>> | null = null;
 let histAveragesKey: string | null = null;
@@ -187,7 +189,8 @@ async function refreshHistoryIndex(): Promise<void> {
 
 function scheduleBarriSparklineLoad(): void {
   if (!historyIndex || selectedStation || !selectedBarri || isHistoricalView(timeView)) return;
-  if (barriSparklineCodi === selectedBarri.barri_codi && barriSparklineCache) return;
+  // Ja s'ha intentat per aquest barri (cache pot ser null si no hi ha fitxers recents).
+  if (barriSparklineCodi === selectedBarri.barri_codi) return;
 
   const codi = selectedBarri.barri_codi;
   const loadId = ++barriSparklineLoadId;
@@ -201,7 +204,7 @@ function scheduleBarriSparklineLoad(): void {
 
 function scheduleStationSparklineLoad(): void {
   if (!historyIndex || !selectedStation || isHistoricalView(timeView)) return;
-  if (stationSparklineId === selectedStation.station_id && stationSparklineCache) return;
+  if (stationSparklineId === selectedStation.station_id) return;
 
   const station = selectedStation;
   const loadId = ++stationSparklineLoadId;
@@ -220,14 +223,18 @@ function scheduleStationSparklineLoad(): void {
 
 function scheduleCitySparklineLoad(): void {
   if (!historyIndex || selectedBarri || selectedStation || isHistoricalView(timeView)) return;
-  if (citySparklineCache) return;
+  if (citySparklineCache || citySparklineLoadDone) return;
   // summary-7d ja alimenta les minigràfiques de ciutat; evita 24 peticions horàries.
-  if (summaryData?.series?.length) return;
+  if (summaryData?.series?.length) {
+    citySparklineLoadDone = true;
+    return;
+  }
 
   const loadId = ++citySparklineLoadId;
   void loadCitySparklineSeriesRecent(historyIndex).then((series) => {
     if (loadId !== citySparklineLoadId) return;
     citySparklineCache = series;
+    citySparklineLoadDone = true;
     void refresh();
   });
 }
@@ -687,7 +694,7 @@ function statsPending(): boolean {
     return barriSparklineCodi !== selectedBarri.barri_codi;
   }
   // Ciutat: summary-7d és suficient per les minigràfiques.
-  return !(summaryData?.series?.length || citySparklineCache);
+  return !(summaryData?.series?.length || citySparklineCache || citySparklineLoadDone);
 }
 
 async function refresh() {
