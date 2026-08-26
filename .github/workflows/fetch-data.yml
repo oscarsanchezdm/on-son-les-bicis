@@ -5,23 +5,15 @@ on:
     # Cada 30 min (UTC), desplaçat +7 min per evitar col·lisions de GitHub a :00/:30
     - cron: "7,37 * * * *"
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths-ignore:
-      - "public/data/**"
 
 concurrency:
-  group: bicing-pipeline
+  group: bicing-ingest
   cancel-in-progress: true
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 jobs:
-  # Ingest no depèn de l'environment github-pages (que pot quedar bloquejat
-  # si un deploy queda en "waiting"). Així les dades es continuen actualitzant.
   ingest:
     runs-on: ubuntu-latest
     steps:
@@ -70,35 +62,3 @@ jobs:
               sleep $((attempt * 4))
             done
           fi
-
-  deploy:
-    needs: ingest
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: main
-          fetch-depth: 0
-
-      - name: Sync latest data commit
-        run: git pull --ff-only origin main
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-
-      - name: Build site
-        run: |
-          npm install
-          npm run build
-
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
-
-      - id: deployment
-        uses: actions/deploy-pages@v4

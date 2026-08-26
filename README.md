@@ -18,8 +18,8 @@ Eina periodística per visualitzar la disponibilitat de bicicletes del Bicing a 
 
 ## Arquitectura
 
-1. **GitHub Actions** (`fetch-data.yml`): cada **30 min** consulta Open Data BCN amb el secret `BICING_TOKEN` (mateixes URLs que bicing-hassio); si falla, usa GBFS com a fallback. Exporta JSON i fa commit a `public/data/`
-2. **GitHub Pages** (`pages.yml`): frontend estàtic (Vite + Leaflet) que llegeix `public/data/*.json`. Es desplega en canvis de codi, **després de cada fetch** (`workflow_run`) i cada 30 min (`schedule`), perquè els commits automàtics de dades no disparen altres workflows.
+1. **GitHub Actions — ingest** (`fetch-data.yml`): cada **30 min** (UTC, a :07 i :37) consulta Open Data BCN amb el secret `BICING_TOKEN` (mateixes URLs que bicing-hassio); si falla, usa GBFS com a fallback. Exporta JSON i fa commit a `public/data/`.
+2. **GitHub Actions — deploy** (`deploy-pages.yml`): frontend estàtic (Vite + Leaflet) que llegeix `public/data/*.json`. Es desplega en canvis de codi (`push` a `main`) i **després de cada ingest exitós** (`workflow_run`), perquè els commits automàtics de dades no disparen altres workflows.
 
 El repo és **públic**, així que les Actions no consumeixen minuts de facturació.
 
