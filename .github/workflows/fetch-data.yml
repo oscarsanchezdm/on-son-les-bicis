@@ -12,7 +12,7 @@ on:
 
 concurrency:
   group: bicing-pipeline
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 permissions:
   contents: write
@@ -20,11 +20,10 @@ permissions:
   id-token: write
 
 jobs:
-  fetch-and-deploy:
+  # Ingest no depèn de l'environment github-pages (que pot quedar bloquejat
+  # si un deploy queda en "waiting"). Així les dades es continuen actualitzant.
+  ingest:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -71,6 +70,22 @@ jobs:
               sleep $((attempt * 4))
             done
           fi
+
+  deploy:
+    needs: ingest
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Sync latest data commit
+        run: git pull --ff-only origin main
 
       - uses: actions/setup-node@v4
         with:
