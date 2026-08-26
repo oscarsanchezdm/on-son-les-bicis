@@ -7,8 +7,9 @@ on:
   workflow_dispatch:
 
 concurrency:
+  # No cancel·lar runs en curs: evita que el cron es mengi sol quan s'acumula cua
   group: bicing-ingest
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: write
