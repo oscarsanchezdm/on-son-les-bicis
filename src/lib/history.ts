@@ -138,6 +138,13 @@ async function loadHourlySnapshot(key: string): Promise<HourlySnapshot | null> {
   return promise;
 }
 
+/** Load many hourly snapshots in parallel (order of keys preserved). */
+async function loadHourlySnapshots(
+  keys: string[]
+): Promise<Array<HourlySnapshot | null>> {
+  return Promise.all(keys.map((key) => loadHourlySnapshot(key)));
+}
+
 export async function loadSummary7d(): Promise<Summary7d | null> {
   const res = await fetch(`${BASE}data/history/summary-7d.json`);
   if (!res.ok) return null;
@@ -804,8 +811,12 @@ export async function loadBarriSparklineSeries(
   const labels: string[] = [];
   const keys: string[] = [];
 
-  for (const file of recentHistoryFiles(index, hours)) {
-    const snapshot = await loadHourlySnapshot(file.key);
+  const files = recentHistoryFiles(index, hours);
+  const snapshots = await loadHourlySnapshots(files.map((f) => f.key));
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i]!;
+    const snapshot = snapshots[i];
     const barris = snapshot?.barris ?? [];
     const b = barris.find((x) => x.barri_codi === barriCodi);
     if (!b || b.capacity_total <= 0) continue;
@@ -869,8 +880,12 @@ export async function loadStationSparklineSeries(
   const labels: string[] = [];
   const keys: string[] = [];
 
-  for (const file of recentHistoryFiles(index, hours)) {
-    const snapshot = await loadHourlySnapshot(file.key);
+  const files = recentHistoryFiles(index, hours);
+  const snapshots = await loadHourlySnapshots(files.map((f) => f.key));
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i]!;
+    const snapshot = snapshots[i];
     const tuple = snapshot?.v?.[idx];
     if (!tuple) continue;
     const [mechanical, ebike, total, docks, bikes_disabled, docks_disabled] = tuple;
@@ -932,8 +947,12 @@ export async function loadCitySparklineSeriesRecent(
   const labels: string[] = [];
   const keys: string[] = [];
 
-  for (const file of recentHistoryFiles(index, hours)) {
-    const snapshot = await loadHourlySnapshot(file.key);
+  const files = recentHistoryFiles(index, hours);
+  const snapshots = await loadHourlySnapshots(files.map((f) => f.key));
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i]!;
+    const snapshot = snapshots[i];
     const barris = snapshot?.barris ?? [];
     if (!barris.length) continue;
 
@@ -1011,8 +1030,10 @@ export async function barriHistAveragesAtHour(
   const pct_oos_anchors: number[] = [];
   const pct_oos_fleet: number[] = [];
 
-  for (const file of matches) {
-    const snapshot = await loadHourlySnapshot(file.key);
+  const snapshots = await loadHourlySnapshots(matches.map((f) => f.key));
+
+  for (let i = 0; i < matches.length; i++) {
+    const snapshot = snapshots[i];
     const b = snapshot?.barris?.find((x) => x.barri_codi === barriCodi);
     if (!b || b.capacity_total <= 0) continue;
     const oos = bikesOutOfService(
@@ -1062,8 +1083,9 @@ export async function cityHistAveragesAtHour(
   const bikes_out_of_service: number[] = [];
   const pct_oos_fleet: number[] = [];
 
-  for (const file of matches) {
-    const snapshot = await loadHourlySnapshot(file.key);
+  const snapshots = await loadHourlySnapshots(matches.map((f) => f.key));
+
+  for (const snapshot of snapshots) {
     const barris = snapshot?.barris ?? [];
     if (!barris.length) continue;
 
@@ -1164,11 +1186,15 @@ export async function loadStationSparklinePct(
   if (idx < 0) return [];
 
   const cutoffKey = historyCutoffKeyUtc(hours);
+  const files = [...index.files]
+    .filter((f) => f.key >= cutoffKey)
+    .sort((a, b) => a.key.localeCompare(b.key));
+  const snapshots = await loadHourlySnapshots(files.map((f) => f.key));
   const points: ChartPoint[] = [];
 
-  for (const file of [...index.files].sort((a, b) => a.key.localeCompare(b.key))) {
-    if (file.key < cutoffKey) continue;
-    const snapshot = await loadHourlySnapshot(file.key);
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i]!;
+    const snapshot = snapshots[i];
     const tuple = snapshot?.v?.[idx];
     if (!tuple) continue;
     points.push({
@@ -1191,11 +1217,15 @@ export async function loadBarriSparklinePct(
   if (!index?.files?.length) return [];
 
   const cutoffKey = historyCutoffKeyUtc(hours);
+  const files = [...index.files]
+    .filter((f) => f.key >= cutoffKey)
+    .sort((a, b) => a.key.localeCompare(b.key));
+  const snapshots = await loadHourlySnapshots(files.map((f) => f.key));
   const points: ChartPoint[] = [];
 
-  for (const file of [...index.files].sort((a, b) => a.key.localeCompare(b.key))) {
-    if (file.key < cutoffKey) continue;
-    const snapshot = await loadHourlySnapshot(file.key);
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i]!;
+    const snapshot = snapshots[i];
     const b = snapshot?.barris?.find((x) => x.barri_codi === barriCodi);
     if (!b || b.capacity_total <= 0) continue;
     points.push({

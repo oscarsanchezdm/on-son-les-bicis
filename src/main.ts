@@ -221,6 +221,8 @@ function scheduleStationSparklineLoad(): void {
 function scheduleCitySparklineLoad(): void {
   if (!historyIndex || selectedBarri || selectedStation || isHistoricalView(timeView)) return;
   if (citySparklineCache) return;
+  // summary-7d ja alimenta les minigràfiques de ciutat; evita 24 peticions horàries.
+  if (summaryData?.series?.length) return;
 
   const loadId = ++citySparklineLoadId;
   void loadCitySparklineSeriesRecent(historyIndex).then((series) => {
@@ -240,7 +242,14 @@ function histAveragesScopeKey(): string | null {
 function scheduleHistAveragesLoad(): void {
   const scopeKey = histAveragesScopeKey();
   if (!historyIndex || !scopeKey) return;
-  if (histAveragesKey === scopeKey && histAveragesCache) return;
+  if (histAveragesKey === scopeKey) return;
+
+  // Ciutat: les mitjanes horàries de summary-7d ja cobreixen la nota del KPI.
+  if (!selectedBarri && summaryData?.hourly?.length) {
+    histAveragesKey = scopeKey;
+    histAveragesCache = null;
+    return;
+  }
 
   const loadId = ++histAveragesLoadId;
   const hour = currentMadridHour();
@@ -554,10 +563,7 @@ function updateTimelineStatus() {
   }
 
   if (timeView.kind === "latest") {
-    if (historyLoading) {
-      setTimelineStatus(timelineEl, "Carregant dades…");
-      return;
-    }
+    // Històric/sparklines es carreguen en background; no bloquegen la navegació.
     setTimelineStatus(timelineEl, formatRelativeTime(latestData.last_updated));
     return;
   }
@@ -680,7 +686,8 @@ function statsPending(): boolean {
   if (selectedBarri) {
     return barriSparklineCodi !== selectedBarri.barri_codi;
   }
-  return !citySparklineCache;
+  // Ciutat: summary-7d és suficient per les minigràfiques.
+  return !(summaryData?.series?.length || citySparklineCache);
 }
 
 async function refresh() {
