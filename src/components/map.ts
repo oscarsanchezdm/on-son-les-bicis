@@ -105,12 +105,16 @@ export function createMap(
   const stationPane = map.createPane("stationPane", rotatePane);
   stationPane.style.zIndex = "450";
 
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
-    attribution:
-      '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> · <a href="https://carto.com/">CARTO</a>',
-    subdomains: "abcd",
-    maxZoom: 20,
-  }).addTo(map);
+  // CARTO basemaps.cartocdn.com ara exigeix API key (watermark "API key needed").
+  // Esri World Light Gray: estil clar similar, sense clau al client.
+  L.tileLayer(
+    "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+    {
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> · &copy; <a href="https://www.esri.com/">Esri</a>',
+      maxZoom: 16,
+    }
+  ).addTo(map);
 
   const stationLayer = L.layerGroup().addTo(map);
   const offlineStationLayer = L.layerGroup().addTo(map);
