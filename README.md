@@ -18,22 +18,12 @@ Eina periodística per visualitzar la disponibilitat de bicicletes del Bicing a 
 
 ## Arquitectura
 
-1. **GitHub Actions — ingest** (`fetch-data.yml`): consulta Open Data BCN amb el secret `BICING_TOKEN` (mateixes URLs que bicing-hassio); si falla, usa GBFS com a fallback. Exporta JSON i fa commit a `public/data/`.
-2. **GitHub Actions — deploy** (`deploy-pages.yml`): frontend estàtic (Vite + Leaflet) que llegeix `public/data/*.json`. Es desplega en canvis de codi (`push` a `main`) i **després de cada ingest exitós** (`workflow_run`), perquè els commits automàtics de dades no disparen altres workflows.
+1. **GitHub Actions** (`bicing.yml`): cada **30 min** (UTC, a :07 i :37) consulta Open Data BCN amb el secret `BICING_TOKEN` (mateixes URLs que bicing-hassio); si falla, usa GBFS com a fallback. Exporta JSON, fa commit a `public/data/` i desplega el frontend a GitHub Pages.
+2. El job `ingest` no usa l’environment `github-pages` (només `deploy`), així un deploy bloquejat no atura l’actualització de dades. Els commits a `public/data/` no tornen a disparar el workflow (`paths-ignore`).
 
 El repo és **públic**, així que les Actions no consumeixen minuts de facturació.
 
-### Freqüència d’actualització
-
-El `schedule` de GitHub Actions és **best-effort**: pot retardar-se o saltar-se runs sota càrrega (la doc oficial ho diu). En la pràctica, amb un cron «cada 30 min» sovint només s’executa **1–2 vegades per hora**, i de nit encara menys. No deixa rastre dels runs saltats.
-
-Per aproximar-se als **~30 min de forma fiable**, afegeix el secret `INGEST_CHAIN_TOKEN`:
-
-1. Crea un [fine-grained PAT](https://github.com/settings/personal-access-tokens) (o classic amb abast `workflow`) amb permís **Actions: Read and write** sobre aquest repo.
-2. Repo → **Settings → Secrets and variables → Actions** → secret `INGEST_CHAIN_TOKEN` amb el token.
-3. Llança un cop **Actions → Fetch Bicing data → Run workflow**. Després de cada ingest exitós, el job `chain-next` espera ~28 min i dispara el següent. El cron de GitHub queda com a xarxa de seguretat si la cadena es trenca.
-
-Alternativa sense cadena interna: un cron extern (p. ex. [cron-job.org](https://cron-job.org)) que faci `POST` a l’API amb `repository_dispatch` i `event_type: bicing-ingest` (també cal un PAT).
+> **Nota:** el `schedule` de GitHub és best-effort (pot retardar-se o saltar runs sense log). Si deixa de disparar, ves a **Actions → Bicing** i comprova que el workflow estigui habilitat («Enable workflow»).
 
 ### Històric (30 dies)
 
