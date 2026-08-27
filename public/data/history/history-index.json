@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-27T14:43:47+00:00",
+  "generated_at": "2026-08-27T21:55:52+00:00",
   "timezone": "Europe/Madrid",
   "hoursByDayType": {
     "weekday": [
@@ -100,48 +100,6 @@
     ]
   },
   "files": [
-    {
-      "key": "2026-07-28-15",
-      "localDate": "2026-07-28",
-      "localHour": 17,
-      "dayType": "weekday"
-    },
-    {
-      "key": "2026-07-28-16",
-      "localDate": "2026-07-28",
-      "localHour": 18,
-      "dayType": "weekday"
-    },
-    {
-      "key": "2026-07-28-17",
-      "localDate": "2026-07-28",
-      "localHour": 19,
-      "dayType": "weekday"
-    },
-    {
-      "key": "2026-07-28-18",
-      "localDate": "2026-07-28",
-      "localHour": 20,
-      "dayType": "weekday"
-    },
-    {
-      "key": "2026-07-28-19",
-      "localDate": "2026-07-28",
-      "localHour": 21,
-      "dayType": "weekday"
-    },
-    {
-      "key": "2026-07-28-20",
-      "localDate": "2026-07-28",
-      "localHour": 22,
-      "dayType": "weekday"
-    },
-    {
-      "key": "2026-07-28-21",
-      "localDate": "2026-07-28",
-      "localHour": 23,
-      "dayType": "weekday"
-    },
     {
       "key": "2026-07-28-22",
       "localDate": "2026-07-29",
@@ -1172,6 +1130,12 @@
       "key": "2026-08-27-14",
       "localDate": "2026-08-27",
       "localHour": 16,
+      "dayType": "weekday"
+    },
+    {
+      "key": "2026-08-27-21",
+      "localDate": "2026-08-27",
+      "localHour": 23,
       "dayType": "weekday"
     }
   ]
