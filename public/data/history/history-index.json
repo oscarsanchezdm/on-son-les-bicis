@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-28T04:29:01+00:00",
+  "generated_at": "2026-08-28T16:54:50+00:00",
   "timezone": "Europe/Madrid",
   "hoursByDayType": {
     "weekday": [
@@ -11,7 +11,6 @@
       6,
       8,
       9,
-      10,
       11,
       12,
       13,
@@ -100,72 +99,6 @@
     ]
   },
   "files": [
-    {
-      "key": "2026-07-29-06",
-      "localDate": "2026-07-29",
-      "localHour": 8,
-      "dayType": "weekday"
-    },
-    {
-      "key": "2026-07-29-07",
-      "localDate": "2026-07-29",
-      "localHour": 9,
-      "dayType": "weekday"
-    },
-    {
-      "key": "2026-07-29-08",
-      "localDate": "2026-07-29",
-      "localHour": 10,
-      "dayType": "weekday"
-    },
-    {
-      "key": "2026-07-29-09",
-      "localDate": "2026-07-29",
-      "localHour": 11,
-      "dayType": "weekday"
-    },
-    {
-      "key": "2026-07-29-10",
-      "localDate": "2026-07-29",
-      "localHour": 12,
-      "dayType": "weekday"
-    },
-    {
-      "key": "2026-07-29-11",
-      "localDate": "2026-07-29",
-      "localHour": 13,
-      "dayType": "weekday"
-    },
-    {
-      "key": "2026-07-29-12",
-      "localDate": "2026-07-29",
-      "localHour": 14,
-      "dayType": "weekday"
-    },
-    {
-      "key": "2026-07-29-13",
-      "localDate": "2026-07-29",
-      "localHour": 15,
-      "dayType": "weekday"
-    },
-    {
-      "key": "2026-07-29-14",
-      "localDate": "2026-07-29",
-      "localHour": 16,
-      "dayType": "weekday"
-    },
-    {
-      "key": "2026-07-29-15",
-      "localDate": "2026-07-29",
-      "localHour": 17,
-      "dayType": "weekday"
-    },
-    {
-      "key": "2026-07-29-16",
-      "localDate": "2026-07-29",
-      "localHour": 18,
-      "dayType": "weekday"
-    },
     {
       "key": "2026-07-29-17",
       "localDate": "2026-07-29",
@@ -1106,6 +1039,12 @@
       "key": "2026-08-28-04",
       "localDate": "2026-08-28",
       "localHour": 6,
+      "dayType": "friday"
+    },
+    {
+      "key": "2026-08-28-16",
+      "localDate": "2026-08-28",
+      "localHour": 18,
       "dayType": "friday"
     }
   ]
