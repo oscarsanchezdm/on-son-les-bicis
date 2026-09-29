@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-28T22:38:43+00:00",
+  "generated_at": "2026-09-29T02:33:50+00:00",
   "timezone": "Europe/Madrid",
   "hoursByDayType": {
     "weekday": [
@@ -7,6 +7,7 @@
       1,
       2,
       3,
+      4,
       6,
       7,
       8,
@@ -85,18 +86,6 @@
     ]
   },
   "files": [
-    {
-      "key": "2026-08-29-23",
-      "localDate": "2026-08-30",
-      "localHour": 1,
-      "dayType": "sunday"
-    },
-    {
-      "key": "2026-08-30-01",
-      "localDate": "2026-08-30",
-      "localHour": 3,
-      "dayType": "sunday"
-    },
     {
       "key": "2026-08-30-08",
       "localDate": "2026-08-30",
@@ -1187,6 +1176,12 @@
       "key": "2026-09-28-22",
       "localDate": "2026-09-29",
       "localHour": 0,
+      "dayType": "weekday"
+    },
+    {
+      "key": "2026-09-29-02",
+      "localDate": "2026-09-29",
+      "localHour": 4,
       "dayType": "weekday"
     }
   ]
