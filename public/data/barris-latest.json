@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-03T20:13:10+00:00",
+  "last_updated": "2026-10-03T23:19:04+00:00",
   "barris": [
     {
       "barri_codi": "0205",
@@ -1322,6 +1322,28 @@
       "docks_disabled_total": 0
     },
     {
+      "barri_codi": "0314",
+      "barri_nom": "la Font de la Guatlla",
+      "stations_count": 2,
+      "stations_active": 1,
+      "capacity_total": 16,
+      "docks_available_total": 14,
+      "bikes_mechanical": 0,
+      "bikes_ebike": 0,
+      "bikes_total": 0,
+      "pct_bikes": 0.0,
+      "pct_docks_free": 87.5,
+      "pct_mechanical": 0.0,
+      "pct_ebike": 0.0,
+      "stations_zero_ebike": 1,
+      "stations_zero_mechanical": 1,
+      "stations_zero_any": 1,
+      "superficie_ha": 0.0,
+      "bikes_out_of_service": 2,
+      "pct_bikes_out_of_service": 12.5,
+      "docks_disabled_total": 0
+    },
+    {
       "barri_codi": "0739",
       "barri_nom": "Sant Genís dels Agudells",
       "stations_count": 2,
@@ -1386,28 +1408,6 @@
       "bikes_out_of_service": 1,
       "pct_bikes_out_of_service": 2.7,
       "docks_disabled_total": 1
-    },
-    {
-      "barri_codi": "0314",
-      "barri_nom": "la Font de la Guatlla",
-      "stations_count": 2,
-      "stations_active": 1,
-      "capacity_total": 16,
-      "docks_available_total": 12,
-      "bikes_mechanical": 0,
-      "bikes_ebike": 2,
-      "bikes_total": 2,
-      "pct_bikes": 12.5,
-      "pct_docks_free": 75.0,
-      "pct_mechanical": 0.0,
-      "pct_ebike": 12.5,
-      "stations_zero_ebike": 0,
-      "stations_zero_mechanical": 1,
-      "stations_zero_any": 0,
-      "superficie_ha": 0.0,
-      "bikes_out_of_service": 2,
-      "pct_bikes_out_of_service": 12.5,
-      "docks_disabled_total": 0
     }
   ]
 }
