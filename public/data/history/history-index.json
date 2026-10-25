@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-25T10:07:18+00:00",
+  "generated_at": "2026-10-25T14:22:13+00:00",
   "timezone": "Europe/Madrid",
   "hoursByDayType": {
     "weekday": [
@@ -998,6 +998,12 @@
       "key": "2026-10-25-10",
       "localDate": "2026-10-25",
       "localHour": 11,
+      "dayType": "sunday"
+    },
+    {
+      "key": "2026-10-25-14",
+      "localDate": "2026-10-25",
+      "localHour": 15,
       "dayType": "sunday"
     }
   ]
