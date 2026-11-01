@@ -1,8 +1,8 @@
 {
-  "last_updated": "2026-11-01T05:54:43+00:00",
-  "exported_at": "2026-11-01T05:54:43.805937+00:00",
+  "last_updated": "2026-11-01T13:13:30+00:00",
+  "exported_at": "2026-11-01T13:13:30.419824+00:00",
   "source": "Bicing (GBFS (B:SM))",
-  "station_count": 513,
+  "station_count": 539,
   "barri_count": 65,
   "disclaimer": "Dades amb retard d'uns minuts. Només estacions en servei entren als percentatges agregats."
 }
