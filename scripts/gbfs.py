@@ -2,11 +2,9 @@
 
 from __future__ import annotations
 
-import json
-import time
 from typing import Any
 
-import requests
+from http_json import fetch_json
 
 GBFS_STATION_INFO_URL = (
     "https://barcelona.publicbikesystem.net/customer/gbfs/v3.0/station_information"
@@ -29,22 +27,7 @@ EBIKE_TYPES = frozenset({"BOOST", "EFIT"})
 
 
 def _fetch_json(url: str, retries: int = 3) -> dict[str, Any]:
-    last_error: Exception | None = None
-    for attempt in range(1, retries + 1):
-        try:
-            resp = requests.get(url, headers=_HTTP_HEADERS, timeout=30)
-            if not resp.ok:
-                raise RuntimeError(
-                    f"HTTP {resp.status_code} from {url}: {resp.text[:300]}"
-                )
-            return resp.json()
-        except (requests.RequestException, json.JSONDecodeError, RuntimeError) as exc:
-            last_error = exc
-            if attempt < retries:
-                time.sleep(2 * attempt)
-    raise RuntimeError(
-        f"Failed to fetch {url} after {retries} attempts: {last_error}"
-    ) from last_error
+    return fetch_json(url, headers=_HTTP_HEADERS, timeout=30, retries=retries)
 
 
 def _localized_name(value: Any) -> str:

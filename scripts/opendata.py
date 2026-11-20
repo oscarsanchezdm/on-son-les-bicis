@@ -7,12 +7,10 @@ from __future__ import annotations
 
 import json
 import sys
-import time
 from typing import Any
 
-import requests
-
 from config import BICING_TOKEN, DATA_DIR, STATION_INFO_URL, STATION_STATUS_URL
+from http_json import fetch_json
 
 
 def _mask_token(token: str, prefix: int = 4, suffix: int = 4) -> str:
@@ -58,39 +56,17 @@ def _headers() -> dict[str, str]:
 
 
 def _fetch_json(url: str, retries: int = 3) -> dict[str, Any]:
-    last_error: Exception | None = None
-    for attempt in range(1, retries + 1):
-        try:
-            resp = requests.get(
-                url,
-                headers=_headers(),
-                timeout=30,
-                allow_redirects=False,
-            )
-            if resp.status_code in {301, 302, 303, 307, 308}:
-                location = resp.headers.get("Location", "")
-                raise RuntimeError(
-                    f"Redirected to {location or 'unknown'} — token invàlid o bot detection"
-                )
-            if not resp.ok:
-                raise RuntimeError(
-                    f"HTTP {resp.status_code} from {url}: {resp.text[:300]}"
-                )
-            try:
-                return resp.json()
-            except json.JSONDecodeError as exc:
-                snippet = resp.text[:300].replace("\n", " ")
-                raise RuntimeError(
-                    f"Non-JSON response from {url} (HTTP {resp.status_code}): {snippet}"
-                ) from exc
-        except (requests.RequestException, RuntimeError) as exc:
-            last_error = exc
-            if attempt < retries:
-                time.sleep(2 * attempt)
-    _log_opendata_failure(url, last_error or RuntimeError("unknown error"))
-    raise RuntimeError(
-        f"Failed to fetch {url} after {retries} attempts: {last_error}"
-    ) from last_error
+    try:
+        return fetch_json(
+            url,
+            headers=_headers(),
+            timeout=30,
+            retries=retries,
+            allow_redirects=False,
+        )
+    except Exception as exc:  # noqa: BLE001
+        _log_opendata_failure(url, exc)
+        raise
 
 
 def _load_cached_station_info() -> dict[str, dict[str, Any]]:

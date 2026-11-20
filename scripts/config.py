@@ -5,14 +5,46 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from dotenv import load_dotenv
+
+def _load_dotenv(path: Path) -> None:
+    """Load KEY=VALUE pairs without requiring python-dotenv."""
+    try:
+        from dotenv import load_dotenv
+
+        load_dotenv(path)
+        return
+    except ImportError:
+        pass
+
+    if not path.is_file():
+        return
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        key = key.strip()
+        value = value.strip().strip("'").strip('"')
+        if key and key not in os.environ:
+            os.environ[key] = value
+
 
 ROOT = Path(__file__).resolve().parents[1]
-DATA_DIR = ROOT / "public" / "data"
+_load_dotenv(ROOT / ".env")
+
+DATA_DIR = Path(os.environ.get("DATA_DIR", ROOT / "public" / "data"))
 STATIC_DIR = DATA_DIR / "static"
 DB_PATH = Path(os.environ.get("DB_PATH", ROOT / "db" / "history.db"))
 BARRIS_GEOJSON = STATIC_DIR / "barris.geojson"
 SUPERFICIE_CSV = STATIC_DIR / "est-superficie.csv"
+# Optional: after export, copy JSON/GeoJSON here (e.g. ~/public_html/data)
+WEB_DATA_DIR = os.environ.get("WEB_DATA_DIR", "").strip()
+
+# SQLite retention (snapshots + barri_snapshots). 0 = no prune. Default ~6 months.
+try:
+    DB_RETENTION_DAYS = int(os.environ.get("DB_RETENTION_DAYS", "180").strip() or "180")
+except ValueError:
+    DB_RETENTION_DAYS = 180
 
 STATION_INFO_URL = (
     "https://opendata-ajuntament.barcelona.cat/data/dataset/"
@@ -31,7 +63,6 @@ BARRIS_SOURCE_URL = (
     "cd800462-f326-429f-a67a-c69b7fc4c50a/download"
 )
 
-load_dotenv(ROOT / ".env")
 _raw_token = os.environ.get("BICING_TOKEN", "").strip()
 if _raw_token.startswith("BICING_TOKEN="):
     _raw_token = _raw_token.split("=", 1)[1].strip()

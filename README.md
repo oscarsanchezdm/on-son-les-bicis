@@ -4,7 +4,7 @@ Eina periodística per visualitzar la disponibilitat de bicicletes del Bicing a 
 
 ## Dades
 
-- [Estat d'estacions Bicing (Open Data)](https://opendata-ajuntament.barcelona.cat/data/ca/dataset/estat-estacions-bicing) (font principal a GitHub Actions, requereix `BICING_TOKEN` — mateix API que [bicing-hassio](https://github.com/oscarsanchezdm/bicing-hassio))
+- [Estat d'estacions Bicing (Open Data)](https://opendata-ajuntament.barcelona.cat/data/ca/dataset/estat-estacions-bicing) (font principal, requereix `BICING_TOKEN` — mateix API que [bicing-hassio](https://github.com/oscarsanchezdm/bicing-hassio))
 - [GBFS Bicing](https://barcelona.publicbikesystem.net/customer/gbfs/v3.0/gbfs.json) (fallback sense token si Open Data falla)
 - [Informació d'estacions](https://opendata-ajuntament.barcelona.cat/data/ca/dataset/informacio-estacions-bicing)
 - [Unitats administratives (barris)](https://opendata-ajuntament.barcelona.cat/data/ca/dataset/20170706-districtes-barris)
@@ -18,73 +18,54 @@ Eina periodística per visualitzar la disponibilitat de bicicletes del Bicing a 
 
 ## Arquitectura
 
-1. **GitHub Actions** (`bicing.yml`): cada **30 min** (UTC, a :07 i :37) consulta Open Data BCN amb el secret `BICING_TOKEN` (mateixes URLs que bicing-hassio); si falla, usa GBFS com a fallback. Exporta JSON, fa commit a `public/data/` i desplega el frontend a GitHub Pages.
-2. El job `ingest` no usa l’environment `github-pages` (només `deploy`), així un deploy bloquejat no atura l’actualització de dades. Els commits a `public/data/` no tornen a disparar el workflow (`paths-ignore`).
+Hi ha dues maneres de mantenir les dades al dia (escull-ne una):
 
-El repo és **públic**, així que les Actions no consumeixen minuts de facturació.
+1. **GitHub Actions** (`bicing.yml`): cada **30 min** (UTC, :07 i :37) consulta Open Data / GBFS, fa commit a `public/data/` i desplega a GitHub Pages. El job `ingest` no depèn de l’environment `github-pages` (només `deploy`).
+2. **Hosting compartit sense Docker** (p. ex. Dinahosting): Python 3.9 + cron + web estàtica. Guia: [docs/SHARED_HOSTING.md](docs/SHARED_HOSTING.md).
 
-> **Nota:** el `schedule` de GitHub és best-effort (pot retardar-se o saltar runs sense log). Si deixa de disparar, ves a **Actions → Bicing** i comprova que el workflow estigui habilitat («Enable workflow»).
+El pipeline Python d’ingestió/exportació **no depèn de Docker** ni de `pip`: funciona amb la biblioteca estàndard (compatible amb Python 3.9.2). Node només cal per construir el frontend.
 
-### Històric (30 dies)
+> **Nota (GitHub Actions):** el `schedule` és best-effort. Si deixa de disparar, ves a **Actions → Bicing** i comprova que el workflow estigui habilitat.
 
-- Fitxers `history/hourly/YYYY-MM-DD-HH.json.gz`: agregats per **barri** i tuples compactes per **estació** (`v`: `[mecànica, elèctrica, total, ancoratges, FS]`)
-- `station-ids.json`: ordre estable dels IDs (índex de `v`)
-- El client carrega un sol fitxer horari sota demanda (selector de franja) i reconstrueix barris + estacions sense descarregar tot l’històric
+### Històric
 
-## Publicar a GitHub
+- **Web (JSON):** `history/hourly/YYYY-MM-DD-HH.json.gz` es reté **30 dies** (selector de franja al client).
+- **SQLite (`db/history.db`, hosting propi):** reté **180 dies** per defecte (`DB_RETENTION_DAYS`; `0` = sense prune). A GitHub Actions el DB és efímer.
+- Tuples d’estació: `v` = `[mecànica, elèctrica, total, ancoratges, FS]`; `station-ids.json` fixa l’ordre dels IDs.
 
-```bash
-# 1. Crea el repo (amb GitHub CLI)
-chmod +x scripts/publish_github.sh
-./scripts/publish_github.sh
-
-# O manualment:
-# - Crea https://github.com/new → on-son-les-bicis
-# - git remote add origin https://github.com/oscarsanchezdm/on-son-les-bicis.git
-# - git push -u origin main
-# - Settings → Secrets → BICING_TOKEN
-# - Settings → Pages → Build: GitHub Actions
-```
-
-<!--
-=============================================================================
-DESACTIVAT (juliol 2026): desenvolupament local i servidor propi.
-El pipeline actiu és 100% GitHub Actions + GitHub Pages.
-Es conserva per futures consultes / reactivació.
-=============================================================================
-
-## Desenvolupament local
+## Desenvolupament local (sense Docker)
 
 ```bash
-cp .env.example .env   # opcional: BICING_TOKEN només per fallback Open Data
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-python scripts/fetch_static_data.py
-python scripts/init_db.py
-python scripts/ingest.py
-python scripts/export.py
+cp .env.example .env   # opcional: BICING_TOKEN
+python3 scripts/init_db.py
+python3 scripts/ingest.py
+python3 scripts/export.py
 npm install && npm run dev
 ```
 
-## Desplegament al servidor (`10.10.100.104`)
+`pip install -r requirements.txt` és opcional (requests/dotenv/pyproj). El cron no els necessita. Per regenerar `barris.geojson` cal `pyproj` i `python3 scripts/fetch_static_data.py --force` (al servidor n’hi ha prou amb el fitxer ja inclòs al repo).
+
+## Hosting compartit (Dinahosting)
 
 ```bash
-# Genera deploy key i afegeix-la al repo GitHub (Settings → Deploy keys)
-./scripts/setup_deploy_key.sh
-
-# Provisiona el contenidor (requereix paramiko: pip install paramiko)
-export INGEST_PASSWORD=cursor   # o la contrasenya real
-export BICING_TOKEN=...         # o deixa que ho llegeixi de .env
-python3 scripts/setup_server.py
-
-# O manualment a /root/on-son-les-bicis:
-git clone git@github.com:oscarsanchezdm/on-son-les-bicis.git .
-cp .env.example .env   # afegir BICING_TOKEN
-mkdir -p db deploy/ssh
-cp deploy/ssh/id_ed25519 deploy/ssh/
-docker compose up -d --build
+./scripts/setup_shared_hosting.sh
+# Cron:
+# */30 * * * * /home/USUARI/on-son-les-bicis/scripts/run_update.sh >> .../logs/bicing.log 2>&1
+npm install && npm run build:root   # puja dist/ a public_html
 ```
--->
+
+Detalls: [docs/SHARED_HOSTING.md](docs/SHARED_HOSTING.md).
+
+## Publicar a GitHub Pages
+
+```bash
+chmod +x scripts/publish_github.sh
+./scripts/publish_github.sh
+# Settings → Secrets → BICING_TOKEN
+# Settings → Pages → Build: GitHub Actions
+```
+
+Més: [docs/GITHUB_PAGES.md](docs/GITHUB_PAGES.md).
 
 ## Llicència
 

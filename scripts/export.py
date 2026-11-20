@@ -14,7 +14,7 @@ from zoneinfo import ZoneInfo
 
 MADRID = ZoneInfo("Europe/Madrid")
 
-from config import DATA_DIR, DB_PATH, ROOT
+from config import DATA_DIR, DB_PATH, DB_RETENTION_DAYS, ROOT
 from source_meta import read_last_source
 from status import is_station_active
 
@@ -528,6 +528,40 @@ def _export_summary_7d(conn: sqlite3.Connection, ts_iso: str) -> None:
     )
 
 
+def _prune_db(conn: sqlite3.Connection) -> int:
+    """Delete snapshots older than DB_RETENTION_DAYS (0 disables)."""
+    if DB_RETENTION_DAYS <= 0:
+        return 0
+    cutoff = (
+        datetime.now(timezone.utc) - timedelta(days=DB_RETENTION_DAYS)
+    ).isoformat()
+    # Prefer normalized ISO timestamps for comparison; keep raw rows whose
+    # normalized form is still within the window.
+    old_ts: list[str] = []
+    for (raw_ts,) in conn.execute("SELECT DISTINCT ts FROM snapshots").fetchall():
+        if _normalize_ts(raw_ts) < cutoff:
+            old_ts.append(raw_ts)
+    for (raw_ts,) in conn.execute("SELECT DISTINCT ts FROM barri_snapshots").fetchall():
+        if _normalize_ts(raw_ts) < cutoff and raw_ts not in old_ts:
+            old_ts.append(raw_ts)
+    if not old_ts:
+        return 0
+    placeholders = ",".join("?" * len(old_ts))
+    cur1 = conn.execute(
+        f"DELETE FROM snapshots WHERE ts IN ({placeholders})", old_ts
+    )
+    cur2 = conn.execute(
+        f"DELETE FROM barri_snapshots WHERE ts IN ({placeholders})", old_ts
+    )
+    conn.commit()
+    deleted = (cur1.rowcount or 0) + (cur2.rowcount or 0)
+    print(
+        f"Pruned DB: removed {deleted} rows older than {DB_RETENTION_DAYS}d "
+        f"(cutoff {cutoff})"
+    )
+    return deleted
+
+
 def export() -> None:
     if not DB_PATH.exists():
         raise FileNotFoundError(f"Database not found: {DB_PATH}")
@@ -540,6 +574,7 @@ def export() -> None:
         _export_latest(conn, ts, ts_iso)
         _export_history(conn, ts, ts_iso)
         _export_summary_7d(conn, ts_iso)
+        _prune_db(conn)
 
     print(f"Exported data for {ts}")
 

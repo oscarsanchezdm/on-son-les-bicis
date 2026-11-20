@@ -1,4 +1,6 @@
-requests>=2.31.0
-shapely>=2.0.0
-python-dotenv>=1.0.0
-pyproj>=3.6.0
+# Optional. The ingest/export cron path runs on Python 3.9+ with the standard
+# library only (shared hosting). Install these for convenience / regenerating
+# static barris (fetch_static_data.py --force needs pyproj).
+requests>=2.28.0,<3
+python-dotenv>=1.0.0,<2
+pyproj>=3.4.0,<4; python_version >= "3.9"

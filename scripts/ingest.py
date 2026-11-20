@@ -9,22 +9,17 @@ import sqlite3
 import sys
 from collections import defaultdict
 from datetime import datetime, timezone
-from pathlib import Path
-
-from pyproj import Transformer
-from shapely.geometry import Point, shape
 
 from config import BARRIS_GEOJSON, BICING_TOKEN, DB_PATH, SUPERFICIE_CSV
 from gbfs import load_gbfs_stations
+from geo import assign_barri, load_barri_features
 from init_db import init_db
 from opendata import load_opendata_stations
 from source_meta import write_last_source
 from status import is_station_active
 
-PREPARED = False
-BARRI_POLYGONS: list[dict] = []
+BARRI_FEATURES: list[dict] = []
 SUPERFICIE: dict[str, float] = {}
-_TO_UTM = Transformer.from_crs("EPSG:4326", "EPSG:25831", always_xy=True)
 
 
 def _normalize_ts(ts: str | int | float) -> str:
@@ -71,24 +66,11 @@ def _load_source_data() -> tuple[dict[str, dict], list[dict], str, str]:
 
 
 def _load_barris() -> None:
-    global BARRI_POLYGONS
+    global BARRI_FEATURES
     if not BARRIS_GEOJSON.exists():
         raise FileNotFoundError(f"Missing {BARRIS_GEOJSON}. Run fetch_static_data.py first.")
     data = json.loads(BARRIS_GEOJSON.read_text(encoding="utf-8"))
-    BARRI_POLYGONS = []
-    for feature in data.get("features", []):
-        geom = feature.get("geometry")
-        if not geom:
-            continue
-        props = feature.get("properties", {})
-        BARRI_POLYGONS.append(
-            {
-                "codi": props.get("codi_barri", ""),
-                "nom": props.get("nom_barri", ""),
-                "districte": props.get("nom_districte", ""),
-                "polygon": shape(geom),
-            }
-        )
+    BARRI_FEATURES = load_barri_features(data)
 
 
 def _load_superficie() -> None:
@@ -106,18 +88,8 @@ def _load_superficie() -> None:
 
 
 def _assign_barri(lat: float, lon: float) -> tuple[str, str, str]:
-    """Match station to barri polygon (GeoJSON is WGS84; legacy UTM coords still supported)."""
-    point_wgs = Point(lon, lat)
-    x, y = _TO_UTM.transform(lon, lat)
-    point_utm = Point(x, y)
-    for barri in BARRI_POLYGONS:
-        polygon = barri["polygon"]
-        if polygon.bounds[0] > 180:
-            if polygon.contains(point_utm):
-                return barri["codi"], barri["nom"], barri["districte"]
-        elif polygon.contains(point_wgs):
-            return barri["codi"], barri["nom"], barri["districte"]
-    return "", "Desconegut", ""
+    """Match station to barri polygon (public/data/static/barris.geojson is WGS84)."""
+    return assign_barri(lat, lon, BARRI_FEATURES)
 
 
 def _pct(numerator: int, denominator: int) -> float:

@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Download static reference data (barris GeoJSON, superficie CSV)."""
+"""Download static reference data (barris GeoJSON, superficie CSV).
+
+Needs pyproj only when regenerating barris from the Ajuntament UTM source.
+On shared hosting, keep the committed public/data/static/ files and skip this.
+"""
 
 from __future__ import annotations
 
@@ -7,21 +11,26 @@ import csv
 import io
 import json
 import sys
+import urllib.request
 import zipfile
 from io import StringIO
 
-import requests
-from pyproj import Transformer
-
 from config import BARRIS_GEOJSON, BARRIS_SOURCE_URL, STATIC_DIR, SUPERFICIE_CSV
+from http_json import fetch_json
 
-_TO_WGS84 = Transformer.from_crs("EPSG:25831", "EPSG:4326", always_xy=True)
+
+def _download_bytes(url: str, timeout: float = 180) -> bytes:
+    req = urllib.request.Request(
+        url,
+        headers={"User-Agent": "on-son-les-bicis/1.0", "Accept": "*/*"},
+        method="GET",
+    )
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        return resp.read()
 
 
 def _download_zip_json(url: str) -> dict:
-    resp = requests.get(url, timeout=180)
-    resp.raise_for_status()
-    content = resp.content
+    content = _download_bytes(url)
     if content[:2] == b"PK":
         with zipfile.ZipFile(io.BytesIO(content)) as zf:
             polygon_name = next(
@@ -51,21 +60,34 @@ def _barri_names(points: dict) -> dict[tuple[str, str], dict]:
     return names
 
 
-def _reproject_coords(coords):
+def _get_transformer():
+    try:
+        from pyproj import Transformer
+    except ImportError as exc:
+        raise RuntimeError(
+            "pyproj is required to regenerate barris.geojson from UTM source. "
+            "On shared hosting, use the committed public/data/static/barris.geojson "
+            "instead of running this script."
+        ) from exc
+    return Transformer.from_crs("EPSG:25831", "EPSG:4326", always_xy=True)
+
+
+def _reproject_coords(coords, transformer):
     if isinstance(coords[0], (int, float)):
-        lon, lat = _TO_WGS84.transform(coords[0], coords[1])
+        lon, lat = transformer.transform(coords[0], coords[1])
         return [lon, lat]
-    return [_reproject_coords(c) for c in coords]
+    return [_reproject_coords(c, transformer) for c in coords]
 
 
-def _reproject_geometry(geometry: dict) -> dict:
+def _reproject_geometry(geometry: dict, transformer) -> dict:
     geom = dict(geometry)
     if geom.get("coordinates"):
-        geom["coordinates"] = _reproject_coords(geom["coordinates"])
+        geom["coordinates"] = _reproject_coords(geom["coordinates"], transformer)
     return geom
 
 
 def download_barris() -> None:
+    transformer = _get_transformer()
     STATIC_DIR.mkdir(parents=True, exist_ok=True)
     print(f"Downloading barris from {BARRIS_SOURCE_URL}")
     payload = _download_zip_json(BARRIS_SOURCE_URL)
@@ -101,7 +123,7 @@ def download_barris() -> None:
                     "codi_districte": dist,
                     "nom_districte": district_names.get(dist, ""),
                 },
-                "geometry": _reproject_geometry(feature.get("geometry") or {}),
+                "geometry": _reproject_geometry(feature.get("geometry") or {}, transformer),
             }
         )
 
@@ -117,9 +139,8 @@ def download_superficie() -> None:
         "https://opendata-ajuntament.barcelona.cat/data/api/action/"
         "package_show?id=est-superficie"
     )
-    resp = requests.get(package_url, timeout=60)
-    resp.raise_for_status()
-    resources = resp.json()["result"]["resources"]
+    payload = fetch_json(package_url, timeout=60, retries=2)
+    resources = payload["result"]["resources"]
     csv_resources = [r for r in resources if r.get("format", "").upper() == "CSV"]
     if not csv_resources:
         print("No CSV resource found for est-superficie, skipping", file=sys.stderr)
@@ -128,10 +149,9 @@ def download_superficie() -> None:
     csv_resources.sort(key=lambda r: r.get("name", ""), reverse=True)
     url = csv_resources[0]["url"]
     print(f"Downloading superficie from {url}")
-    data_resp = requests.get(url, timeout=60)
-    data_resp.raise_for_status()
+    text = _download_bytes(url, timeout=60).decode("utf-8", errors="replace")
 
-    reader = csv.DictReader(StringIO(data_resp.text))
+    reader = csv.DictReader(StringIO(text))
     rows = []
     for row in reader:
         keys = {k.lower(): v for k, v in row.items()}
@@ -161,9 +181,16 @@ def download_superficie() -> None:
 
 
 def main() -> None:
-    download_barris()
+    force = "--force" in sys.argv
+    if BARRIS_GEOJSON.exists() and not force:
+        print(f"Keeping existing {BARRIS_GEOJSON} (pass --force to regenerate)")
+    else:
+        download_barris()
     try:
-        download_superficie()
+        if SUPERFICIE_CSV.exists() and not force:
+            print(f"Keeping existing {SUPERFICIE_CSV} (pass --force to regenerate)")
+        else:
+            download_superficie()
     except Exception as exc:  # noqa: BLE001
         print(f"Warning: could not download superficie: {exc}", file=sys.stderr)
 
